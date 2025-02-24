@@ -39,7 +39,9 @@ if ("`user'" == "erick") {
 }
 
 if ("`user'" == "stefanograziosi") {
+	cd "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps"
     global filepath "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps1"
+	global output "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
 }
 
 if ("`user'" == "gabrielemole") {
@@ -94,7 +96,7 @@ matrix list table_1
 
 *Studia come esportare in .tex
 
-esttab matrix(table_1) using "table_1.tex", replace tex ///
+esttab matrix(table_1) using "ps1/ps1_output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -179,7 +181,7 @@ matrix colnames table_2 = Reg(1) Reg(2) Reg(3)
 
 matrix list table_2
 
-esttab matrix(table_2) using "table_2.tex", replace tex ///
+esttab matrix(table_2) using "ps1/ps1_output/table_2.tex", replace tex ///
     title("Sequential Regression Results") ///
     cells("result(fmt(3))") ///
 	nomtitles 
@@ -227,7 +229,7 @@ restore
 
 * Questa just in case ci fossimo persi qualcosa, secondo me ha senso ma non è richiesta #SG *
 
-esttab trim3 trim5 trim10 using "table_3.tex", replace tex ///
+esttab trim3 trim5 trim10 using "ps1/ps1_output/table_3.tex", replace tex ///
     title("Regression Results After Removing Extreme Influence Observations") ///
     stats(N, fmt(%9.0g) label("N")) ///
 	nomtitles 
