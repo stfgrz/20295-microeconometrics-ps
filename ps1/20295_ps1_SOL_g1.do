@@ -11,7 +11,7 @@ clear
 
 set more off
 
-/* For commands */
+/* For commands INNO EUROPA LEAGUE */
 
 /* First time running this code? Please remove the comment marks from the code below and install of the necessary packages */
 
