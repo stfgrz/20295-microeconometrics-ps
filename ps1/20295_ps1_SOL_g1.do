@@ -67,7 +67,7 @@ Name it TABLE 1.
 Present for each variable: mean for treated, mean for controls, standard deviations for treated, standard deviations for control, difference in means between treatment and control, appropriate standard errors for difference in means.
 Comment on how many variables are balanced or not. Is it what you expected? */
 
-matrix table_1 = J(7,6,.)
+matrix table_1a = J(7,6,.)
 
 local covars "age educ black hisp nodegree re74 re75"
 local row_1a = 1
@@ -82,22 +82,22 @@ foreach var of local covars {
     local diff_mean = `treated_mean' - `control_mean'
     local se_diff = r(se)
     
-    matrix table_1[`row_1a',1] = `treated_mean'
-    matrix table_1[`row_1a',2] = `control_mean'
-    matrix table_1[`row_1a',3] = `treated_sd'
-    matrix table_1[`row_1a',4] = `control_sd'
-    matrix table_1[`row_1a',5] = `diff_mean'
-    matrix table_1[`row_1a',6] = `se_diff'
+    matrix table_1a[`row_1a',1] = `treated_mean'
+    matrix table_1a[`row_1a',2] = `control_mean'
+    matrix table_1a[`row_1a',3] = `treated_sd'
+    matrix table_1a[`row_1a',4] = `control_sd'
+    matrix table_1a[`row_1a',5] = `diff_mean'
+    matrix table_1a[`row_1a',6] = `se_diff'
     
     local row_1a = `row_1a' + 1
 }
 
-matrix colnames table_1 = TreatedMean_j3 ControlMean_j3 TreatedSD_j3 ControlSD_j3 DiffMean_j3 SE_Diff_j3
-matrix rownames table_1 = age educ black hisp nodegree re74 re75
+matrix colnames table_1a = TreatedMean_j3 ControlMean_j3 TreatedSD_j3 ControlSD_j3 DiffMean_j3 SE_Diff_j3
+matrix rownames table_1a = age educ black hisp nodegree re74 re75
 
 matrix list table_1
 
-esttab matrix(table_1) using "ps1/ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a) using "ps1/ps1_output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -118,7 +118,7 @@ scalar se1 = _se[train]
 Add rows to the table with the number of controls and treated in each regression. Name it TABLE 2.
 Are your results sensitive to the introduction of covariates? */
 
-matrix table_2 = J(4, 3, .)
+matrix table_1b = J(4, 3, .)
 local col_1b = 1
 
 *Regression 1*
@@ -128,10 +128,10 @@ scalar controls1 = r(N)
 count if e(sample) & train==1
 scalar treated1 = r(N)
 
-matrix table_2[1, `col_1b'] = coef1
-matrix table_2[2, `col_1b'] = se1
-matrix table_2[3, `col_1b'] = controls1
-matrix table_2[4, `col_1b'] = treated1
+matrix table_1b[1, `col_1b'] = coef1
+matrix table_1b[2, `col_1b'] = se1
+matrix table_1b[3, `col_1b'] = controls1
+matrix table_1b[4, `col_1b'] = treated1
 
 local col_1b = `col_1b' + 1
 
@@ -147,10 +147,10 @@ scalar controls2 = r(N)
 count if e(sample) & train==1
 scalar treated2 = r(N)
 
-matrix table_2[1, `col_1b'] = coef2
-matrix table_2[2, `col_1b'] = se2
-matrix table_2[3, `col_1b'] = controls2
-matrix table_2[4, `col_1b'] = treated2
+matrix table_1b[1, `col_1b'] = coef2
+matrix table_1b[2, `col_1b'] = se2
+matrix table_1b[3, `col_1b'] = controls2
+matrix table_1b[4, `col_1b'] = treated2
 
 local col_1b = `col_1b' + 1
 
@@ -166,19 +166,19 @@ scalar controls3 = r(N)
 count if e(sample) & train==1
 scalar treated3 = r(N)
 
-matrix table_2[1, `col_1b'] = coef3
-matrix table_2[2, `col_1b'] = se3
-matrix table_2[3, `col_1b'] = controls3
-matrix table_2[4, `col_1b'] = treated3
+matrix table_1b[1, `col_1b'] = coef3
+matrix table_1b[2, `col_1b'] = se3
+matrix table_1b[3, `col_1b'] = controls3
+matrix table_1b[4, `col_1b'] = treated3
 
 *Table 2*
 
-matrix rownames table_2 = Coef_train SE_train N_controls N_treated
-matrix colnames table_2 = Reg(1) Reg(2) Reg(3)
+matrix rownames table_1b = Coef_train SE_train N_controls N_treated
+matrix colnames table_1b = Reg(1) Reg(2) Reg(3)
 
-matrix list table_2
+matrix list table_1b
 
-esttab matrix(table_2) using "ps1/ps1_output/table_2.tex", replace tex ///
+esttab matrix(table_1b) using "ps1/ps1_output/table_2.tex", replace tex ///
     title("Sequential Regression Results") ///
     cells("result(fmt(3))") ///
 	nomtitles 
@@ -242,9 +242,42 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/abc3c6d
 
 /* (a) Do a table with the same structure of TABLE 1 of item (a) in question 1 for the following covariates: age educ black hisp re74 re75 (note that nodegree is not present in the current dataset.) Add the corresponding columns to TABLE 1. */
 
-balancetable train age educ black hisp re74 re75 using "ps1/ps1_output/table_4.tex", observationscolumn ctitles("Control group" "Treatment group" "Difference") replace
+matrix table_2a = J(6,6,.)
 
-/*UTILIZZA FORMATTAZIONE DI STE (VEDI 1.a)*/
+local covars "age educ black hisp re74 re75"
+local row_2a = 1
+
+foreach var of local covars {
+	ttest `var', by(train)
+    
+    local treated_mean = r(mu_2)
+    local control_mean = r(mu_1)
+    local treated_sd = r(sd_2)
+    local control_sd = r(sd_1)
+    local diff_mean = `treated_mean' - `control_mean'
+    local se_diff = r(se)
+    
+    matrix table_2a[`row_2a',1] = `treated_mean'
+    matrix table_2a[`row_2a',2] = `control_mean'
+    matrix table_2a[`row_2a',3] = `treated_sd'
+    matrix table_2a[`row_2a',4] = `control_sd'
+    matrix table_2a[`row_2a',5] = `diff_mean'
+    matrix table_2a[`row_2a',6] = `se_diff'
+    
+    local row_2a = `row_2a' + 1
+}
+
+matrix colnames table_2a = TreatedMean_j3 ControlMean_j3 TreatedSD_j3 ControlSD_j3 DiffMean_j3 SE_Diff_j3
+matrix rownames table_2a = age educ black hisp re74 re75
+
+matrix list table_2a
+
+matrix table_1a_2a = table_1a, table_2a
+
+esttab matrix(table_1a_2a) using "ps1/ps1_output/table_1.tex", replace tex ///
+    title("Balance Check Across Treatment and Control") ///
+    cells("result(fmt(3))") ///
+	nomtitles
 
 /* (b) Generate a variable named treated that randomly allocates half of observations to a (fake) treatment group and the other half to a (fake) control group. Fix a seed of 5 digits using the command set seed. */
 
@@ -270,15 +303,50 @@ pwcorr treated treated_2, sig
 
 	/* (i) Use the same list of covariates of item (a) of this question. */
 	
-/* RICREA TABELLA SEGUENDO FORMAT 1.a */
+matrix table_2d = J(6,6,.)
+
+local covars "age educ black hisp re74 re75"
+local row_2d = 1
+
+foreach var of local covars {
+	ttest `var', by(treated)
+    
+    local treated_mean = r(mu_2)
+    local control_mean = r(mu_1)
+    local treated_sd = r(sd_2)
+    local control_sd = r(sd_1)
+    local diff_mean = `treated_mean' - `control_mean'
+    local se_diff = r(se)
+    
+    matrix table_2d[`row_2d',1] = `treated_mean'
+    matrix table_2d[`row_2d',2] = `control_mean'
+    matrix table_2d[`row_2d',3] = `treated_sd'
+    matrix table_2d[`row_2d',4] = `control_sd'
+    matrix table_2d[`row_2d',5] = `diff_mean'
+    matrix table_2d[`row_2d',6] = `se_diff'
+    
+    local row_2d = `row_2d' + 1
+}
+
+matrix colnames table_2d = TreatedMean_treat ControlMean_treat TreatedSD_treat ControlSD_treat DiffMean_treat SE_Diff_treat
+matrix rownames table_2d = age educ black hisp re74 re75
+
+matrix list table_2d
 	
 	/* (ii) Add the corresponding columns to TABLE 1. */
 	
-/* VEDI SOPRA */ 
+matrix table_1b_2d = table_1b, table_2d
+
+esttab matrix(table_1b_2d) using "ps1/ps1_output/table_1.tex", replace tex ///
+    title("Balance Check Across Treatment and Control") ///
+    cells("result(fmt(3))") ///
+	nomtitles
 	
 	/* (iii) What you find corresponds to your expectations? */
 	
-	
+		/*
+		As expected, being the treatment randomly allocated, covariates are balanced across both treatment and control.
+		*/
 
 /* (e)  */
 
@@ -334,19 +402,6 @@ outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "N
 	
 	
 	/* (iv) Comment on what you find. Is it what you expected? Are your results sensitive to the introduction of covariates? */ 
-
-/* (g) */
-
-	/* (i)  */
-	
-	
-	
-	/* (ii)  */
-	
-	
-	
-	/* (iii)  */
-
 
 
 *=============================================================================
@@ -474,7 +529,7 @@ HC3 Robust Standard Errors, on the other hand, are widely used and considered as
 
 	
 		/*
-		PER SOFI: Fai spiegazione teorica di come gli errori sono calcolati
+		Bootstrapping is a non-parametric statistical method that uses random sampling with replacement to determine the sampling variation of an estimate. In particular, standard errors in a bootstrap procedure are calculated by resampling the data multiple times (the standard on stata is 50 times) , recalculating the statistic of interest for each resample, and finally computing the standard deviation of the replications. The standard deviation of the bootstrap replications is the bootsrap standard error.
 		*/
 	
 	/* (iv) Do any of your conclusions regarding the effect of the training program change based on the analysis performed in this exercise? Based on the discussion provided in the Data Colada post, can you think of a reason for why your results using HC3 should or shouldn't change for this exercise? 
