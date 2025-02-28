@@ -11,11 +11,11 @@ clear
 
 set more off
 
-/* For commands INNO EUROPA LEAGUE */
+/* For commands */
 
 /* First time running this code? Please remove the comment marks from the code below and install of the necessary packages */
 
-/*
+
 ssc install outreg2, replace
 ssc install ivreg2, replace
 ssc install estout, replace
@@ -521,13 +521,27 @@ HC3 Robust Standard Errors, on the other hand, are widely used and considered as
 		*/
 	
 	/* (ii) Using the dataset jtrain2, rerun the analysis you have performed in exercise 1, now calculating the standard errors based on HC3 (this is done in Stata using the option vce() in your regression command). */
-	
 
-	
+*First regression
+regress re78 train, vce(hc3)
+
+*second regression
+regress re78 train age educ black hisp, vce(hc3) 
+
+*third regression
+regress re78 train age educ black hisp re74 re75, vce(hc3)
+
+/*The analysis carried out in point d of the 1st exercise cannot be done with any other VCE other than the standard VCE(ols)*/
+
+/*
+manca l'analisi da fare
+*/
+
 	/* (iii) Perform a third version of your analysis, now based on bootstrapping (use the bootstrap command in Stata). Briefly describe how the standard errors are calculated in this approach. */
-	
 
-	
+*first regression
+
+
 		/*
 		Bootstrapping is a non-parametric statistical method that uses random sampling with replacement to determine the sampling variation of an estimate. In particular, standard errors in a bootstrap procedure are calculated by resampling the data multiple times (the standard on stata is 50 times) , recalculating the statistic of interest for each resample, and finally computing the standard deviation of the replications. The standard deviation of the bootstrap replications is the bootsrap standard error.
 		*/
