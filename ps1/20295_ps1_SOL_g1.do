@@ -15,7 +15,7 @@ set more off
 
 /* First time running this code? Please remove the comment marks from the code below and install of the necessary packages */
 
-
+/*
 ssc install outreg2, replace
 ssc install ivreg2, replace
 ssc install estout, replace
@@ -29,12 +29,13 @@ ssc install randtreat, replace
  */
 
 /* For graphs & stuff */
+/*
 ssc install grstyle, replace
 ssc install coefplot, replace
 graph set window fontface "Lato"
 grstyle init
 grstyle set plain, horizontal
-
+*/
 local user = c(username)
 
 if ("`user'" == "erick") {
@@ -540,12 +541,18 @@ manca l'analisi da fare
 	/* (iii) Perform a third version of your analysis, now based on bootstrapping (use the bootstrap command in Stata). Briefly describe how the standard errors are calculated in this approach. */
 
 *first regression
-
+bootstrap _b, reps(1000): regress re78 train
+*second regression
+bootstrap _b, reps(1000): regress re78 train age educ black hisp
+*third regression
+bootstrap _b, reps(1000): regress re78 train age educ black hisp re74 re75
 
 		/*
 		Bootstrapping is a non-parametric statistical method that uses random sampling with replacement to determine the sampling variation of an estimate. In particular, standard errors in a bootstrap procedure are calculated by resampling the data multiple times (the standard on stata is 50 times) , recalculating the statistic of interest for each resample, and finally computing the standard deviation of the replications. The standard deviation of the bootstrap replications is the bootsrap standard error.
 		*/
 	
 	/* (iv) Do any of your conclusions regarding the effect of the training program change based on the analysis performed in this exercise? Based on the discussion provided in the Data Colada post, can you think of a reason for why your results using HC3 should or shouldn't change for this exercise? 
+	
+	*this has to be done when we have a more complete analysis
 
 	
