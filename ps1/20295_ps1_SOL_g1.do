@@ -96,7 +96,7 @@ foreach var of local covars {
 matrix colnames table_1a = TreatedMean_j3 ControlMean_j3 TreatedSD_j3 ControlSD_j3 DiffMean_j3 SE_Diff_j3
 matrix rownames table_1a = age educ black hisp nodegree re74 re75
 
-matrix list table_1
+matrix list table_1a
 
 esttab matrix(table_1a) using "ps1/ps1_output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
@@ -112,15 +112,18 @@ regress re78 train
 scalar coef1 = _b[train]
 scalar se1 = _se[train]
 
+	/* A: By running a regression of the real earnings in 1978 on training (which represents our treatment variable), we obtain a positive coefficient of 1.794343 significant at the 5% level; this implies that real earnings, in our experiment, were positive correlated with the training programme.
+	
+	We ought to keep in mind that, despite the coefficient being statistically significant and different from zero, the R^2 of our model (0.0178) suggests that there are other factors responsible for the vast portion of the variation of real earnings in 1978 */
+
 /* (c) Construct a table by sequentially adding the output of the following regressions to each column:
 (1) re78 on train;
 (2) re78 on train age educ black hisp;
 (3) re78 on train age educ black hisp re74 re75;
-Add rows to the table with the number of controls and treated in each regression. Name it TABLE 2.
-Are your results sensitive to the introduction of covariates? */
+Add rows to the table with the number of controls and treated in each regression. Name it TABLE 2. */
 
-matrix table_1b = J(4, 3, .)
-local col_1b = 1
+matrix table_1c = J(4, 3, .)
+local col_1c = 1
 
 *Regression 1*
 
@@ -129,12 +132,12 @@ scalar controls1 = r(N)
 count if e(sample) & train==1
 scalar treated1 = r(N)
 
-matrix table_1b[1, `col_1b'] = coef1
-matrix table_1b[2, `col_1b'] = se1
-matrix table_1b[3, `col_1b'] = controls1
-matrix table_1b[4, `col_1b'] = treated1
+matrix table_1c[1, `col_1c'] = coef1
+matrix table_1c[2, `col_1c'] = se1
+matrix table_1c[3, `col_1c'] = controls1
+matrix table_1c[4, `col_1c'] = treated1
 
-local col_1b = `col_1b' + 1
+local col_1b = `col_1c' + 1
 
 *Regression 2*
 
@@ -148,12 +151,12 @@ scalar controls2 = r(N)
 count if e(sample) & train==1
 scalar treated2 = r(N)
 
-matrix table_1b[1, `col_1b'] = coef2
-matrix table_1b[2, `col_1b'] = se2
-matrix table_1b[3, `col_1b'] = controls2
-matrix table_1b[4, `col_1b'] = treated2
+matrix table_1c[1, `col_1c'] = coef2
+matrix table_1c[2, `col_1c'] = se2
+matrix table_1c[3, `col_1c'] = controls2
+matrix table_1c[4, `col_1c'] = treated2
 
-local col_1b = `col_1b' + 1
+local col_1c = `col_1c' + 1
 
 *Regression 3*
 
@@ -167,22 +170,26 @@ scalar controls3 = r(N)
 count if e(sample) & train==1
 scalar treated3 = r(N)
 
-matrix table_1b[1, `col_1b'] = coef3
-matrix table_1b[2, `col_1b'] = se3
-matrix table_1b[3, `col_1b'] = controls3
-matrix table_1b[4, `col_1b'] = treated3
+matrix table_1c[1, `col_1c'] = coef3
+matrix table_1c[2, `col_1c'] = se3
+matrix table_1c[3, `col_1c'] = controls3
+matrix table_1c[4, `col_1c'] = treated3
 
 *Table 2*
 
-matrix rownames table_1b = Coef_train SE_train N_controls N_treated
-matrix colnames table_1b = Reg(1) Reg(2) Reg(3)
+matrix rownames table_1c = Coef_train SE_train N_controls N_treated
+matrix colnames table_1c = Reg(1) Reg(2) Reg(3)
 
-matrix list table_1b
+matrix list table_1c
 
-esttab matrix(table_1b) using "ps1/ps1_output/table_2.tex", replace tex ///
+esttab matrix(table_1c) using "ps1/ps1_output/table_2.tex", replace tex ///
     title("Sequential Regression Results") ///
     cells("result(fmt(3))") ///
 	nomtitles 
+	
+/* Are your results sensitive to the introduction of covariates? */
+
+	/* A: Yes, given that our coefficient for the treatment programme does not change significantly as we introduce covariates, we can safely state that our results are robust */
 
 /* (d) dfbeta is a statistic that measures how much the regression coefficient of a certain variable changes in standard deviations if the i-th observation is deleted.
 If using Stata, type help dfbeta and discover how to estimate this statistic after a regression. The command in R is also dfbeta and can also be checked using help(dfbeta).
@@ -231,6 +238,11 @@ esttab trim3 trim5 trim10 using "ps1/ps1_output/table_3.tex", replace tex ///
     title("Regression Results After Removing Extreme Influence Observations") ///
     stats(N, fmt(%9.0g) label("N")) ///
 	nomtitles 
+	
+	
+/* We notice how the coefficient tends to change in the order of the decimals.
+ 
+Moreover, we can observe how the coefficient loses statistical significance as observations are removed, suggesting that  */
 
 *=============================================================================
 /* 								Question 2 									*/
@@ -268,12 +280,30 @@ foreach var of local covars {
     local row_2a = `row_2a' + 1
 }
 
-matrix colnames table_2a = TreatedMean_j3 ControlMean_j3 TreatedSD_j3 ControlSD_j3 DiffMean_j3 SE_Diff_j3
-matrix rownames table_2a = age educ black hisp re74 re75
+matrix list table_2a
+
+matrix table_2a_new = J(7,6,.)
+forvalues i = 1/4 {
+    forvalues j = 1/6 {
+        matrix table_2a_new[`i', `j'] = table_2a[`i', `j']
+    }
+}
+forvalues i = 5/6 {
+    forvalues j = 1/6 {
+        matrix table_2a_new[`i'+1, `j'] = table_2a[`i', `j']
+    }
+}
+
+matrix drop table_2a
+matrix table_2a = table_2a_new
 
 matrix list table_2a
 
 matrix table_1a_2a = table_1a, table_2a
+
+matrix colnames table_1a_2a = TreatedMean_treat_1a ControlMean_treat_1a TreatedSD_treat_1a ControlSD_treat_1a DiffMean_treat_1a SE_Diff_treat_1a TreatedMean_treat_2a ControlMean_treat_2a TreatedSD_treat_2a ControlSD_treat_2a DiffMean_treat_2a SE_Diff_treat_2a
+
+matrix list table_1a_2a
 
 esttab matrix(table_1a_2a) using "ps1/ps1_output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
@@ -336,9 +366,29 @@ matrix list table_2d
 	
 	/* (ii) Add the corresponding columns to TABLE 1. */
 	
-matrix table_1b_2d = table_1b, table_2d
+matrix table_2d_new = J(7,6,.)
+	
+forvalues i = 1/4 {
+    forvalues j = 1/6 {
+        matrix table_2d_new[`i', `j'] = table_2d[`i', `j']
+    }
+}
+forvalues i = 5/6 {
+    forvalues j = 1/6 {
+        matrix table_2d_new[`i'+1, `j'] = table_2d[`i', `j']
+    }
+}
 
-esttab matrix(table_1b_2d) using "ps1/ps1_output/table_1.tex", replace tex ///
+matrix list table_2d_new
+
+matrix drop table_2d
+matrix table_2d = table_2d_new
+
+matrix list table_2d
+	
+matrix table_1a_2a_2d = table_1a_2a, table_2d
+
+esttab matrix(table_1a_2a_2d) using "ps1/ps1_output/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
