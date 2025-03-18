@@ -541,8 +541,8 @@ Read Athey and Imbens (2017) (focus on those sections where the authors discuss 
 /* (a) Under which conditions, allowing for heterogeneous treatment effects, is Neyman's inference unbiased? */
 
 	/*
-	Neyman, in the context of inference from random experiments, proposed as an estimator the difference in average outcomes by treatment status.
-	Allowing heterogeneous treatment effects, for the estimator proposed by Neyman to be unbiased pure randomisation must hold, so it must be a completely randomized experiment. 
+	Neyman, in the context of inference from random experiments, proposed as an estimator the difference in average outcomes by treatment status, so for treatment and control groups. .
+	Allowing heterogeneous treatment effects, for the estimator proposed by Neyman to be unbiased pure randomisation must hold, so it must be a completely randomized experiment. This holds when there is independence of treatment assignement and potential outcomes. 
 	On the other hand, if we are considering the estimation of the standard error, for the estimator to be unbiased under heterogeneous treatment effects, it must be possible to view the sample analyzed as a random sample from an infinite population.
 	*/
 
@@ -619,7 +619,7 @@ bootstrap _b, reps(1000): regress re78 train age educ black hisp re74 re75
 
 The fact that coefficients remain consistent across specifications, with only slight widening of the confidence intervals, is an indicator of the robustness of the analysis performed. 
 
-Based on the discussion in the Data Colada post, it was to be expected that the results do not change much, since the sample size is much larger than 250 observations, and we know that HC3 performs much better than the default standard error option when the sample size is small. 
+Based on the discussion in the Data Colada post, it was to be expected that the results do not change, since the sample size is larger than 250 observations, and we know that HC3 performs much better than the default standard error option when the sample size is small. 
 
 Finally, our conclusion regarding the effect of the training program did not change based on the analysis performed in this exercise. 
 
