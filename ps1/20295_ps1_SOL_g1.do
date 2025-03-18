@@ -107,7 +107,7 @@ esttab matrix(table_1a) using "ps1/ps1_output/table_1.tex", replace tex ///
 Save the estimate and the standard error of the coefficient on train as scalars.
 Interpret the coefficient. */
 
-regress re78 train
+regress re78 train, vce(robust)
 
 scalar coef1 = _b[train]
 scalar se1 = _se[train]
@@ -141,7 +141,7 @@ local col_1c = `col_1c' + 1
 
 *Regression 2*
 
-regress re78 train age educ black hisp
+regress re78 train age educ black hisp, vce(robust)
 
 scalar coef2 = _b[train]
 scalar se2   = _se[train]
@@ -160,7 +160,7 @@ local col_1c = `col_1c' + 1
 
 *Regression 3*
 
-regress re78 train age educ black hisp re74 re75
+regress re78 train age educ black hisp re74 re75, vce(robust)
 
 scalar coef3 = _b[train]
 scalar se3   = _se[train]
@@ -197,7 +197,7 @@ Generate a variable named influence_train storing the dfbetas of train of the la
 Redo the last regression you did in point (c) but removing the observations with the 3, 5, and 10 lowest and largest values in influence train.
 Are your results sensitive to influential observations? */
 
-regress re78 train age educ black hisp re74 re75
+regress re78 train age educ black hisp re74 re75, vce(robust)
 dfbeta, stub(influence_)
 
 egen rank_influence = rank(influence_1), field
@@ -208,7 +208,7 @@ preserve
 	summarize influence_1, meanonly
 	local N = r(N)
 	drop if rank_influence <= 3 | rank_influence >= (`N' - 3 + 1)
-	regress re78 train age educ black hisp re74 re75
+	regress re78 train age educ black hisp re74 re75, vce(robust)
 	estimates store trim3
 restore
 
@@ -218,7 +218,7 @@ preserve
     summarize influence_1, meanonly
 	local N = r(N)
 	drop if rank_influence <= 5 | rank_influence >= (`N' - 5 + 1)
-	regress re78 train age educ black hisp re74 re75
+	regress re78 train age educ black hisp re74 re75, vce(robust)
 	estimates store trim5
 restore
 
@@ -228,7 +228,7 @@ preserve
     summarize influence_1, meanonly
 	local N = r(N)
 	drop if rank_influence <= 10 | rank_influence >= (`N' - 10 + 1)
-	regress re78 train age educ black hisp re74 re75
+	regress re78 train age educ black hisp re74 re75, vce(robust)
 	estimates store trim10
 restore
 
@@ -469,18 +469,20 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/abc3c6d
 
 	/* (i) To do this, in the first step you should perform a Lasso regression of re78 on age educ black hisp re74 re75. */
 	
+set seed 20295
+	
+rlasso re78 age educ black hisp re74 re75
+	
 		/* IMPORTANT NOTE: for the sake of clarity, our first attempt revolved around the robust lasso approach, here implemented by rlasso. Nonetheless, we faced difficulties as none of the variables would end up resulting statistically significant, exception made for the constant.
 		
 		Given this lack of results, we decided to relax our assumptions and implement a standard lasso approach, here exemplified by the command `lasso linear' */
-	
-set seed 20295
 
 lasso linear re78 age educ black hisp re74 re75
 lassocoef
 	
 	/* (ii) Then, in a second step, run an OLS regression of re78 on train and all the variables selected in the first step. */
 	
-		/* A: according to the output, all of our previous variables were accepted, exception made for ``hisp'' */
+		/* A: According to the output, all of our previous variables were accepted, exception made for ``hisp'' */
 	
 regress re78 train age educ black re74 re75
 	
@@ -490,24 +492,28 @@ regress re78 train age educ black re74 re75
 		
 		For what it concerns the approach, still, performing inference after a post‐Lasso OLS regression raises several challenges that arise largely from the fact that the model selection step is inherently data‐driven. When Lasso is used to select controls, the resulting set of regressors is not picked by us (the researcher), but it depends on the particularities of the sample and the chosen tuning parameter. This extra randomness is typically ignored by conventional OLS inference, leading to standard errors and confidence intervals that are too narrow and p‐values that might misrepresent the true level of uncertainty.
 
-			Moreover, a naive approach that applies Lasso solely on the outcome equation can inadvertently drop variables that, while only moderately predictive of the outcome, are strongly correlated with the treatment variable; in this case, the issue is that such omissions risk introducing omitted‐variable bias into the treatment effect estimate. Even if one subsequently re-estimates the model using OLS on the selected variables—often called post‐Lasso—the initial selection step's bias can persist. Lasso's regularization not only shrinks coefficient estimates toward zero, but its selection process can also be sensitive to the penalty level, which further complicates the inference.
+		Moreover, a naive approach that applies Lasso solely on the outcome equation can inadvertently drop variables that, while only moderately predictive of the outcome, are strongly correlated with the treatment variable; in this case, the issue is that such omissions risk introducing omitted‐variable bias into the treatment effect estimate. Even if one subsequently re-estimates the model using OLS on the selected variables—often called post‐Lasso—the initial selection step's bias can persist. Lasso's regularization not only shrinks coefficient estimates toward zero, but its selection process can also be sensitive to the penalty level, which further complicates the inference.
 
-			In essence, while post‐Lasso OLS offers a useful strategy for reducing dimensionality in high-dimensional settings, the inference based on such a regression is fraught with complications. The additional variability introduced by the selection process, along with the risk of omitted-variable bias and regularization bias, means that traditional OLS standard errors are insufficient. Adopting the double selection method is a step in the right direction, but it also necessitates specialized adjustments in the inferential framework to yield reliable conclusions. */
+		In essence, while post‐Lasso OLS offers a useful strategy for reducing dimensionality in high-dimensional settings, the inference based on such a regression is fraught with complications. The additional variability introduced by the selection process, along with the risk of omitted-variable bias and regularization bias, means that traditional OLS standard errors are insufficient. Adopting the double selection method is a step in the right direction, but it also necessitates specialized adjustments in the inferential framework to yield reliable conclusions. */
 
 /* (b) Now perform the "double selection" procedure as described by Belloni et al. (2014). We will perform this for two sets of variables in the exercises below. For each of these cases, you should first perform the "double selection" procedure directly using pdslasso in Stata or rlassoEffect in R and then check each step of this selection by running rlasso either in Stata or R.*/
 
 	/* (i) In a first step, perform the "double selection" on the original variable list age educ black hisp re74 re75. Comment on your results. */
 	
-pdslasso re78 train (age black hisp re74 re75)
+pdslasso re78 train (age black hisp re74 re75), rlasso
 
-regress re78 train age educ black re74 re75
+	/* We implemented the double selection procedure following the approach described by Belloni et al. (2014). The procedure involves two key selection steps: one for the outcome (re78) and one for the treatment (train). In both steps, none of the candidate high-dimensional controls—age, black, hisp, re74, and re75—were selected. In other words, the lasso did not add any extra controls beyond the constant term.
+
+		The final structural equation, estimated with CHS lasso-orthogonalized variables, yields a statistically significant coefficient for the treatment variable (train) of approximately 1.79 (standard error 0.63, p = 0.004). This result indicates that, even after allowing for a data-driven selection of additional controls, the estimated effect of the treatment remains robust and significant.
+
+		The absence of additional selected controls suggests that the potential confounders in our original variable list do not contribute significantly to explaining the variation in re78 or the treatment assignment beyond what is already captured. Consequently, our original covariate specification appears adequate, and the double selection procedure confirms the robustness of the estimated treatment effect. */
 	
 	/* (ii) Now increase the potential selected features by creating dummies for each of the age and educ levels (you're also free to add other variables, such as interactions between controls). Discuss your results and the improvements provided by the "double selection" procedure with respect to the one performed in Q3(a) */
 	
-egen agegrp = cut(age), group(6)
+egen agegrp = cut(age), group(4)
 tabulate agegrp, generate(agegrp_d)
 
-egen educgrp = cut(educ), group(6)
+egen educgrp = cut(educ), group(4)
 tabulate educgrp, generate(educgrp_d)
 
 pdslasso re78 train (age educ black hisp re74 re75 agegrp_d1 agegrp_d2 agegrp_d3 agegrp_d4 educgrp_d1 educgrp_d2 educgrp_d3 educgrp_d4), rlasso
