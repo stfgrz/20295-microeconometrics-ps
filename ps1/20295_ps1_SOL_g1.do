@@ -556,31 +556,22 @@ Read Athey and Imbens (2017) (focus on those sections where the authors discuss 
 
 * (b) 
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/6439a5d44431b6a76c8de6989f44bf7adc461cbb/ps1/ps1_data/jtrain3.dta", clear
+use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/6439a5d44431b6a76c8de6989f44bf7adc461cbb/ps1/ps1_data/jtrain2.dta", clear
 
 *calculating the simple difference in means
+
 ritest train _b[train]: ///
 	reg re78 train 
-	
-	*with this I have a p-value almost at 0 (0.0000)
-	*I arrive at the same value, 1.79
-	
+
 * running same test with 1000 permutations
 ritest train _b[train], reps(1000): ///
-	reg re78 train
-	*p-value 0.0060
-	
+	reg re78 train 
+
 *running the same test with 10000 permutations
 ritest train _b[train], reps(10000): ///
     reg re78 train
-	*p-value 0.0054
 
-*running with controls
-ritest train _b[train], reps(1000): reg re78 train age educ black hisp
-	*p-value molto più alto, p=0.0130
-
-*questions for my groupmates --> should we include some controls maybe? YES WE INCLUDED THEM
-*the p-value they get is 0.044 - why is it higher?? Maybe they had a different choice of permutations? ADESSO RILEGGIAMO e capiamo cosa c'è di diverso
+	/* A: We followed the approach of Heß (2016) and we replicated section 4.1 from Athey and Imbens (2017) was replicated. We conducted the resampling with 100 (default) iterations, 1000 and 10000 iterations. With 100 iterations, the p-value is approximately zero. With 1000 iterations, the p-value varies between 0.0030 and 0.0070. With the last specification, with 10000 resampling replications the p-value is 0.0039, which is a bit smaller than the one found by Athey and Imbens (2017). The difference is to be expected, because of the randomness of the permutation sampling.*/
 
 /* (c) Read again the randomization plan in LaLonde (1986). On which grounds Athey and Imbens (2017)'s illustration of Fisherian inference on LaLonde (1986)'s paper could be criticized? */
 
