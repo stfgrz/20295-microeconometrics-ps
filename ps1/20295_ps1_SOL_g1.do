@@ -332,6 +332,9 @@ randtreat, generate(treated_2) setseed(20295) misfits(strata) // check this out 
 	
 pwcorr treated treated_2, sig
 
+	/* The correlation is close to 0 and not statistically significant. This is consistent with random assignments with different algorithms. If an assignment is truly random it should be uncorrelated with other random assignments adopting different techniques even when using the same seed. */
+
+
 /* (d) Do a table with the same structure of TABLE 1 of item (a) in question 1., but using treated instead of train. */ 
 
 	/* (i) Use the same list of covariates of item (a) of this question. */
@@ -398,7 +401,7 @@ esttab matrix(table_1a_2a_2d) using "ps1/ps1_output/table_1.tex", replace tex //
 	/* (iii) What you find corresponds to your expectations? */
 	
 		/*
-		As expected, being the treatment randomly allocated, covariates are balanced across both treatment and control.
+		All variables are statistically balanced when using random assignment to the fake treatment. This is coherent with theoretical expectations as the treatment is randomly assigned and one should expect that almost all variables are balanced, possibly with some exceptions due to chance. As we are dealing with relatively few variables it was more likely to observe them all balanced. Experimental data gave a different picture, where only the dummy for Hispanics was slightly more balanced (yet the difference was close to 5% significance). This difference is due to the very different nature of the data.
 		*/
 
 /* (e)  */
@@ -420,14 +423,14 @@ count if e(sample) & treated == 0
 local n_ctrl= r(N)
 count if e(sample) & treated == 1
 local n_trt= r(N)
-outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Randomised Treatment 1) append dta
+outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Randomised Treatment 2) append dta
 
 reg re78 treated age educ black hisp re74 re75, vce(robust)
 count if e(sample) & treated == 0
 local n_ctrl= r(N)
 count if e(sample) & treated == 1
 local n_trt= r(N)
-outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Randomised Treatment 1) append dta
+outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Randomised Treatment 3) append dta
 	
 	/* (ii) Add lines in the table with the number of controls and treated in each regression. */
 	
@@ -435,7 +438,7 @@ outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "N
 	
 	/* (iii) Comment on what you find. Is it what you expected? */
 	
-		/* A: */
+		/* In the first regression, the treatment dummy is slightly negative yet insignificant. After controlling for other covariates, the point estimate moves closer to 0 and remains statistically insignificant. As expected, adding covariates slightly improves standard errors for the treatment dummy. This is in line with the assignment of a random pseudo-treatment, hence yielding a null effect due to his "fake" nature. Some covariates become significant in explaining the outcome, namely age, education, and previous earnings, while ethnicities do not show any statistical association (Hispanic is significant only at the 10% level).  */
 
 /* (f) */
 
@@ -444,19 +447,37 @@ outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "N
 		(2) re78 on train age educ black hisp;
 		(3) re78 on train age educ black hisp re74 re75. */
 	
-	
+reg re78 train, vce(robust)
+count if e(sample) & treated == 0
+local n_control= r(N)
+count if e(sample) & treated == 1
+local n_treated= r(N)
+outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_treated', "Number Control",`n_control')ctitle (Regression Training 1) append dta
+
+reg re78 train age educ black hisp, vce(robust)
+count if e(sample) & treated == 0
+local n_ctrl= r(N)
+count if e(sample) & treated == 1
+local n_trt= r(N)
+outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Regression Training 2) append dta
+
+reg re78 train age educ black hisp re74 re75, vce(robust)
+count if e(sample) & treated == 0
+local n_ctrl= r(N)
+count if e(sample) & treated == 1
+local n_trt= r(N)
+outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Regression Training 3) append dta
+
 	
 	/* (ii) Add lines in the table with the number of controls and treated in each regression. */
 	
-	
+	/* A: This task was carried out for each individual regression with the command `addstat` */
 	
 	/* (iii) Compare the results with the first three columns of TABLE 2. */
-	
-	
-	
 	/* (iv) Comment on what you find. Is it what you expected? Are your results sensitive to the introduction of covariates? */ 
 
-
+	/* The first regression of real earnings on the training program shows a significant and strong negative effect of the training program (-15.20), differently from the positive effect displayed in the first column (1.794), where the magnitude was also notably lower. While the positive effect and the magnitude was robust to the introduction of other covariates when using jtrain2, the "treatment effect" disappears in jtrain3 after controlling for the other variables. Adding controls to jtrain3 makes the point estimate gradually drop to a slightly positive value close to 0 and lose its statistical significance, partially resembling the result in the previous subpoint. Covariates also show change in magnitude and significance after adding controls. An example is age that changes sign and drops in magnitude after controlling for real earnings. This difference is due to the different nature of the datasets, namely experimental and non-experimental, and as such it was in line with our expectations to find discrepancies.  */
+	
 *=============================================================================
 /* 								Question 3 									*/
 /* So far we have selected the covariates to be added to the regression ourselves. We will now use regularization methods to perform this selection in a data-driven approach.
