@@ -560,16 +560,16 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/6439a5d
 
 *calculating the simple difference in means
 
-ritest train _b[train]: ///
+ritest train _b[train], seed(20295): ///
 	reg re78 train 
 
 * running same test with 1000 permutations
-ritest train _b[train], reps(1000): ///
+ritest train _b[train], reps(1000) seed(20295): ///
 	reg re78 train 
 
 *running the same test with 10000 permutations
-ritest train _b[train], reps(10000): ///
-    reg re78 train
+ritest train _b[train], reps(10000) seed(20295): ///
+    reg re78 train 
 
 	/* A: We followed the approach of Heß (2016) and we replicated section 4.1 from Athey and Imbens (2017) was replicated. We conducted the resampling with 100 (default) iterations, 1000 and 10000 iterations. With 100 iterations, the p-value is approximately zero. With 1000 iterations, the p-value varies between 0.0030 and 0.0070. With the last specification, with 10000 resampling replications the p-value is 0.0039, which is a bit smaller than the one found by Athey and Imbens (2017). The difference is to be expected, because of the randomness of the permutation sampling.*/
 
