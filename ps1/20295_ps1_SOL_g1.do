@@ -549,21 +549,20 @@ Read Athey and Imbens (2017) (focus on those sections where the authors discuss 
 /* (b) Describe Fisher's inference and replicate section 4.1 of Athey and Imbens (2017) in Stata. Do you arrive at their same p-value? If not, why? Hint: Note that you can draw motivation from third-parties for your own answer; for this case, we suggest that you read Heß (2017).*/ 
 
 	/*
-	Fisher's idea was to test the sharp null hypothesis, which is the null hypothesis under which we can infer all the missing potential outcomes from the observed ones. A typical choice is the null hypothesis that the treatment has no effect. The alternative hypothesis is that there exists at least one unit such that this does not hold.  
+	Fisher's inference is based on testing the sharp null hypothesis, which is the null hypothesis under which we can infer all the missing potential outcomes from the observed ones. A typical choice is the null hypothesis that the treatment has no effect. The alternative hypothesis is that there exists at least one unit such that this does not hold.  
 	This type of inference, also called Fishearian Randomization Inference, produces a distribution of a test statistic under a null hypothesis, and it helps the researcher understand if the observed value of the statistic is "extreme", and so it helps understand whether the null hypothesis must be rejected. 
 	Fisher's inference makes it possible to infer, for any statistic that is a function of the Y^obs (observed outcomes), W (treatment) and X (covariates), the exact distribution of that statistic under the null hypothesis.
 	*/
-
-* (b) 
-
 use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/6439a5d44431b6a76c8de6989f44bf7adc461cbb/ps1/ps1_data/jtrain2.dta", clear
 
 *calculating the simple difference in means
+*seed set at 20295 to mantain coherence
 
+*default of 100 permutations
 ritest train _b[train], seed(20295): ///
 	reg re78 train 
 
-* running same test with 1000 permutations
+*running same test with 1000 permutations
 ritest train _b[train], reps(1000) seed(20295): ///
 	reg re78 train 
 
@@ -571,13 +570,13 @@ ritest train _b[train], reps(1000) seed(20295): ///
 ritest train _b[train], reps(10000) seed(20295): ///
     reg re78 train 
 
-	/* A: We followed the approach of Heß (2016) and we replicated section 4.1 from Athey and Imbens (2017) was replicated. We conducted the resampling with 100 (default) iterations, 1000 and 10000 iterations. With 100 iterations, the p-value is approximately zero. With 1000 iterations, the p-value varies between 0.0030 and 0.0070. With the last specification, with 10000 resampling replications the p-value is 0.0039, which is a bit smaller than the one found by Athey and Imbens (2017). The difference is to be expected, because of the randomness of the permutation sampling.*/
+	/* We followed the approach of Heß (2016) and we replicated section 4.1 from Athey and Imbens (2017). We conducted the resampling with 100 (default) iterations, 1000 and 10000 iterations. With 100 iterations, the p-value is approximately zero. With 1000 iterations, the p-value varies between 0.0030 and 0.0070. With the last specification, with 10000 resampling replications the p-value is 0.0039, which is slightly smaller than the one found by Athey and Imbens (2017). The difference is to be expected, because of the random nature of the permutation sampling.*/
 
 /* (c) Read again the randomization plan in LaLonde (1986). On which grounds Athey and Imbens (2017)'s illustration of Fisherian inference on LaLonde (1986)'s paper could be criticized? */
 
 	/*
-	The main critique that could be moved against Athey and Imbens (2017) illustration of Lalonde (1986)'s paper is how randomization was carried out in the original experiment versus how it was reproduced in the Athey and Imbens paper. In particular, the treatment in the data analyzed by Lalonde was given out by 10 different sites of the project, while in the Athey and Imbens (2017) Fisherian inference illustration, the data is treated as if the treatment was randomly assigned across the sample, without the intervention of the single sites. 
-	*/
+	The main critique that could be moved against Athey and Imbens (2017) illustration of Lalonde (1986)'s paper is how randomization was carried out in the original experiment versus how it was reproduced in the Athey and Imbens paper. In particular, the treatment in the data analyzed by Lalonde was given out by 10 different sites of the project, while in the Athey and Imbens (2017) Fisherian inference illustration, the data is treated as if the treatment was randomly assigned across the sample, without the intervention of the single sites. An important assumption when conducting Fisherian inference is that all treatment assignments are equally likely, so if site-specific factors influence outcomes or the assignment process, this assumption might not hold, and for this reason it could lead to incorrect p-values, and so to incorrect conclusions about statistical significance. 
+*/
 
 /* (d) The article Channeling Fisher: Randomization Tests and the Statistical Insignificance of Seemingly Significant Experimental Results (Young, 2019) presents the results of an exercise to test the null hypothesis of no treatment effects in a series of experimental papers recently published in AEA journals, showing that many of the coefficients reported in those papers are no longer significant in a randomization test. A critique of this paper has been published by professors Uri Johnson, Leif Nelson and Joe Simmons in their blog, Data Colada. Read their post here and answer the questions below. */
 
