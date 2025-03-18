@@ -604,10 +604,6 @@ regress re78 train age educ black hisp re74 re75, vce(hc3)
 
 /*The analysis carried out in point d of the 1st exercise cannot be done with any other VCE other than the standard VCE(ols)*/
 
-/*
-manca l'analisi da fare
-*/
-
 	/* (iii) Perform a third version of your analysis, now based on bootstrapping (use the bootstrap command in Stata). Briefly describe how the standard errors are calculated in this approach. */
 
 *first regression
@@ -622,7 +618,13 @@ bootstrap _b, reps(1000): regress re78 train age educ black hisp re74 re75
 		*/
 	
 	/* (iv) Do any of your conclusions regarding the effect of the training program change based on the analysis performed in this exercise? Based on the discussion provided in the Data Colada post, can you think of a reason for why your results using HC3 should or shouldn't change for this exercise? 
-	
-	*this has to be done when we have a more complete analysis
+
+*The regressions performed in this exercise yield the same results as the regressions performed in exercise 1. In particular, the coefficients for all three specifications (non-robust standard errors, HC3 and bootstrapping) are the same, and the only difference between the results of the two analyses are the standard errors. In particular, the standard errors tend to be slightly higher when using HC3 or bootstrapping instead of the normal standard errors of the first regression.
+
+The fact that coefficients remain consistent across specifications, with only slight widening of the confidence intervals, is an indicator of the robustness of the analysis performed. 
+
+Based on the discussion in the Data Colada post, it was to be expected that the results do not change much, since the sample size is much larger than 250 observations, and we know that HC3 performs much better than the default standard error option when the sample size is small. 
+
+Finally, our conclusion regarding the effect of the training program did not change based on the analysis performed in this exercise. 
 
 	
