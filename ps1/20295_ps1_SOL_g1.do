@@ -49,11 +49,8 @@ if ("`user'" == "stefanograziosi") {
 }
 
 if ("`user'" == "gabrielemole") {
-    global filepath "CAMBIA"
-}
-
-if ("`user'" == "39331") {
-    global filepath "CAMBIA"
+    global filepath "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1"
+	global output "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
 }
 
 *=============================================================================
@@ -405,7 +402,7 @@ esttab matrix(table_1a_2a_2d) using "ps1/ps1_output/table_1.tex", replace tex //
 	
 	/* (iii) What you find corresponds to your expectations? */
 	
-		/* A: All variables are statistically balanced when using random assignment to the fake treatment. This is coherent with theoretical expectations as the treatment is randomly assigned and one should expect that almost all variables are balanced, possibly with some exceptions due to chance. As we are dealing with relatively few variables it was more likely to observe them all balanced. Experimental data gave a different picture, where only the dummy for Hispanics was slightly more balanced (yet the difference was close to 5% significance). This difference is due to the very different nature of the data. */
+		/* A: All variables are statistically balanced when using random assignment to the fake treatment. This is coherent with theoretical expectations as the treatment is randomly assigned and one should expect that almost all variables are balanced, possibly with some exceptions due to chance. As we are dealing with relatively few variables it was more likely to observe them all balanced. Experimental data gave a different picture, almost completely imbalanced, a difference that is due to the very different nature of the data. */
 
 /* (e)  */
 
@@ -414,26 +411,76 @@ esttab matrix(table_1a_2a_2d) using "ps1/ps1_output/table_1.tex", replace tex //
 		(2) re78 on treated age educ black hisp;
 		(3) re78 on treated age educ black hisp re74 re75. */
 		
+matrix table_2e = J(4, 3, .)
+local col_2e = 1
+
+*Regression 1*
+
 reg re78 treated, vce(robust)
-count if e(sample) & treated == 0
-local n_control= r(N)
-count if e(sample) & treated == 1
-local n_treated= r(N)
-outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_treated', "Number Control",`n_control')ctitle (Randomised Treatment 1) append dta
 
-reg re78 treated age educ black hisp, vce(robust)
-count if e(sample) & treated == 0
-local n_ctrl= r(N)
-count if e(sample) & treated == 1
-local n_trt= r(N)
-outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Randomised Treatment 2) append dta
+count if e(sample) & treated==0
+scalar controls1 = r(N)
+count if e(sample) & treated==1
+scalar treated1 = r(N)
 
-reg re78 treated age educ black hisp re74 re75, vce(robust)
-count if e(sample) & treated == 0
-local n_ctrl= r(N)
-count if e(sample) & treated == 1
-local n_trt= r(N)
-outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Randomised Treatment 3) append dta
+matrix table_2e[1, `col_2e'] = coef1
+matrix table_2e[2, `col_2e'] = se1
+matrix table_2e[3, `col_2e'] = controls1
+matrix table_2e[4, `col_2e'] = treated1
+
+local col_2e = `col_2e' + 1
+
+*Regression 2*
+
+regress re78 treated age educ black hisp, vce(robust)
+
+scalar coef2 = _b[treated]
+scalar se2   = _se[treated]
+
+count if e(sample) & treated==0
+scalar controls2 = r(N)
+count if e(sample) & treated==1
+scalar treated2 = r(N)
+
+matrix table_2e[1, `col_2e'] = coef2
+matrix table_2e[2, `col_2e'] = se2
+matrix table_2e[3, `col_2e'] = controls2
+matrix table_2e[4, `col_2e'] = treated2
+
+local col_2e = `col_2e' + 1
+
+*Regression 3*
+
+regress re78 treated age educ black hisp re74 re75, vce(robust)
+
+scalar coef3 = _b[treated]
+scalar se3   = _se[treated]
+
+count if e(sample) & treated==0
+scalar controls3 = r(N)
+count if e(sample) & treated==1
+scalar treated3 = r(N)
+
+matrix table_2e[1, `col_2e'] = coef3
+matrix table_2e[2, `col_2e'] = se3
+matrix table_2e[3, `col_2e'] = controls3
+matrix table_2e[4, `col_2e'] = treated3
+
+*Table 2*
+
+matrix rownames table_2e = Coef_train SE_train N_controls N_treated
+matrix colnames table_2e = Reg(4) Reg(5) Reg(6)
+
+matrix list table_2e
+
+matrix table_1c_2e = table_1c, table_2e
+
+matrix list table_1c_2e
+
+esttab matrix(table_1c_2e) using "ps1/ps1_output/table_2.tex", replace tex ///
+    title("Sequential Regression Results") ///
+    cells("result(fmt(3))") ///
+	nomtitles
 	
 	/* (ii) Add lines in the table with the number of controls and treated in each regression. */
 	
@@ -441,7 +488,7 @@ outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "N
 	
 	/* (iii) Comment on what you find. Is it what you expected? */
 	
-		/* A: In the first regression, the treatment dummy is slightly negative yet insignificant. After controlling for other covariates, the point estimate moves closer to 0 and remains statistically insignificant. As expected, adding covariates slightly improves standard errors for the treatment dummy. This is in line with the assignment of a random pseudo-treatment, hence yielding a null effect due to his "fake" nature. Some covariates become significant in explaining the outcome, namely age, education, and previous earnings, while ethnicities do not show any statistical association (Hispanic is significant only at the 10% level).  */
+		/* A: In the first regression, the treatment dummy is slightly negative yet insignificant. After controlling for other covariates, the point estimate moves closer to 0 and remains statistically insignificant. As expected, adding covariates slightly improves standard errors for the treatment dummy. This is in line with the assignment of a random pseudo-treatment, hence yielding a null effect due to his random nature. Some covariates become significant in explaining the outcome, namely age, education, and previous earnings, while ethnicities do not show any statistical association (Hispanic is significant only at the 10% level).  */
 
 /* (f) */
 
@@ -450,26 +497,76 @@ outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "N
 		(2) re78 on train age educ black hisp;
 		(3) re78 on train age educ black hisp re74 re75. */
 		
-reg re78 train, vce(robust)
-count if e(sample) & treated == 0
-local n_control= r(N)
-count if e(sample) & treated == 1
-local n_treated= r(N)
-outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_treated', "Number Control",`n_control')ctitle (Regression Training 1) append dta
+matrix table_2f = J(4, 3, .)
+local col_2f = 1
 
-reg re78 train age educ black hisp, vce(robust)
-count if e(sample) & treated == 0
-local n_ctrl= r(N)
-count if e(sample) & treated == 1
-local n_trt= r(N)
-outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Regression Training 2) append dta
+*Regression 1*
 
-reg re78 train age educ black hisp re74 re75, vce(robust)
-count if e(sample) & treated == 0
-local n_ctrl= r(N)
-count if e(sample) & treated == 1
-local n_trt= r(N)
-outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "Number Control",`n_ctrl')ctitle (Regression Training 3) append dta
+regress re78 train, vce(robust)
+
+count if e(sample) & train==0
+scalar controls1 = r(N)
+count if e(sample) & train==1
+scalar treated1 = r(N)
+
+matrix table_2f[1, `col_2f'] = coef1
+matrix table_2f[2, `col_2f'] = se1
+matrix table_2f[3, `col_2f'] = controls1
+matrix table_2f[4, `col_2f'] = treated1
+
+local col_2f = `col_2f' + 1
+
+*Regression 2*
+
+regress re78 train age educ black hisp, vce(robust)
+
+scalar coef2 = _b[train]
+scalar se2   = _se[train]
+
+count if e(sample) & train==0
+scalar controls2 = r(N)
+count if e(sample) & train==1
+scalar treated2 = r(N)
+
+matrix table_2f[1, `col_2f'] = coef2
+matrix table_2f[2, `col_2f'] = se2
+matrix table_2f[3, `col_2f'] = controls2
+matrix table_2f[4, `col_2f'] = treated2
+
+local col_2f = `col_2f' + 1
+
+*Regression 3*
+
+regress re78 train age educ black hisp re74 re75, vce(robust)
+
+scalar coef3 = _b[train]
+scalar se3   = _se[train]
+
+count if e(sample) & train==0
+scalar controls3 = r(N)
+count if e(sample) & train==1
+scalar treated3 = r(N)
+
+matrix table_2f[1, `col_2f'] = coef3
+matrix table_2f[2, `col_2f'] = se3
+matrix table_2f[3, `col_2f'] = controls3
+matrix table_2f[4, `col_2f'] = treated3
+
+*Table 2*
+
+matrix rownames table_2f = Coef_train SE_train N_controls N_treated
+matrix colnames table_2f = Reg(7) Reg(8) Reg(9)
+
+matrix list table_2f
+
+matrix table_1c_2e_2f = table_1c_2e, table_2f
+
+matrix list table_1c_2e_2f
+
+esttab matrix(table_1c_2e_2f) using "ps1/ps1_output/table_2.tex", replace tex ///
+    title("Sequential Regression Results") ///
+    cells("result(fmt(3))") ///
+	nomtitles 
 	
 	/* (ii) Add lines in the table with the number of controls and treated in each regression. */
 
@@ -477,7 +574,7 @@ outreg2 using "ps1/ps1_output/table_2.tex", addstat("Number Treated",`n_trt', "N
 	
 	/* (iii) Compare the results with the first three columns of TABLE 2.  Comment on what you find. Is it what you expected? Are your results sensitive to the introduction of covariates? */ 
 	
-		/* A: The first regression of real earnings on the training program shows a significant and strong negative effect of the training program (-15.20), differently from the positive effect displayed in the first column (1.794), where the magnitude was also notably lower. While the positive effect and the magnitude was robust to the introduction of other covariates when using jtrain2, the "treatment effect" disappears in jtrain3 after controlling for the other variables. Adding controls to jtrain3 makes the point estimate gradually drop to a slightly positive value close to 0 and lose its statistical significance, partially resembling the result in the previous subpoint. Covariates also show change in magnitude and significance after adding controls. An example is age that changes sign and drops in magnitude after controlling for real earnings. This difference is due to the different nature of the datasets, namely experimental and non-experimental, and as such it was in line with our expectations to find discrepancies.  */
+		/* A: The first regression of real earnings on the training program shows a significant and strong negative effect of the training program (-15.20), differently from the positive effect displayed in the first column (1.794), where the magnitude was also notably lower. While the positive effect and the magnitude was robust to the introduction of other covariates when using jtrain2, the "treatment effect" disappears in jtrain3 after controlling for the other variables. Adding controls to jtrain3 makes the point estimate gradually drop to a slightly positive value close to 0 and lose its statistical significance, partially resembling the result in the previous subpoint. Covariates also show change in magnitude and significance after adding controls. An example is "age" that changes sign and drops in magnitude after controlling for real earnings. This difference is due to the different nature of the datasets, namely experimental and non-experimental, and as such it was in line with our expectations to find discrepancies.  */
 
 
 *=============================================================================
@@ -587,19 +684,11 @@ Read Athey and Imbens (2017) (focus on those sections where the authors discuss 
 
 /* (a) Under which conditions, allowing for heterogeneous treatment effects, is Neyman's inference unbiased? */
 
-	/*
-	Neyman, in the context of inference from random experiments, proposed as an estimator the difference in average outcomes by treatment status.
-	Allowing heterogeneous treatment effects, for the estimator proposed by Neyman to be unbiased pure randomisation must hold, so it must be a completely randomized experiment. 
-	On the other hand, if we are considering the estimation of the standard error, for the estimator to be unbiased under heterogeneous treatment effects, it must be possible to view the sample analyzed as a random sample from an infinite population.
-	*/
+	/*A: Neyman, in the context of inference from random experiments, proposed as an estimator the difference in average outcomes by treatment status, so for treatment and control groups. Allowing heterogeneous treatment effects, for the estimator proposed by Neyman to be unbiased pure randomisation must hold, so it must be a completely randomized experiment. This holds when there is independence of treatment assignement and potential outcomes. On the other hand, if we are considering the estimation of the standard error, for the estimator to be unbiased under heterogeneous treatment effects, it must be possible to view the sample analyzed as a random sample from an infinite population. */
 
 /* (b) Describe Fisher's inference and replicate section 4.1 of Athey and Imbens (2017) in Stata. Do you arrive at their same p-value? If not, why? Hint: Note that you can draw motivation from third-parties for your own answer; for this case, we suggest that you read Heß (2017).*/ 
 
-	/*
-	Fisher's idea was to test the sharp null hypothesis, which is the null hypothesis under which we can infer all the missing potential outcomes from the observed ones. A typical choice is the null hypothesis that the treatment has no effect. The alternative hypothesis is that there exists at least one unit such that this does not hold.  
-	This type of inference, also called Fishearian Randomization Inference, produces a distribution of a test statistic under a null hypothesis, and it helps the researcher understand if the observed value of the statistic is "extreme", and so it helps understand whether the null hypothesis must be rejected. 
-	Fisher's inference makes it possible to infer, for any statistic that is a function of the Y^obs (observed outcomes), W (treatment) and X (covariates), the exact distribution of that statistic under the null hypothesis.
-	*/
+	/*A: Fisher's inference is based on testing the sharp null hypothesis, which is the null hypothesis under which we can infer all the missing potential outcomes from the observed ones. A typical choice is the null hypothesis that the treatment has no effect. The alternative hypothesis is that there exists at least one unit such that this does not hold. This type of inference, also called Fishearian Randomization Inference, produces a distribution of a test statistic under a null hypothesis, and it helps the researcher understand if the observed value of the statistic is "extreme", and so it helps understand whether the null hypothesis must be rejected. Fisher's inference makes it possible to infer, for any statistic that is a function of the Y^obs (observed outcomes), W (treatment) and X (covariates), the exact distribution of that statistic under the null hypothesis.*/
 
 * (b) 
 
@@ -618,22 +707,18 @@ ritest train _b[train], reps(1000): ///
 ritest train _b[train], reps(10000): ///
     reg re78 train
 
-	/* A: We followed the approach of Heß (2016) and we replicated section 4.1 from Athey and Imbens (2017) was replicated. We conducted the resampling with 100 (default) iterations, 1000 and 10000 iterations. With 100 iterations, the p-value is approximately zero. With 1000 iterations, the p-value varies between 0.0030 and 0.0070. With the last specification, with 10000 resampling replications the p-value is 0.0039, which is a bit smaller than the one found by Athey and Imbens (2017). The difference is to be expected, because of the randomness of the permutation sampling.*/
+	/* A: We followed the approach of Heß (2016) and we replicated section 4.1 from Athey and Imbens (2017). We conducted the resampling with 100 (default) iterations, 1000 and 10000 iterations. With 100 iterations, the p-value is approximately zero. With 1000 iterations, the p-value varies between 0.0030 and 0.0070. With the last specification, with 10000 resampling replications the p-value is 0.0039, which is slightly smaller than the one found by Athey and Imbens (2017). The difference is to be expected, because of the random nature of the permutation sampling.*/
 
 /* (c) Read again the randomization plan in LaLonde (1986). On which grounds Athey and Imbens (2017)'s illustration of Fisherian inference on LaLonde (1986)'s paper could be criticized? */
 
-	/*
-	The main critique that could be moved against Athey and Imbens (2017) illustration of Lalonde (1986)'s paper is how randomization was carried out in the original experiment versus how it was reproduced in the Athey and Imbens paper. In particular, the treatment in the data analyzed by Lalonde was given out by 10 different sites of the project, while in the Athey and Imbens (2017) Fisherian inference illustration, the data is treated as if the treatment was randomly assigned across the sample, without the intervention of the single sites. 
-	*/
+	/* A: The main critique that could be moved against Athey and Imbens (2017) illustration of Lalonde (1986)'s paper is how randomization was carried out in the original experiment versus how it was reproduced in the Athey and Imbens paper. In particular, the treatment in the data analyzed by Lalonde was given out by 10 different sites of the project, while in the Athey and Imbens (2017) Fisherian inference illustration, the data is treated as if the treatment was randomly assigned across the sample, without the intervention of the single sites. An important assumption when conducting Fisherian inference is that all treatment assignments are equally likely, so if site-specific factors influence outcomes or the assignment process, this assumption might not hold, and for this reason it could lead to incorrect p-values, and so to incorrect conclusions about statistical significance. */
 
 /* (d) The article Channeling Fisher: Randomization Tests and the Statistical Insignificance of Seemingly Significant Experimental Results (Young, 2019) presents the results of an exercise to test the null hypothesis of no treatment effects in a series of experimental papers recently published in AEA journals, showing that many of the coefficients reported in those papers are no longer significant in a randomization test. A critique of this paper has been published by professors Uri Johnson, Leif Nelson and Joe Simmons in their blog, Data Colada. Read their post here and answer the questions below. */
 
 	/* (i) Briefly explain the difference between the procedure used as the default in Stata for the calculation of standard errors (HC1) and the one proposed by the Data Colada post (HC3). */
 	
-		/*
-		In HC1 Robust Standard Errors, the diagonal elementes of the variance-covariance matrix are substitued with Robust Standard error, based on non-constant variance, which are the squared residuals, weighted by the following coefficient n/(n-k). HC1 robust standard errors are the default in Stata. 
-HC3 Robust Standard Errors, on the other hand, are widely used and considered as the best standard errors when heteroskedasticity is present. The diagonal elements of the variance-covariance matrix are replaced by the squared residuals divided by (1-h)^2, h being the hat values that range from 0 to 1. 
-		*/
+		/* A: In HC1 Robust Standard Errors, the diagonal elementes of the variance-covariance matrix are substitued with Robust Standard error, based on non-constant variance, which are the squared residuals, weighted by the following coefficient n/(n-k). HC1 robust standard errors are the default in Stata. 
+HC3 Robust Standard Errors, on the other hand, are widely used and considered as the best standard errors when heteroskedasticity is present. The diagonal elements of the variance-covariance matrix are replaced by the squared residuals divided by (1-h)^2, h being the hat values that range from 0 to 1. */
 	
 	/* (ii) Using the dataset jtrain2, rerun the analysis you have performed in exercise 1, now calculating the standard errors based on HC3 (this is done in Stata using the option vce() in your regression command). */
 
@@ -657,18 +742,15 @@ bootstrap _b, reps(1000): regress re78 train age educ black hisp
 *third regression
 bootstrap _b, reps(1000): regress re78 train age educ black hisp re74 re75
 
-		/*
-		Bootstrapping is a non-parametric statistical method that uses random sampling with replacement to determine the sampling variation of an estimate. In particular, standard errors in a bootstrap procedure are calculated by resampling the data multiple times (the standard on stata is 50 times) , recalculating the statistic of interest for each resample, and finally computing the standard deviation of the replications. The standard deviation of the bootstrap replications is the bootsrap standard error.
-		*/
+		/* A: Bootstrapping is a non-parametric statistical method that uses random sampling with replacement to determine the sampling variation of an estimate. In particular, standard errors in a bootstrap procedure are calculated by resampling the data multiple times (the standard on stata is 50 times) , recalculating the statistic of interest for each resample, and finally computing the standard deviation of the replications. The standard deviation of the bootstrap replications is the bootsrap standard error */
 	
 	/* (iv) Do any of your conclusions regarding the effect of the training program change based on the analysis performed in this exercise? Based on the discussion provided in the Data Colada post, can you think of a reason for why your results using HC3 should or shouldn't change for this exercise? 
 
-*The regressions performed in this exercise yield the same results as the regressions performed in exercise 1. In particular, the coefficients for all three specifications (non-robust standard errors, HC3 and bootstrapping) are the same, and the only difference between the results of the two analyses are the standard errors. In particular, the standard errors tend to be slightly higher when using HC3 or bootstrapping instead of the normal standard errors of the first regression.
-
-The fact that coefficients remain consistent across specifications, with only slight widening of the confidence intervals, is an indicator of the robustness of the analysis performed. 
-
-Based on the discussion in the Data Colada post, it was to be expected that the results do not change much, since the sample size is much larger than 250 observations, and we know that HC3 performs much better than the default standard error option when the sample size is small. 
-
-Finally, our conclusion regarding the effect of the training program did not change based on the analysis performed in this exercise. 
-
+		/* A: The regressions performed in this exercise yield the same results as the regressions performed in exercise 1. In particular, the coefficients for all three specifications (non-robust standard errors, HC3 and bootstrapping) are substantially the same, and the only difference between the results of the two analyses are the standard errors, even though the variation is small and does not change the significance of the results found. HC3 standard errors are slightly higher, in line with theoretical expectations.
+		
+		The fact that coefficients remain consistent across specifications, with only slight change in the confidence intervals, is an indicator of the robustness of the analysis performed. 
+		
+		Based on the discussion in the Data Colada post, it was to be expected that the results do not change, since the sample size is larger than 250 observations, and we know that HC3 performs much better than the HC1 default standard error option when the sample size is small. 
+		
+		Finally, our conclusion regarding the effect of the training program did not change based on the analysis performed in this exercise. */
 	
