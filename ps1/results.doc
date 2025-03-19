@@ -1,0 +1,34 @@
+{\rtf1\fs24
+\trowd\trgaph75\trleft-75\intbl\trqc\clbrdrt\brdrs\cellx1872\clbrdrt\brdrs\cellx3168\clbrdrt\brdrs\cellx5040\clbrdrt\brdrs\cellx6624
+\ql \cell\qc (1)\cell\qc (2)\cell\qc (3)\cell\row
+\trowd\trgaph75\trleft-75\trqc\cellx1872\cellx3168\cellx5040\cellx6624
+\trowd\trgaph75\trleft-75\trqc\clbrdrb\brdrs\cellx1872\clbrdrb\brdrs\cellx3168\clbrdrb\brdrs\cellx5040\clbrdrb\brdrs\cellx6624
+\ql VARIABLES\cell\qc Baseline\cell\qc Demographics\cell\qc Full Model\cell\row
+\trowd\trgaph75\trleft-75\trqc\cellx1872\cellx3168\cellx5040\cellx6624
+\ql \cell\qc \cell\qc \cell\qc \cell\row
+\ql train\cell\qc 1.794***\cell\qc 1.686**\cell\qc 1.680**\cell\row
+\ql \cell\qc (0.671)\cell\qc (0.654)\cell\qc (0.657)\cell\row
+\ql age\cell\qc \cell\qc 0.055\cell\qc 0.054\cell\row
+\ql \cell\qc \cell\qc (0.037)\cell\qc (0.037)\cell\row
+\ql educ\cell\qc \cell\qc 0.415**\cell\qc 0.404***\cell\row
+\ql \cell\qc \cell\qc (0.161)\cell\qc (0.155)\cell\row
+\ql black\cell\qc \cell\qc -2.229**\cell\qc -2.180**\cell\row
+\ql \cell\qc \cell\qc (0.989)\cell\qc (1.004)\cell\row
+\ql hisp\cell\qc \cell\qc 0.089\cell\qc 0.144\cell\row
+\ql \cell\qc \cell\qc (1.338)\cell\qc (1.352)\cell\row
+\ql re74\cell\qc \cell\qc \cell\qc 0.083\cell\row
+\ql \cell\qc \cell\qc \cell\qc (0.106)\cell\row
+\ql re75\cell\qc \cell\qc \cell\qc 0.047\cell\row
+\ql \cell\qc \cell\qc \cell\qc (0.120)\cell\row
+\ql Constant\cell\qc 4.555***\cell\qc 0.816\cell\qc 0.674\cell\row
+\ql \cell\qc (0.340)\cell\qc (2.314)\cell\qc (2.325)\cell\row
+\ql \cell\qc \cell\qc \cell\qc \cell\row
+\ql Observations\cell\qc 445\cell\qc 445\cell\qc 445\cell\row
+\ql R-squared\cell\qc 0.018\cell\qc 0.048\cell\qc 0.055\cell\row
+\ql Treated\cell\qc 185\cell\qc 185\cell\qc 185\cell\row
+\trowd\trgaph75\trleft-75\trqc\trbrdrb\brdrs\clbrdrb\brdrs\cellx1872\clbrdrb\brdrs\cellx3168\clbrdrb\brdrs\cellx5040\clbrdrb\brdrs\cellx6624
+\ql Controls\cell\qc 260\cell\qc 260\cell\qc 260\cell\row
+\pard\qc
+Robust standard errors in parentheses\par
+*** p<0.01, ** p<0.05, * p<0.1\par
+}
