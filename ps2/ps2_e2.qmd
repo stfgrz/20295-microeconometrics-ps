@@ -1,0 +1,46 @@
+---
+title: "20295 Microeconometrics - Problem Set 2"
+author: "Stefano Graziosi \\
+          Gabriele Mole"
+format: pdf
+---
+
+# Exercise 2
+
+------------------------------------------------------------------------
+
+## Question 1
+
+We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, includ- ing several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
+
+#### Hint
+
+Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Black- board as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, includ- ing several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
+
+### 1(a)
+
+Structure your data set accordingly to assess whether the introduction of the uni- lateral divorce law had an effect on divorce rates for our sample at the county level. Estimate a causal forest using the causal forest command from package grf. What is the estimated averate treatment effect in this instance? Is it consistent with your answer in exercise 1.c?
+
+### 1(b)
+
+Now make an analysis of the causal forest results regarding potential heteroge- neous treatment effects. Check the results on
+
+1.  The Best Linear Projection;
+
+2.  The Targeting Operator Characteristic;
+
+3.  Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
+
+Explain what is being performed in each point and interpret your output.
+
+### 1(c)
+
+Discuss your results. Did you find any evidence of heterogeneous treatment effects? Justify your answer based on your output in the previous items.
+
+### 1(d)
+
+An important aspect in the implementation of causal forests is the use of ”honest trees”, as explained in section 2.4 of Wager and Athey (2017). Explain this procedure and why it is important for our estimation of CATEs. Rerun your analysis without ”honest trees” by selecting `honesty = FALSE`.
+
+1.  Is your average treatment effect the same?
+
+2.  When would you expect this to not be the case?
