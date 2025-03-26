@@ -2,7 +2,7 @@
 title: "20295 Microeconometrics - Problem Set 2"
 author: "Stefano Graziosi \\
           Gabriele Mole"
-format: pdf
+format: html
 knitr:
   opts_knit:
     root.dir: "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_e2"
@@ -11,8 +11,6 @@ knitr:
 # Exercise 2
 
 ------------------------------------------------------------------------
-
-## Question 1
 
 We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
@@ -47,23 +45,30 @@ library(gridExtra)
 # Packages related to tidyverse, for data manipulation
 library(tidyverse) # includes (lubridate), (dplyr), (ggplot2), (tidyr), (tidyselect)
 library(tinytex)
+library(fastDummies)
 
 # To handle time changes
 library(timechange)
+
+# IMPORTANT: run twice to solve the errors
 ```
 
 ```{r}
 data_url <- "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/expanded_data.csv"
 df <- read.csv(data_url)
 
-#Define `urban` as a numerical dummy variable
+#Define `urbanization` as a numerical dummy 
+df$urbanization_dummy <- as.numeric(df$urbanization == "Rural")
 
+# Here, 0 = `Urban` and 1 = `Rural`
 
+#Define `st` as a numerical variable
+df$state_id <- as.numeric(as.factor(df$st))
 
-#Define `st` as a numerical dummy variable
+# Here, the state IDs are assigned in alphabetical order
 ```
 
-### 1(a)
+## Question 2(a)
 
 Structure your data set accordingly to assess whether the introduction of the unilateral divorce law had an effect on divorce rates for our sample at the county level. Estimate a causal forest using the causal forest command from package grf.
 
@@ -77,13 +82,13 @@ outcome <- df$div_rate_sim
 # Treatment
 treat <- df$treatment
 
-# Covariates
+# Covariates (make sure to include only the numberical variables)
 covariates <- subset(df, 
                      select = c("education_rate",
                             "childcare_availability",
                             "unemployment_rate",
                             "median_income",
-                            "urbanization",
+                            "urbanization_dummy",
                             "marriage_rate",
                             "religious_adherence",
                             "alcohol_consumption",
@@ -91,7 +96,7 @@ covariates <- subset(df,
                             "women_labor_force_participation",
                             "crime_rate",
                             "social_services_spending",
-                            "st",
+                            "state_id",
                             "county_id")
                      )
 ```
@@ -103,7 +108,10 @@ covariates <- subset(df,
 cf <- causal_forest(X = covariates, Y = outcome, W = treat)
 
 # Estimate the average treatment effect (ATE)
-ate <- average_treatment_effect(cf)
+ate <- average_treatment_effect(
+  cf, 
+  target.sample = "overlap")
+
 ate
 
 ci_lower <- ate["estimate"] - 1.96 * ate["std.err"]
@@ -113,32 +121,69 @@ cat("ATE:", ate["estimate"],
     "\n95% CI: [", ci_lower, ", ", ci_upper, "]\n")
 ```
 
-1.  What is the estimated averate treatment effect in this instance?
+The programme suggests us that there are some issues with overlap, so we will follow the standard procedure suggested on the package documentation:
 
-ate\["estimate"\] gives the point estimate, while ate\["std.err"\] gives the standard error
+> If the output of the causal_forest method doesn’t pass a sanity check based on your knowledge of the data, it may be worth checking whether the overlap assumption is violated. In order for conditional average treatment effects to be properly identified, a dataset’s propensity scores must be bounded away from 0 and 1. A simple way to validate this assumption is to calculate the propensity scores by regressing the treatment assignments W against X, and examining the out-of-bag predictions. Concretely, you can perform the following steps:
 
-2.  Is it consistent with your answer in exercise 1.c?
+```{r}
+propensity.forest = regression_forest(covariates, treat)
+W.hat = predict(propensity.forest)$predictions
+hist(W.hat, xlab = "propensity score")
+```
 
-### 1(b)
+> If there is strong overlap, the histogram will be concentrated away from 0 and 1. If the data is instead concentrated at the extremes, the overlap assumption likely does not hold.
 
-Now make an analysis of the causal forest results regarding potential heterogeneous treatment effects. Check the results on
+Our histogram is indeed concentrated towards zero and one, suggesting that overlap is indeed an issue in our case.
 
-1.  The Best Linear Projection;
+> For further discussion of the overlap assumption, please see Imbens and Rubin (2015). In practice, this assumption is often violated due to incorrect modeling decision: for example one covariate may be a deterministic indicator that the example received treatment.
 
-2.  The Targeting Operator Characteristic;
+In order to account for this, we simply include `target.sample = "overlap"` when calculating the ATE.
 
-3.  Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
+1.  **What is the estimated averate treatment effect in this instance?**
+
+  ate "estimate" gives the point estimate, while ate "std.err" gives the standard error
+
+2.  **Is it consistent with your answer in exercise 1.c?**
+
+## Question 2(b)
+
+  Now make an analysis of the causal forest results regarding potential heterogeneous treatment effects. Check the results on
+
+1.  **The Best Linear Projection;**
+
+```{r}
+blp <- best_linear_projection(cf, covariates)
+print(blp)
+```
+
+> **What is being performed**: The Best Linear Projection involves regressing the estimated conditional average treatment effects (CATEs) on the covariates. This approach checks whether the heterogeneity captured by the forest is systematically related to the observed covariates. If the coefficients (or the overall fit) are statistically significant, it provides evidence that the treatment effects vary in a predictable way with these covariates.
+
+  Interpretation Guidelines:
+- The output will typically show a coefficient (or a set of coefficients) along with standard errors and p-values.
+- A statistically significant coefficient indicates that a change in the corresponding covariate is associated with a systematic change in the treatment effect.
+- If the overall fit is good, it supports the notion that heterogeneity in treatment effects is predictable from the observed characteristics.
+
+2.  **The Targeting Operator Characteristic;**
+
+```{r}
+toc <- targeting_operator_characteristic(cf)
+plot(toc, main="Targeting Operator Characteristic", xlab="Quantile of Population", ylab="Cumulative Gain")
+```
+
+> **What is being performed**: The Targeting Operator Characteristic (TOC) evaluates the performance of the causal forest in terms of how well the estimated treatment effects can be used for targeting. Essentially, it plots the cumulative gain (in terms of treatment effect) that one would obtain by targeting the population in order of the predicted CATEs. A TOC curve that lies substantially above the 45° line (line of equality) indicates that the forest is successful in distinguishing between units with higher versus lower treatment effects.
+
+3.  **Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity** (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
 
 Explain what is being performed in each point and interpret your output.
 
-### 1(c)
+## Question 2(c)
 
 Discuss your results. Did you find any evidence of heterogeneous treatment effects? Justify your answer based on your output in the previous items.
 
-### 1(d)
+## Question 2(d)
 
 An important aspect in the implementation of causal forests is the use of ”honest trees”, as explained in section 2.4 of Wager and Athey (2017). Explain this procedure and why it is important for our estimation of CATEs. Rerun your analysis without ”honest trees” by selecting `honesty = FALSE`.
 
-1.  Is your average treatment effect the same?
+1.  **Is your average treatment effect the same?**
 
-2.  When would you expect this to not be the case?
+2.  **When would you expect this to not be the case?**
