@@ -3,6 +3,9 @@ title: "20295 Microeconometrics - Problem Set 2"
 author: "Stefano Graziosi \\
           Gabriele Mole"
 format: pdf
+knitr:
+  opts_knit:
+    root.dir: "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_e2"
 ---
 
 # Exercise 2
@@ -11,19 +14,114 @@ format: pdf
 
 ## Question 1
 
-We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, includ- ing several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
+We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
 #### Hint
 
 Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Black- board as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, includ- ing several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
+#### Setup
+
+```{r}
+#| label: Load the relevant libraries
+
+# To solve conflicts
+library(conflicted)
+conflicts_prefer(dplyr::filter)
+
+# For this assignment specifically
+library(grf)
+
+  # Necessary packages for quantmod
+  library(zoo)
+  library(xts)
+library(quantmod)
+
+# For fancy plots
+library(ggthemes)
+  # Necessary packages for viridis
+  library(viridisLite)
+library(viridis)
+library(gridExtra)
+
+# Packages related to tidyverse, for data manipulation
+library(tidyverse) # includes (lubridate), (dplyr), (ggplot2), (tidyr), (tidyselect)
+library(tinytex)
+
+# To handle time changes
+library(timechange)
+```
+
+```{r}
+data_url <- "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/expanded_data.csv"
+df <- read.csv(data_url)
+
+#Define `urban` as a numerical dummy variable
+
+
+
+#Define `st` as a numerical dummy variable
+```
+
 ### 1(a)
 
-Structure your data set accordingly to assess whether the introduction of the uni- lateral divorce law had an effect on divorce rates for our sample at the county level. Estimate a causal forest using the causal forest command from package grf. What is the estimated averate treatment effect in this instance? Is it consistent with your answer in exercise 1.c?
+Structure your data set accordingly to assess whether the introduction of the unilateral divorce law had an effect on divorce rates for our sample at the county level. Estimate a causal forest using the causal forest command from package grf.
+
+```{r}
+#| label: Create variable names
+df$treatment <- ifelse(df$year >= df$lfdivlaw, 1, 0)
+
+# Outcome variable
+outcome <- df$div_rate_sim
+
+# Treatment
+treat <- df$treatment
+
+# Covariates
+covariates <- subset(df, 
+                     select = c("education_rate",
+                            "childcare_availability",
+                            "unemployment_rate",
+                            "median_income",
+                            "urbanization",
+                            "marriage_rate",
+                            "religious_adherence",
+                            "alcohol_consumption",
+                            "domestic_violence_rate",
+                            "women_labor_force_participation",
+                            "crime_rate",
+                            "social_services_spending",
+                            "st",
+                            "county_id")
+                     )
+```
+
+```{r}
+#| label: Estimating the causal forest
+
+# Fit the causal forest
+cf <- causal_forest(X = covariates, Y = outcome, W = treat)
+
+# Estimate the average treatment effect (ATE)
+ate <- average_treatment_effect(cf)
+ate
+
+ci_lower <- ate["estimate"] - 1.96 * ate["std.err"]
+ci_upper <- ate["estimate"] + 1.96 * ate["std.err"]
+cat("ATE:", ate["estimate"], 
+    "\nStd. Error:", ate["std.err"],
+    "\n95% CI: [", ci_lower, ", ", ci_upper, "]\n")
+```
+
+1.  What is the estimated averate treatment effect in this instance?
+
+ate\["estimate"\] gives the point estimate, while ate\["std.err"\] gives the standard error
+
+2.  Is it consistent with your answer in exercise 1.c?
 
 ### 1(b)
 
-Now make an analysis of the causal forest results regarding potential heteroge- neous treatment effects. Check the results on
+Now make an analysis of the causal forest results regarding potential heterogeneous treatment effects. Check the results on
 
 1.  The Best Linear Projection;
 
