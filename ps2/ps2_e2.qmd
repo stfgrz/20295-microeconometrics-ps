@@ -120,6 +120,12 @@ cat("ATE:", ate["estimate"],
     "\nStd. Error:", ate["std.err"],
     "\n95% CI: [", ci_lower, ", ", ci_upper, "]\n")
 ```
+```{r}
+varimp <- variable_importance(cf)
+ranked.vars <- order(varimp, decreasing = TRUE)
+
+colnames(covariates)[ranked.vars[1:3]]
+```
 
 The programme suggests us that there are some issues with overlap, so we will follow the standard procedure suggested on the package documentation:
 
@@ -166,9 +172,36 @@ print(blp)
 2.  **The Targeting Operator Characteristic;**
 
 ```{r}
-toc <- targeting_operator_characteristic(cf)
-plot(toc, main="Targeting Operator Characteristic", xlab="Quantile of Population", ylab="Cumulative Gain")
+# Extract predicted CATEs
+cate <- predict(cf)$predictions
+
+# Sort CATEs in descending order
+order_idx <- order(cate, decreasing = TRUE)
+cate_sorted <- cate[order_idx]
+
+# Compute cumulative gain
+cumulative_gain <- cumsum(cate_sorted)
+normalized_gain <- cumulative_gain / sum(cate_sorted)
+
+# Fraction of the population
+population_fraction <- seq_along(cate_sorted) / length(cate_sorted)
 ```
+
+```{r}
+toc_data <- data.frame(
+  population_fraction = population_fraction,
+  normalized_gain = normalized_gain
+)
+
+ggplot(toc_data, aes(x = population_fraction, y = normalized_gain)) +
+  geom_line() +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "steelblue") +
+  labs(title = "Targeting Operator Characteristic (Manual Calculation)",
+       x = "Fraction of Population Targeted",
+       y = "Normalized Cumulative Gain") +
+  theme_minimal()
+```
+
 
 > **What is being performed**: The Targeting Operator Characteristic (TOC) evaluates the performance of the causal forest in terms of how well the estimated treatment effects can be used for targeting. Essentially, it plots the cumulative gain (in terms of treatment effect) that one would obtain by targeting the population in order of the predicted CATEs. A TOC curve that lies substantially above the 45° line (line of equality) indicates that the forest is successful in distinguishing between units with higher versus lower treatment effects.
 
