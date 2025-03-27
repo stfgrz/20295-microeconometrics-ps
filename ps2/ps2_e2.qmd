@@ -14,11 +14,11 @@ knitr:
 
 We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
-#### Hint
+**Hint**
 
 Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Black- board as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, includ- ing several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
-#### Setup
+**Setup**
 
 ```{r}
 #| label: Load the relevant libraries
@@ -74,15 +74,15 @@ Structure your data set accordingly to assess whether the introduction of the un
 
 ```{r}
 #| label: Create variable names
-df$treatment <- ifelse(df$year >= df$lfdivlaw, 1, 0)
 
-# Outcome variable
+# The outcome Y (must be a numeric vector with no NAs).
 outcome <- df$div_rate_sim
 
-# Treatment
+# The treatment assignment W (must be a binary or real numeric vector with no NAs).
+df$treatment <- ifelse(df$year >= df$lfdivlaw, 1, 0)
 treat <- df$treatment
 
-# Covariates (make sure to include only the numberical variables)
+# The covariates X used in the causal regression.
 covariates <- subset(df, 
                      select = c("education_rate",
                             "childcare_availability",
@@ -105,7 +105,33 @@ covariates <- subset(df,
 #| label: Estimating the causal forest
 
 # Fit the causal forest
-cf <- causal_forest(X = covariates, Y = outcome, W = treat)
+cf <- causal_forest(X = covariates, 
+                    Y = outcome, 
+                    W = treat,
+                    Y.hat = NULL,
+                    W.hat = NULL,
+                    num.trees = 2000,
+                    sample.weights = NULL,
+                    clusters = NULL,
+                    equalize.cluster.weights = FALSE,
+                    sample.fraction = 0.5,
+                    mtry = min(ceiling(sqrt(ncol(X)) + 20), ncol(X)),
+                    min.node.size = 5,
+                    honesty = TRUE, # DOPO DOVREMO CAMBIARE QUESTO <- <- <- <- <- <- <- <-
+                    honesty.fraction = 0.5,
+                    honesty.prune.leaves = TRUE,
+                    alpha = 0.05,
+                    imbalance.penalty = 0,
+                    stabilize.splits = TRUE,
+                    ci.group.size = 2,
+                    tune.parameters = "none",
+                    tune.num.trees = 200,
+                    tune.num.reps = 50,
+                    tune.num.draws = 1000,
+                    compute.oob.predictions = TRUE,
+                    num.threads = NULL,
+                    seed = runif(1, 0, .Machine$integer.max)
+                    )
 
 # Estimate the average treatment effect (ATE)
 ate <- average_treatment_effect(
@@ -120,6 +146,7 @@ cat("ATE:", ate["estimate"],
     "\nStd. Error:", ate["std.err"],
     "\n95% CI: [", ci_lower, ", ", ci_upper, "]\n")
 ```
+
 ```{r}
 varimp <- variable_importance(cf)
 ranked.vars <- order(varimp, decreasing = TRUE)
@@ -139,21 +166,21 @@ hist(W.hat, xlab = "propensity score")
 
 > If there is strong overlap, the histogram will be concentrated away from 0 and 1. If the data is instead concentrated at the extremes, the overlap assumption likely does not hold.
 
-Our histogram is indeed concentrated towards zero and one, suggesting that overlap is indeed an issue in our case.
+Our histogram is indeed concentrated towards zero, suggesting that overlap is indeed an issue in our case.
 
 > For further discussion of the overlap assumption, please see Imbens and Rubin (2015). In practice, this assumption is often violated due to incorrect modeling decision: for example one covariate may be a deterministic indicator that the example received treatment.
 
-In order to account for this, we simply include `target.sample = "overlap"` when calculating the ATE.
+In order to account for this, we decide to include `target.sample = "overlap"` when calculating the ATE.
 
 1.  **What is the estimated averate treatment effect in this instance?**
 
-  ate "estimate" gives the point estimate, while ate "std.err" gives the standard error
+ate "estimate" gives the point estimate, while ate "std.err" gives the standard error
 
 2.  **Is it consistent with your answer in exercise 1.c?**
 
 ## Question 2(b)
 
-  Now make an analysis of the causal forest results regarding potential heterogeneous treatment effects. Check the results on
+Now make an analysis of the causal forest results regarding potential heterogeneous treatment effects. Check the results on
 
 1.  **The Best Linear Projection;**
 
@@ -164,48 +191,170 @@ print(blp)
 
 > **What is being performed**: The Best Linear Projection involves regressing the estimated conditional average treatment effects (CATEs) on the covariates. This approach checks whether the heterogeneity captured by the forest is systematically related to the observed covariates. If the coefficients (or the overall fit) are statistically significant, it provides evidence that the treatment effects vary in a predictable way with these covariates.
 
-  Interpretation Guidelines:
-- The output will typically show a coefficient (or a set of coefficients) along with standard errors and p-values.
-- A statistically significant coefficient indicates that a change in the corresponding covariate is associated with a systematic change in the treatment effect.
-- If the overall fit is good, it supports the notion that heterogeneity in treatment effects is predictable from the observed characteristics.
+Interpretation Guidelines:
+
+-   The output will typically show a coefficient (or a set of coefficients) along with standard errors and p-values.
+
+-   A statistically significant coefficient indicates that a change in the corresponding covariate is associated with a systematic change in the treatment effect.
+
+-   If the overall fit is good, it supports the notion that heterogeneity in treatment effects is predictable from the observed characteristics.
 
 2.  **The Targeting Operator Characteristic;**
 
 ```{r}
-# Extract predicted CATEs
-cate <- predict(cf)$predictions
+full_predict <- predict(cf)
 
-# Sort CATEs in descending order
+cate <- full_predict$predictions
+
+# Sorting CATE in descending order
 order_idx <- order(cate, decreasing = TRUE)
 cate_sorted <- cate[order_idx]
 
-# Compute cumulative gain
+# Computing cumulative gain
 cumulative_gain <- cumsum(cate_sorted)
 normalized_gain <- cumulative_gain / sum(cate_sorted)
 
-# Fraction of the population
 population_fraction <- seq_along(cate_sorted) / length(cate_sorted)
 ```
 
 ```{r}
+
 toc_data <- data.frame(
   population_fraction = population_fraction,
   normalized_gain = normalized_gain
 )
 
+# Plot the TOC curve with ggplot2
 ggplot(toc_data, aes(x = population_fraction, y = normalized_gain)) +
   geom_line() +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "steelblue") +
-  labs(title = "Targeting Operator Characteristic (Manual Calculation)",
+  labs(title = "Targeting Operator Characteristic (TOC)",
        x = "Fraction of Population Targeted",
        y = "Normalized Cumulative Gain") +
   theme_minimal()
 ```
 
+Interpretation Guidelines:
+
+-   The 45° line represents the baseline (no targeting benefit).
+
+-   A TOC curve that substantially lies above this line indicates that prioritizing units based on the estimated CATE would yield a higher cumulative gain in treatment effect.
 
 > **What is being performed**: The Targeting Operator Characteristic (TOC) evaluates the performance of the causal forest in terms of how well the estimated treatment effects can be used for targeting. Essentially, it plots the cumulative gain (in terms of treatment effect) that one would obtain by targeting the population in order of the predicted CATEs. A TOC curve that lies substantially above the 45° line (line of equality) indicates that the forest is successful in distinguishing between units with higher versus lower treatment effects.
 
 3.  **Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity** (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
+
+```{r}
+cate_data <- data.frame(cate = cate)
+ggplot(cate_data, aes(x = cate)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "darkgray") +
+  labs(title = "Distribution of Estimated CATEs",
+       x = "Estimated CATE",
+       y = "Frequency") +
+  theme_minimal()
+```
+Now we implement a trial and error strategy to find potential drivers for heterogeneity
+
+```{r}
+#| label: Heterogeneity Driver: education_rate
+
+scatter_data <- data.frame(
+  driver = df$education_rate,
+  cate = cate
+)
+
+ggplot(scatter_data, aes(x = driver, y = cate)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
+  labs(title = "Relationship between Driver and Estimated Treatment Effects",
+       x = "Driver",
+       y = "Estimated CATE") +
+  theme_minimal()
+```
+
+```{r}
+#| label: Heterogeneity Driver: childcare_availability
+
+scatter_data <- data.frame(
+  driver = df$childcare_availability,
+  cate = cate
+)
+
+ggplot(scatter_data, aes(x = driver, y = cate)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
+  labs(title = "Relationship between Driver and Estimated Treatment Effects",
+       x = "Driver",
+       y = "Estimated CATE") +
+  theme_minimal()
+```
+
+```{r}
+#| label: Heterogeneity Driver: unemployment_rate
+
+scatter_data <- data.frame(
+  driver = df$unemployment_rate,
+  cate = cate
+)
+
+ggplot(scatter_data, aes(x = driver, y = cate)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
+  labs(title = "Relationship between Driver and Estimated Treatment Effects",
+       x = "Driver",
+       y = "Estimated CATE") +
+  theme_minimal()
+```
+
+```{r}
+#| label: Heterogeneity Driver: #INSERISCI NOME VARIABILE
+
+scatter_data <- data.frame(
+  driver = df$unemployment_rate, #BASTA CAMBIARE QUESTA RIGA DI CODICE ED IL RESTO VA IN AUTOMATICO.
+  cate = cate
+)
+
+ggplot(scatter_data, aes(x = driver, y = cate)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
+  labs(title = "Relationship between Driver and Estimated Treatment Effects",
+       x = "Driver",
+       y = "Estimated CATE") +
+  theme_minimal()
+```
+
+### i. Education Rate
+
+```{r}
+rate.educ.rate <- rank_average_treatment_effect(
+  cf,
+  covariates$education_rate, # Multiply by -1 to order by decreasing index
+  subset = !is.na(covariates$education_rate) # Ignore missing X-values
+  )
+plot(rate.educ.rate, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
+```
+
+### ii. Religious Adherence
+
+```{r}
+rate.rel.ad <- rank_average_treatment_effect(
+  cf,
+  -1 * covariates$religious_adherence, # Multiply by -1 to order by decreasing index
+  subset = !is.na(covariates$religious_adherence) # Ignore missing X-values
+  )
+plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing religious adherence")
+```
+
+### iii. Women Labour Force Participation
+
+```{r}
+rate.wlfp <- rank_average_treatment_effect(
+  cf,
+  covariates$women_labor_force_participation, # Multiply by -1 to order by decreasing index
+  subset = !is.na(covariates$women_labor_force_participation) # Ignore missing X-values
+  )
+plot(rate.wlfp, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
+```
 
 Explain what is being performed in each point and interpret your output.
 
