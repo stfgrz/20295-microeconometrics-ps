@@ -1,7 +1,6 @@
 ---
 title: "20295 Microeconometrics - Problem Set 2"
-author: "Stefano Graziosi \\
-          Gabriele Mole"
+author: "Stefano Graziosi, Gabriele Mole"
 format: html
 knitr:
   opts_knit:
@@ -22,10 +21,6 @@ Wolfers (2006) did not provide a rich set of variables for this analysis, so we�
 
 ```{r}
 #| label: Load the relevant libraries
-
-# To solve conflicts
-library(conflicted)
-conflicts_prefer(dplyr::filter)
 
 # For this assignment specifically
 library(grf)
@@ -49,6 +44,10 @@ library(fastDummies)
 
 # To handle time changes
 library(timechange)
+
+# To solve conflicts
+library(conflicted)
+conflicts_prefer(dplyr::filter)
 
 # IMPORTANT: run twice to solve the errors
 ```
@@ -105,38 +104,14 @@ covariates <- subset(df,
 #| label: Estimating the causal forest
 
 # Fit the causal forest
-cf <- causal_forest(X = covariates, 
-                    Y = outcome, 
-                    W = treat,
-                    Y.hat = NULL,
-                    W.hat = NULL,
-                    num.trees = 2000,
-                    sample.weights = NULL,
-                    clusters = NULL,
-                    equalize.cluster.weights = FALSE,
-                    sample.fraction = 0.5,
-                    mtry = min(ceiling(sqrt(ncol(X)) + 20), ncol(X)),
-                    min.node.size = 5,
-                    honesty = TRUE, # DOPO DOVREMO CAMBIARE QUESTO <- <- <- <- <- <- <- <-
-                    honesty.fraction = 0.5,
-                    honesty.prune.leaves = TRUE,
-                    alpha = 0.05,
-                    imbalance.penalty = 0,
-                    stabilize.splits = TRUE,
-                    ci.group.size = 2,
-                    tune.parameters = "none",
-                    tune.num.trees = 200,
-                    tune.num.reps = 50,
-                    tune.num.draws = 1000,
-                    compute.oob.predictions = TRUE,
-                    num.threads = NULL,
-                    seed = runif(1, 0, .Machine$integer.max)
+cf <- causal_forest(covariates,
+                    outcome, 
+                    treat
                     )
 
 # Estimate the average treatment effect (ATE)
-ate <- average_treatment_effect(
-  cf, 
-  target.sample = "overlap")
+ate <- average_treatment_effect(cf, 
+                                target.sample = "overlap")
 
 ate
 
@@ -151,7 +126,7 @@ cat("ATE:", ate["estimate"],
 varimp <- variable_importance(cf)
 ranked.vars <- order(varimp, decreasing = TRUE)
 
-colnames(covariates)[ranked.vars[1:3]]
+colnames(covariates)[ranked.vars[1:5]]
 ```
 
 The programme suggests us that there are some issues with overlap, so we will follow the standard procedure suggested on the package documentation:
@@ -182,10 +157,10 @@ ate "estimate" gives the point estimate, while ate "std.err" gives the standard 
 
 Now make an analysis of the causal forest results regarding potential heterogeneous treatment effects. Check the results on
 
-1.  **The Best Linear Projection;**
+### 2(b)(i) The Best Linear Projection
 
 ```{r}
-blp <- best_linear_projection(cf, covariates)
+blp <- best_linear_projection(cf, covariates[ranked.vars[1:5]])
 print(blp)
 ```
 
@@ -199,7 +174,9 @@ Interpretation Guidelines:
 
 -   If the overall fit is good, it supports the notion that heterogeneity in treatment effects is predictable from the observed characteristics.
 
-2.  **The Targeting Operator Characteristic;**
+### 2(b)(ii) The Targeting Operator Characteristic
+
+#### Stefano's version
 
 ```{r}
 full_predict <- predict(cf)
@@ -242,7 +219,16 @@ Interpretation Guidelines:
 
 > **What is being performed**: The Targeting Operator Characteristic (TOC) evaluates the performance of the causal forest in terms of how well the estimated treatment effects can be used for targeting. Essentially, it plots the cumulative gain (in terms of treatment effect) that one would obtain by targeting the population in order of the predicted CATEs. A TOC curve that lies substantially above the 45° line (line of equality) indicates that the forest is successful in distinguishing between units with higher versus lower treatment effects.
 
-3.  **Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity** (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
+#### Website's version
+
+```{r}
+
+```
+
+
+### 2(b)(iii) Distribution of CATEs
+
+> Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
 
 ```{r}
 cate_data <- data.frame(cate = cate)
@@ -254,6 +240,23 @@ ggplot(cate_data, aes(x = cate)) +
   theme_minimal()
 ```
 Now we implement a trial and error strategy to find potential drivers for heterogeneity
+
+```{r}
+#| label: Heterogeneity Driver: religious_adherence
+
+scatter_data <- data.frame(
+  driver = df$religious_adherence,
+  cate = cate
+)
+
+ggplot(scatter_data, aes(x = driver, y = cate)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
+  labs(title = "Relationship between Driver and Estimated Treatment Effects",
+       x = "Driver",
+       y = "Estimated CATE") +
+  theme_minimal()
+```
 
 ```{r}
 #| label: Heterogeneity Driver: education_rate
@@ -273,27 +276,10 @@ ggplot(scatter_data, aes(x = driver, y = cate)) +
 ```
 
 ```{r}
-#| label: Heterogeneity Driver: childcare_availability
+#| label: Heterogeneity Driver: women_labor_force_participation
 
 scatter_data <- data.frame(
-  driver = df$childcare_availability,
-  cate = cate
-)
-
-ggplot(scatter_data, aes(x = driver, y = cate)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
-  labs(title = "Relationship between Driver and Estimated Treatment Effects",
-       x = "Driver",
-       y = "Estimated CATE") +
-  theme_minimal()
-```
-
-```{r}
-#| label: Heterogeneity Driver: unemployment_rate
-
-scatter_data <- data.frame(
-  driver = df$unemployment_rate,
+  driver = df$women_labor_force_participation,
   cate = cate
 )
 
@@ -328,10 +314,12 @@ ggplot(scatter_data, aes(x = driver, y = cate)) +
 ```{r}
 rate.educ.rate <- rank_average_treatment_effect(
   cf,
-  covariates$education_rate, # Multiply by -1 to order by decreasing index
+  covariates$education_rate,
   subset = !is.na(covariates$education_rate) # Ignore missing X-values
   )
 plot(rate.educ.rate, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
+
+rate.educ.rate
 ```
 
 ### ii. Religious Adherence
@@ -343,6 +331,8 @@ rate.rel.ad <- rank_average_treatment_effect(
   subset = !is.na(covariates$religious_adherence) # Ignore missing X-values
   )
 plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing religious adherence")
+
+rate.rel.ad
 ```
 
 ### iii. Women Labour Force Participation
