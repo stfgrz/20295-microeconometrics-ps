@@ -1,6 +1,6 @@
 ---
 title: "20295 Microeconometrics - Problem Set 2"
-author: "Stefano Graziosi, Gabriele Mole"
+author: "Stefano Graziosi"
 format: html
 knitr:
   opts_knit:
@@ -225,7 +225,6 @@ Interpretation Guidelines:
 
 ```
 
-
 ### 2(b)(iii) Distribution of CATEs
 
 > Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
@@ -239,7 +238,6 @@ ggplot(cate_data, aes(x = cate)) +
        y = "Frequency") +
   theme_minimal()
 ```
-Now we implement a trial and error strategy to find potential drivers for heterogeneity
 
 ### i. Education Rate
 
@@ -262,12 +260,14 @@ scatter_data <- data.frame(
   cate = cate
 )
 
-ggplot(scatter_data, aes(x = driver, y = cate)) +
+ggplot(scatter_data, aes(x = driver, y = cate, color = factor(treat))) +
   geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
+  geom_smooth(method = "loess", se = TRUE, color = "orange") +
+  geom_smooth(aes(group = factor(treat)), method = "loess", se = TRUE) +
   labs(title = "Relationship between Driver and Estimated Treatment Effects",
        x = "Driver",
-       y = "Estimated CATE") +
+       y = "Estimated CATE",
+       color = "Treatment Group") +
   theme_minimal()
 ```
 
@@ -292,12 +292,14 @@ scatter_data <- data.frame(
   cate = cate
 )
 
-ggplot(scatter_data, aes(x = driver, y = cate)) +
+ggplot(scatter_data, aes(x = driver, y = cate, color = factor(treat))) +
   geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
+  geom_smooth(method = "loess", se = TRUE, color = "orange") +
+  geom_smooth(aes(group = factor(treat)), method = "loess", se = TRUE) +
   labs(title = "Relationship between Driver and Estimated Treatment Effects",
        x = "Driver",
-       y = "Estimated CATE") +
+       y = "Estimated CATE",
+       color = "Treatment Group") +
   theme_minimal()
 ```
 
@@ -320,12 +322,14 @@ scatter_data <- data.frame(
   cate = cate
 )
 
-ggplot(scatter_data, aes(x = driver, y = cate)) +
+ggplot(scatter_data, aes(x = driver, y = cate, color = factor(treat))) +
   geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
+  geom_smooth(method = "loess", se = TRUE, color = "orange") +
+  geom_smooth(aes(group = factor(treat)), method = "loess", se = TRUE) +
   labs(title = "Relationship between Driver and Estimated Treatment Effects",
        x = "Driver",
-       y = "Estimated CATE") +
+       y = "Estimated CATE",
+       color = "Treatment Group") +
   theme_minimal()
 ```
 
@@ -333,12 +337,45 @@ Explain what is being performed in each point and interpret your output.
 
 ## Question 2(c)
 
-Discuss your results. Did you find any evidence of heterogeneous treatment effects? Justify your answer based on your output in the previous items.
+> Discuss your results. Did you find any evidence of heterogeneous treatment effects? Justify your answer based on your output in the previous items.
 
 ## Question 2(d)
 
-An important aspect in the implementation of causal forests is the use of ”honest trees”, as explained in section 2.4 of Wager and Athey (2017). Explain this procedure and why it is important for our estimation of CATEs. Rerun your analysis without ”honest trees” by selecting `honesty = FALSE`.
+> An important aspect in the implementation of causal forests is the use of ”honest trees”, as explained in section 2.4 of Wager and Athey (2017). Explain this procedure and why it is important for our estimation of CATEs. Rerun your analysis without ”honest trees” by selecting `honesty = FALSE`.
+
+### i. Honest Trees Explanations
+
+Inserisci sezione dove spieghi cosa sono gli honest trees
+
+### ii. Comparison of Results
+
+```{r}
+#| label: Estimating the causal forest
+
+# Fit the causal forest
+tau.forest.hf <- causal_forest(covariates,
+                    outcome, 
+                    treat,
+                    honesty = FALSE
+                    )
+
+# Estimate the average treatment effect (ATE)
+cate <- average_treatment_effect(tau.forest.hf, 
+                                target.sample = "overlap")
+cate
+
+ci_lower <- cate["estimate"] - 1.96 * cate["std.err"]
+ci_upper <- cate["estimate"] + 1.96 * cate["std.err"]
+cat("ATE:", cate["estimate"], 
+    "\nStd. Error:", cate["std.err"],
+    "\n95% CI: [", ci_lower, ", ", ci_upper, "]\n")
+
+```
+
+
 
 1.  **Is your average treatment effect the same?**
+
+
 
 2.  **When would you expect this to not be the case?**
