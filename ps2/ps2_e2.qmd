@@ -376,6 +376,13 @@ cat("ATE:", cate["estimate"],
 
 1.  **Is your average treatment effect the same?**
 
-
+There are no statistical differences between our first results and the ones obtained disabling the use of honest trees.
 
 2.  **When would you expect this to not be the case?**
+
+> Chat: When using honest trees versus non-honest trees, we generally expect similar ATE estimates in large samples or when the forest is well-behaved. However, differences can arise in circumstances such as:
+1. Small sample sizes: With fewer observations, the split between training and estimation subsamples (required for honest trees) can lead to less precise estimates. The “honesty” constraint might then produce a noticeably different estimate compared to the full sample use when honesty is disabled.
+2. Complex or noisy data: When the data exhibits substantial noise or complex heterogeneity, the honest approach—by reducing overfitting—may yield different splits and average effects. In this case, the bias-variance trade-off is shifted such that the imposed honesty can lead to an ATE estimate that diverges from that of the non-honest version.
+3. Overfitting concerns: If the non-honest trees are overfitting the data (i.e., tailoring splits too closely to the particular sample noise), the honest trees may provide a more stable, albeit sometimes different, estimate of the ATE by using separate data to decide splits and to estimate treatment effects.
+
+In summary, you would expect the average treatment effect to differ between honest and non-honest trees when the sample size is small or the data is sufficiently noisy/complex so that the benefits of reduced overfitting in honest trees lead to a different overall picture of the treatment effect.
