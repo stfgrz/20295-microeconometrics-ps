@@ -56,12 +56,12 @@ conflicts_prefer(dplyr::filter)
 data_url <- "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/expanded_data.csv"
 df <- read.csv(data_url)
 
-#Define `urbanization` as a numerical dummy 
+#Define `urbanization` as a factor (dummy)
 df$urbanization_dummy <- as.numeric(df$urbanization == "Rural")
 
 # Here, 0 = `Urban` and 1 = `Rural`
 
-#Define `st` as a numerical variable
+#Define `st` as a factor
 df$state_id <- as.numeric(as.factor(df$st))
 
 # Here, the state IDs are assigned in alphabetical order
@@ -104,26 +104,26 @@ covariates <- subset(df,
 #| label: Estimating the causal forest
 
 # Fit the causal forest
-cf <- causal_forest(covariates,
+tau.forest <- causal_forest(covariates,
                     outcome, 
                     treat
                     )
 
 # Estimate the average treatment effect (ATE)
-ate <- average_treatment_effect(cf, 
+cate <- average_treatment_effect(tau.forest, 
                                 target.sample = "overlap")
+cate
 
-ate
-
-ci_lower <- ate["estimate"] - 1.96 * ate["std.err"]
-ci_upper <- ate["estimate"] + 1.96 * ate["std.err"]
-cat("ATE:", ate["estimate"], 
-    "\nStd. Error:", ate["std.err"],
+ci_lower <- cate["estimate"] - 1.96 * cate["std.err"]
+ci_upper <- cate["estimate"] + 1.96 * cate["std.err"]
+cat("ATE:", cate["estimate"], 
+    "\nStd. Error:", cate["std.err"],
     "\n95% CI: [", ci_lower, ", ", ci_upper, "]\n")
+
 ```
 
 ```{r}
-varimp <- variable_importance(cf)
+varimp <- variable_importance(tau.forest)
 ranked.vars <- order(varimp, decreasing = TRUE)
 
 colnames(covariates)[ranked.vars[1:5]]
@@ -145,7 +145,7 @@ Our histogram is indeed concentrated towards zero, suggesting that overlap is in
 
 > For further discussion of the overlap assumption, please see Imbens and Rubin (2015). In practice, this assumption is often violated due to incorrect modeling decision: for example one covariate may be a deterministic indicator that the example received treatment.
 
-In order to account for this, we decide to include `target.sample = "overlap"` when calculating the ATE.
+In order to account for this, we decide to include `target.sample = "overlap"` when calculating the CATE.
 
 1.  **What is the estimated averate treatment effect in this instance?**
 
@@ -160,7 +160,7 @@ Now make an analysis of the causal forest results regarding potential heterogene
 ### 2(b)(i) The Best Linear Projection
 
 ```{r}
-blp <- best_linear_projection(cf, covariates[ranked.vars[1:5]])
+blp <- best_linear_projection(tau.forest, covariates[ranked.vars[1:5]])
 print(blp)
 ```
 
@@ -179,7 +179,7 @@ Interpretation Guidelines:
 #### Stefano's version
 
 ```{r}
-full_predict <- predict(cf)
+full_predict <- predict(tau.forest)
 
 cate <- full_predict$predictions
 
@@ -241,21 +241,17 @@ ggplot(cate_data, aes(x = cate)) +
 ```
 Now we implement a trial and error strategy to find potential drivers for heterogeneity
 
+### i. Education Rate
+
 ```{r}
-#| label: Heterogeneity Driver: religious_adherence
+rate.educ.rate <- rank_average_treatment_effect(
+  tau.forest,
+  covariates$education_rate,
+  subset = !is.na(covariates$education_rate) # Ignore missing X-values
+  )
+plot(rate.educ.rate, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
 
-scatter_data <- data.frame(
-  driver = df$religious_adherence,
-  cate = cate
-)
-
-ggplot(scatter_data, aes(x = driver, y = cate)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
-  labs(title = "Relationship between Driver and Estimated Treatment Effects",
-       x = "Driver",
-       y = "Estimated CATE") +
-  theme_minimal()
+rate.educ.rate
 ```
 
 ```{r}
@@ -275,6 +271,47 @@ ggplot(scatter_data, aes(x = driver, y = cate)) +
   theme_minimal()
 ```
 
+### ii. Religious Adherence
+
+```{r}
+rate.rel.ad <- rank_average_treatment_effect(
+  tau.forest,
+  -1 * covariates$religious_adherence, # Multiply by -1 to order by decreasing index
+  subset = !is.na(covariates$religious_adherence) # Ignore missing X-values
+  )
+plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing religious adherence")
+
+rate.rel.ad
+```
+
+```{r}
+#| label: Heterogeneity Driver: religious_adherence
+
+scatter_data <- data.frame(
+  driver = df$religious_adherence,
+  cate = cate
+)
+
+ggplot(scatter_data, aes(x = driver, y = cate)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
+  labs(title = "Relationship between Driver and Estimated Treatment Effects",
+       x = "Driver",
+       y = "Estimated CATE") +
+  theme_minimal()
+```
+
+### iii. Women Labour Force Participation
+
+```{r}
+rate.wlfp <- rank_average_treatment_effect(
+  tau.forest,
+  covariates$women_labor_force_participation, # Multiply by -1 to order by decreasing index
+  subset = !is.na(covariates$women_labor_force_participation) # Ignore missing X-values
+  )
+plot(rate.wlfp, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
+```
+
 ```{r}
 #| label: Heterogeneity Driver: women_labor_force_participation
 
@@ -290,60 +327,6 @@ ggplot(scatter_data, aes(x = driver, y = cate)) +
        x = "Driver",
        y = "Estimated CATE") +
   theme_minimal()
-```
-
-```{r}
-#| label: Heterogeneity Driver: #INSERISCI NOME VARIABILE
-
-scatter_data <- data.frame(
-  driver = df$unemployment_rate, #BASTA CAMBIARE QUESTA RIGA DI CODICE ED IL RESTO VA IN AUTOMATICO.
-  cate = cate
-)
-
-ggplot(scatter_data, aes(x = driver, y = cate)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess", se = TRUE, color = "firebrick") +
-  labs(title = "Relationship between Driver and Estimated Treatment Effects",
-       x = "Driver",
-       y = "Estimated CATE") +
-  theme_minimal()
-```
-
-### i. Education Rate
-
-```{r}
-rate.educ.rate <- rank_average_treatment_effect(
-  cf,
-  covariates$education_rate,
-  subset = !is.na(covariates$education_rate) # Ignore missing X-values
-  )
-plot(rate.educ.rate, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
-
-rate.educ.rate
-```
-
-### ii. Religious Adherence
-
-```{r}
-rate.rel.ad <- rank_average_treatment_effect(
-  cf,
-  -1 * covariates$religious_adherence, # Multiply by -1 to order by decreasing index
-  subset = !is.na(covariates$religious_adherence) # Ignore missing X-values
-  )
-plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing religious adherence")
-
-rate.rel.ad
-```
-
-### iii. Women Labour Force Participation
-
-```{r}
-rate.wlfp <- rank_average_treatment_effect(
-  cf,
-  covariates$women_labor_force_participation, # Multiply by -1 to order by decreasing index
-  subset = !is.na(covariates$women_labor_force_participation) # Ignore missing X-values
-  )
-plot(rate.wlfp, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
 ```
 
 Explain what is being performed in each point and interpret your output.
