@@ -53,6 +53,8 @@ conflicts_prefer(dplyr::filter)
 ```
 
 ```{r}
+#| label: Cleaning the dataset
+
 data_url <- "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/expanded_data.csv"
 df <- read.csv(data_url)
 
@@ -66,6 +68,13 @@ df$state_id <- as.numeric(as.factor(df$st))
 
 # Here, the state IDs are assigned in alphabetical order
 ```
+
+```{r}
+#| label: Preparing the dataset
+
+# Taking the first difference of the outcome variable (1978-1968)
+```
+
 
 ## Question 2(a)
 
