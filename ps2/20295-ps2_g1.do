@@ -58,7 +58,7 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/blob/5c
 
 /* (a) Note that one of the variables in the data set is stpop, the state population. In the next exercises, you should follow Wolfers (2006) in weighting both your descriptive output and your analysis by the state population. A short summary of the different weighting procedures in Stata is provided here ([1,2]). Given that divorce rates are an average computed in each state and the variable stpop provides the population in each of these states, which is the weight you should use when reporting the evolution of divorce rates or a regression of divorce rates on unilateral divorce laws to match the analysis in Wolfers (2006)? */
 
-	/* A: Wolfers (2006) adopts a weighted least squared framework, using population weights to account for unbalanced microdata and a treatment variable at the state level. As the treatment variable is at the state level and div_rate is a state mean, we should follow  Dupraz (2013) adopting the state population (stpop) as the analytical weights and robust standard errors with vce(robust)*/
+	/* A: Wolfers (2006) adopts a weighted least squared framework, using population weights to account for unbalanced microdata and a treatment variable at the state level. As the treatment variable is at the state level and div_rate is a state mean, we should follow  Dupraz (2013) adopting the state population (stpop) as the analytical weights and robust standard errors with vce(robust). This procedure improves computational efficiency and would yield the same estimates as relying on "fweight" and clustered standard errors. */
 	
 /* (b) The article relies on the timing of the introduction of unilateral divorce laws to compare divorce rates in the two possible regimes. One of the assumptions of this analysis is that states with the previous divorce law and the ones that introduced unilateral divorce laws would both follow parallel trends in their divorce rates in the absence of the changes to the legislation. Create 2 different graphs to support this assumption: (i) the first graph should convey the same message as the one in Figure 1 of the original paper, comparing states that did not change their divorce laws during 1968 - 1988 (Friedberg's sample) and the ones that did; (ii) the second graph should perform the same description, but focusing on the simpler analysis we will perform in the next exercise: compare the states adopting the unilateral divorce law between 1969 and 1973 to the ones that introduced it in the year 2000, only reporting the time trend up to 1978 and including a vertical line between 1968 and 1969 (when the first reforms in our sample started). Do your results support the assumption of parallel trends? */
 
@@ -87,7 +87,7 @@ graph twoway
     (line div_rate_dif year, lcolor(black) lp(dash)) 
     (function y = 0.2, range(1968 1988) lcolor(black) lpattern(solid) lwidth(medium))
     ,
-    xline(1969 1977, lp(solid)) //* might change the vertical lines 
+    xline(1968 1988, lp(solid)) //* might change the vertical lines 
     ylabel(0(1)7, grid glstyle(solid))
     yline(0, lp(solid))
     xlabel(1956(2)1998, nogrid angle(45))
@@ -104,8 +104,8 @@ graph twoway
     xtitle("Year")
 	text(0.3 1982 "Friedberg's sample", size(small) color(black) place(n))	
 	text(6.6 1973 "Reform period", size(small) color(black) place(n))
-	text(6.3 1973 "29 states adopted", size(small) color(black) place(n)) //*check if it is 29 states 
-	text(6 1973 "unilateral divorce", size(small) color(black) place(n))
+	*text(6.3 1973 "29 states adopted", size(small) color(black) place(n)) //*check if it is 29 states 
+	*text(6 1973 "unilateral divorce", size(small) color(black) place(n))
     ytitle("Divorce rate" "Divorces per 1,000 persons per year")
 
 ;
@@ -173,9 +173,9 @@ restore
 
 	/* A: A preliminary analysis does not find a strong support for the parallel trend assumption (PTA). 
 
-Graph 2 shows that treated countries had higher baseline divorce rates compared to the control group. The difference among the two groups increases over time, starting from 1.238 in 1956 and noticeably reaching 1.71 in 1968 (38% increase). While we observe a relevant rise of divorce rates in 1970, the outcome variable slowly congerges to the pre-treatment levels. 
+Graph 2 shows that treated countries had higher baseline divorce rates compared to the control group. From a first graphical exploration control states and reform states seem to follow similar trajectories before the treatment. Yet the difference among the two groups increases over time, starting from 1.238 in 1956 and noticeably reaching 1.71 in 1968 (38% increase). While we observe a relevant rise of divorce rates in 1970, the outcome variable slowly congerges to the pre-treatment levels. 
 
-This can be explained in line with Wolfers (2006): there is a sort of endogeneity of treatment status, as treated countries already showed a tendency toward more divorces, and the reforms simply freed up the marriages that could not break up due to bilateral divorce laws. In other words the increase in the difference could be explained as a result of all the people who could not divorce previously to reform and cumulated as a stock ready to be released. Hence, no clear support for the PTA is found. 
+This can be explained in line with Wolfers (2006): there is a sort of endogeneity of treatment status, as treated countries already showed a tendency towards more divorces, and the reforms simply freed up the marriages that could not break up due to bilateral divorce laws. In other words the increase in the difference could be explained as a result of all the people who could not divorce previously to the reform and cumulated as a stock ready to be released. Due to this considerations, no clear support for the PTA is found but proper statistical test should be adopted to have clear conclusions. 
  */
 	
 /* INSTRUCTIONS: Let us now start an analysis of the effects of the introduction of unilateral divorce laws. As a first step, let us perform a 2-period difference-in-difference analysis using "long differences", focusing on the evolution of divorces between 1968 and 1978. Keeping only these 2 years in our sample, you should compare states adopting the unilateral divorce law between 1969 and 1973 to the ones that introduced it in the year 2000. On this restricted sample, you should create: (i) a variable UNILATERAL equal to 1 if a state introduced the unilateral divorce law during this period (as signaled by variable lfdivlaw); (ii) a variable POST equal to 1 if the year is 1978; and (iii) a variable POST UNILATERAL when both POST and UNILATERAL are equal to 1. */
@@ -199,6 +199,10 @@ preserve
 	/* (ii) A full Difference-in-Differences specification, including POST, UNILATERAL and POST UNILATERAL as regressors; */
 	
 	reg div_rate POST UNILATERAL POST_UNILATERAL [aweight = stpop], vce(robust)
+	
+	*extra 
+	
+	reg div_rate POST UNILATERAL POST*UNILATERAL [aweight = stpop], vce(robust)
 
 	
 	/* (iii) Based on the graphs you created in section (a), could you say something about the difference in the coefficients from regressions (i) and (ii)? What is the effect of introducing unilateral divorce laws according to this analysis? */
