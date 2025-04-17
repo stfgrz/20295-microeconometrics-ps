@@ -5,17 +5,36 @@ format: html
 knitr:
   opts_knit:
     root.dir: "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_e2"
+editor: 
+  markdown: 
+    wrap: 72
 ---
 
 # Exercise 2
 
 ------------------------------------------------------------------------
 
-We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
+We will now use causal forests to assess if there’s any evidence of
+heterogeneous treatment effects of unilateral divorce laws on divorce
+rates. The original data set used in Wolfers (2006) did not provide a
+rich set of variables for this analysis, so we’ll use an expanded
+version based on simulated observations (the data set is provided on
+Blackboard as expanded data.csv. These will depict a data set where you
+would have access to county level observations in each of the states of
+the original sample, including several characteristics of the population
+in each county. A table with all variables in the updated data set and
+their description is provided below.
 
 **Hint**
 
-Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Black- board as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, includ- ing several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
+Wolfers (2006) did not provide a rich set of variables for this
+analysis, so we’ll use an expanded version based on simulated
+observations (the data set is provided on Black- board as expanded
+data.csv. These will depict a data set where you would have access to
+county level observations in each of the states of the original sample,
+includ- ing several characteristics of the population in each county. A
+table with all variables in the updated data set and their description
+is provided below.
 
 **Setup**
 
@@ -41,6 +60,7 @@ library(gridExtra)
 library(tidyverse) # includes (lubridate), (dplyr), (ggplot2), (tidyr), (tidyselect)
 library(tinytex)
 library(fastDummies)
+library(stargazer)
 
 # To handle time changes
 library(timechange)
@@ -52,6 +72,10 @@ conflicts_prefer(dplyr::lag)
 
 # IMPORTANT: run twice to solve the errors
 ```
+
+## Question 2(a)
+
+> Structure your data set accordingly to assess whether the introduction of the unilateral divorce law had an effect on divorce rates for our sample at the county level. Estimate a causal forest using the causal forest command from package grf.
 
 ```{r}
 #| label: Cleaning and fixing dummies
@@ -70,16 +94,18 @@ df$state_id <- as.numeric(as.factor(df$st))
 
 # Define the treatment dummy
 df <- df %>%
-  mutate(treated = case_when(
-      lfdivlaw >= 1969 & lfdivlaw <= 1973 ~ 1,   
-      TRUE ~ NA)
-  )
+  mutate(
+    treated = ifelse(
+      lfdivlaw >= 1968 & lfdivlaw <= 1973, 1, 0)
+    )
 
 # We tried defining as factors but some grf functions only work with numbers
 ```
 
+After defining correctly all of our covariates of interest, we definethe difference in the divorce rate between 1978 and 1968 and create thefinal dataset.
+
 ```{r}
-#| label: Preparing the dataset
+#| label: Turning the data into first differences
 
 df <- df %>% 
   arrange(state_id, county_id, year) %>%
@@ -87,48 +113,40 @@ df <- df %>%
   mutate(div_rate_diff = div_rate_sim - lag(div_rate_sim)) %>% # I just wanted to test if `lag` works
   ungroup()
 
-head(df)
-```
-```{r}
-# Create a baseline data frame containing the covariates from 1968.
-# Adjust the select() call if you want to include only specific baseline variables.
-
 baseline_df <- df %>%
   filter(year == 1968) 
-  # Optionally, specify only a subset of columns:
-  # select(state_id, county, covariate1, covariate2, ..., other_covariates)
 
-# Create a data frame for first differences for the year 1978.
 diff1978_df <- df %>%
   filter(year == 1978) %>%
   select(state_id, county_id, div_rate_diff)
 
 # Merge the baseline covariates with the first difference variable.
-# This assumes each unit (combination of state and county) is present in both subsets.
 final_df <- left_join(baseline_df, diff1978_df, by = c("state_id", "county_id"))
 
 # I don't really understand how we created the .x and .y divorce rate variables -> STICK TO THE Y VERSION, IT IS CORRECT
 
 head(final_df)
-
 ```
 
+After fixing the dataset, we define the variables of interest as per the
+tutorial:
 
-## Question 2(a)
+-   **Y**: Outcome, *i.e.* first difference in the divorce rate
 
-Structure your data set accordingly to assess whether the introduction of the unilateral divorce law had an effect on divorce rates for our sample at the county level. Estimate a causal forest using the causal forest command from package grf.
+-   **W**: Treatment, *i.e.* a dummy taking values 1 if a divorce law
+    was implemented between 1968 and 1973 (as per point 1.c, see STATA)
+    and 0 otherwise.
+
+-   **X**: Covariates
 
 ```{r}
-#| label: Create variable names
+#| label: Defining the variables of interest
 
-# The outcome Y (must be a numeric vector with no NAs).
 outcome <- final_df$div_rate_diff.y
 
-# The treatment assignment W (must be a binary or real numeric vector with no NAs).
-treat <- final_df
+treat <- final_df$treated
 
-# The covariates X used in the causal regression.
-covariates <- subset(df, 
+covariates <- subset(final_df, 
                      select = c("education_rate",
                             "childcare_availability",
                             "unemployment_rate",
@@ -140,32 +158,28 @@ covariates <- subset(df,
                             "domestic_violence_rate",
                             "women_labor_force_participation",
                             "crime_rate",
-                            "social_services_spending",
-                            "state_id",
-                            "county_id")
+                            "social_services_spending")
                      )
 ```
+
+We can now estimate the causal forest
 
 ```{r}
 #| label: Estimating the causal forest
 
-# Fit the causal forest
 tau.forest <- causal_forest(covariates,
                     outcome, 
                     treat
                     )
 
-# Estimate the average treatment effect (ATE)
 cate <- average_treatment_effect(tau.forest, 
-                                target.sample = "overlap")
-cate
+                                target.sample = "all")
 
 ci_lower <- cate["estimate"] - 1.96 * cate["std.err"]
 ci_upper <- cate["estimate"] + 1.96 * cate["std.err"]
 cat("ATE:", cate["estimate"], 
     "\nStd. Error:", cate["std.err"],
     "\n95% CI: [", ci_lower, ", ", ci_upper, "]\n")
-
 ```
 
 ```{r}
@@ -175,27 +189,43 @@ ranked.vars <- order(varimp, decreasing = TRUE)
 colnames(covariates)[ranked.vars[1:5]]
 ```
 
-The programme suggests us that there are some issues with overlap, so we will follow the standard procedure suggested on the package documentation:
-
 > If the output of the causal_forest method doesn’t pass a sanity check based on your knowledge of the data, it may be worth checking whether the overlap assumption is violated. In order for conditional average treatment effects to be properly identified, a dataset’s propensity scores must be bounded away from 0 and 1. A simple way to validate this assumption is to calculate the propensity scores by regressing the treatment assignments W against X, and examining the out-of-bag predictions. Concretely, you can perform the following steps:
 
 ```{r}
 propensity.forest = regression_forest(covariates, treat)
 W.hat = predict(propensity.forest)$predictions
-hist(W.hat, xlab = "propensity score")
+
+hist_df <- data.frame(propensity = W.hat)
+
+ggplot(hist_df, aes(x = propensity)) +
+  geom_histogram(
+    binwidth   = 0.01,           # adjust bin width to taste
+    fill       = "steelblue",    # nice solid fill color
+    color      = "white",        # border color between bins
+    alpha      = 0.8             # slight transparency
+  ) +
+  labs(
+    title = "Distribution of Propensity Scores",
+    x     = "Propensity Score",
+    y     = "Count"
+  ) +
+  theme_minimal() +              # clean, uncluttered look
+  theme(
+    plot.title   = element_text(hjust = 0.5, size = 16, face = "bold"),
+    axis.title   = element_text(size = 14),
+    axis.text    = element_text(size = 12)
+  )
 ```
 
 > If there is strong overlap, the histogram will be concentrated away from 0 and 1. If the data is instead concentrated at the extremes, the overlap assumption likely does not hold.
 
-Our histogram is concentrated towards zero, suggesting that overlap is indeed an issue in our case.
+Our histogram appears to be balanced, we will hence proceed to take into account the whole sample (`target.sample = "all"`) when calculating the CATE
 
 > For further discussion of the overlap assumption, please see Imbens and Rubin (2015). In practice, this assumption is often violated due to incorrect modeling decision: for example one covariate may be a deterministic indicator that the example received treatment.
 
-In order to account for this, we decide to include `target.sample = "overlap"` when calculating the CATE.
-
 1.  **What is the estimated averate treatment effect in this instance?**
 
-ate "estimate" gives the point estimate, while ate "std.err" gives the standard error
+ate "estimate" gives the point estimate, while ate "std.err" gives thestandard error
 
 2.  **Is it consistent with your answer in exercise 1.c?**
 
@@ -222,9 +252,14 @@ Interpretation Guidelines:
 
 ### 2(b)(ii) The Targeting Operator Characteristic
 
-#### Stefano's version
+#### Stefano's version 
+
+> This was just a tentative run before looking at the code. I left it here for the sake of completeness but it should by no mean be taken seriously. The official version is right next below.
 
 ```{r}
+#| eval: false
+#| include: false
+
 full_predict <- predict(tau.forest)
 
 cate <- full_predict$predictions
@@ -241,6 +276,8 @@ population_fraction <- seq_along(cate_sorted) / length(cate_sorted)
 ```
 
 ```{r}
+#| eval: false
+#| include: false
 
 toc_data <- data.frame(
   population_fraction = population_fraction,
@@ -265,25 +302,50 @@ Interpretation Guidelines:
 
 > **What is being performed**: The Targeting Operator Characteristic (TOC) evaluates the performance of the causal forest in terms of how well the estimated treatment effects can be used for targeting. Essentially, it plots the cumulative gain (in terms of treatment effect) that one would obtain by targeting the population in order of the predicted CATEs. A TOC curve that lies substantially above the 45° line (line of equality) indicates that the forest is successful in distinguishing between units with higher versus lower treatment effects.
 
-#### Website's version
+#### Official version
 
 ```{r}
+samples.by.state <- split(seq_along(final_df$state_id), final_df$state_id)
+num.states <- length(samples.by.state)
+train <- unlist(samples.by.state[sample(1:num.states, num.states / 2)])
+
+# Training forest (In-bag)
+train.forest <- causal_forest(
+  covariates[train, ],
+  outcome[train],
+  treat[train],
+  W.hat = 0.5,
+  clusters = final_df$state_id[train])
+
+tau.hat.eval <- predict(train.forest,covariates[-train, ])$predictions
+
+# Evaluation forest (Out-of-bag)
+eval.forest <- causal_forest(
+  covariates[-train, ],
+  outcome[-train],
+  treat[-train],
+  W.hat = 0.5,
+  clusters = final_df$state_id[-train])
+
+rate.cate <- rank_average_treatment_effect(eval.forest, tau.hat.eval)
+plot(rate.cate, main = "TOC: By decreasing estimated CATE")
 
 ```
+```{r}
+print(rate.cate)
+```
+```{r}
+ci_lower_rate.cate <- rate.cate$estimate - 1.96 * rate.cate$std.err
+ci_upper_rate.cate <- rate.cate$estimate + 1.96 * rate.cate$std.err
+cat("CATE:", rate.cate$estimate, 
+    "\nStd. Error:", rate.cate$std.err,
+    "\n95% CI: [", ci_lower_rate.cate, ", ", ci_upper_rate.cate, "]\n")
+```
+
 
 ### 2(b)(iii) Distribution of CATEs
 
 > Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
-
-```{r}
-cate_data <- data.frame(cate = cate)
-ggplot(cate_data, aes(x = cate)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "darkgray") +
-  labs(title = "Distribution of Estimated CATEs",
-       x = "Estimated CATE",
-       y = "Frequency") +
-  theme_minimal()
-```
 
 ### i. Education Rate
 
@@ -302,13 +364,12 @@ rate.educ.rate
 #| label: Heterogeneity Driver: education_rate
 
 scatter_data <- data.frame(
-  driver = df$education_rate,
+  driver = covariates$education_rate,
   cate = cate
 )
 
-ggplot(scatter_data, aes(x = driver, y = cate, color = factor(treat))) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess", se = TRUE, color = "orange") +
+ggplot(scatter_data, aes(x = driver, y = cate)) +
+  geom_point(aes(color = factor(treat)), alpha = 0.5) +
   geom_smooth(aes(group = factor(treat)), method = "loess", se = TRUE) +
   labs(title = "Relationship between Driver and Estimated Treatment Effects",
        x = "Driver",
@@ -316,6 +377,28 @@ ggplot(scatter_data, aes(x = driver, y = cate, color = factor(treat))) +
        color = "Treatment Group") +
   theme_minimal()
 ```
+
+```{r}
+educ_toc <- rate.educ.rate$TOC
+
+ggplot(educ_toc, aes(x = q, y = estimate)) +
+  geom_point() +
+  geom_errorbar(
+    aes(
+      ymin = estimate - 1.96*std.err,
+      ymax = estimate + 1.96*std.err
+    ),
+    width = 0.02
+  ) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(
+    x    = "Treated fraction (q)",
+    y    = "Increase in divorce rates",
+    title= "TOC: By increasing education rate"
+  )
+
+```
+
 
 ### ii. Religious Adherence
 
@@ -334,7 +417,7 @@ rate.rel.ad
 #| label: Heterogeneity Driver: religious_adherence
 
 scatter_data <- data.frame(
-  driver = df$religious_adherence,
+  driver = final_df$religious_adherence,
   cate = cate
 )
 
@@ -385,6 +468,8 @@ Explain what is being performed in each point and interpret your output.
 
 > Discuss your results. Did you find any evidence of heterogeneous treatment effects? Justify your answer based on your output in the previous items.
 
+
+
 ## Question 2(d)
 
 > An important aspect in the implementation of causal forests is the use of ”honest trees”, as explained in section 2.4 of Wager and Athey (2017). Explain this procedure and why it is important for our estimation of CATEs. Rerun your analysis without ”honest trees” by selecting `honesty = FALSE`.
@@ -418,17 +503,34 @@ cat("ATE:", cate["estimate"],
 
 ```
 
-
-
 1.  **Is your average treatment effect the same?**
 
-There are no statistical differences between our first results and the ones obtained disabling the use of honest trees.
+There are no statistical differences between our first results and the
+ones obtained disabling the use of honest trees.
 
 2.  **When would you expect this to not be the case?**
 
-> Chat: When using honest trees versus non-honest trees, we generally expect similar ATE estimates in large samples or when the forest is well-behaved. However, differences can arise in circumstances such as:
-1. Small sample sizes: With fewer observations, the split between training and estimation subsamples (required for honest trees) can lead to less precise estimates. The “honesty” constraint might then produce a noticeably different estimate compared to the full sample use when honesty is disabled.
-2. Complex or noisy data: When the data exhibits substantial noise or complex heterogeneity, the honest approach—by reducing overfitting—may yield different splits and average effects. In this case, the bias-variance trade-off is shifted such that the imposed honesty can lead to an ATE estimate that diverges from that of the non-honest version.
-3. Overfitting concerns: If the non-honest trees are overfitting the data (i.e., tailoring splits too closely to the particular sample noise), the honest trees may provide a more stable, albeit sometimes different, estimate of the ATE by using separate data to decide splits and to estimate treatment effects.
+> Chat: When using honest trees versus non-honest trees, we generally
+> expect similar ATE estimates in large samples or when the forest is
+> well-behaved. However, differences can arise in circumstances such
+> as: 1. Small sample sizes: With fewer observations, the split between
+> training and estimation subsamples (required for honest trees) can
+> lead to less precise estimates. The “honesty” constraint might then
+> produce a noticeably different estimate compared to the full sample
+> use when honesty is disabled. 2. Complex or noisy data: When the data
+> exhibits substantial noise or complex heterogeneity, the honest
+> approach—by reducing overfitting—may yield different splits and
+> average effects. In this case, the bias-variance trade-off is shifted
+> such that the imposed honesty can lead to an ATE estimate that
+> diverges from that of the non-honest version. 3. Overfitting concerns:
+> If the non-honest trees are overfitting the data (i.e., tailoring
+> splits too closely to the particular sample noise), the honest trees
+> may provide a more stable, albeit sometimes different, estimate of the
+> ATE by using separate data to decide splits and to estimate treatment
+> effects.
 
-In summary, you would expect the average treatment effect to differ between honest and non-honest trees when the sample size is small or the data is sufficiently noisy/complex so that the benefits of reduced overfitting in honest trees lead to a different overall picture of the treatment effect.
+In summary, you would expect the average treatment effect to differ
+between honest and non-honest trees when the sample size is small or the
+data is sufficiently noisy/complex so that the benefits of reduced
+overfitting in honest trees lead to a different overall picture of the
+treatment effect.
