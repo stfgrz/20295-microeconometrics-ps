@@ -5,36 +5,17 @@ format: html
 knitr:
   opts_knit:
     root.dir: "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_e2"
-editor: 
-  markdown: 
-    wrap: 72
 ---
 
 # Exercise 2
 
 ------------------------------------------------------------------------
 
-We will now use causal forests to assess if there’s any evidence of
-heterogeneous treatment effects of unilateral divorce laws on divorce
-rates. The original data set used in Wolfers (2006) did not provide a
-rich set of variables for this analysis, so we’ll use an expanded
-version based on simulated observations (the data set is provided on
-Blackboard as expanded data.csv. These will depict a data set where you
-would have access to county level observations in each of the states of
-the original sample, including several characteristics of the population
-in each county. A table with all variables in the updated data set and
-their description is provided below.
+We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
 **Hint**
 
-Wolfers (2006) did not provide a rich set of variables for this
-analysis, so we’ll use an expanded version based on simulated
-observations (the data set is provided on Black- board as expanded
-data.csv. These will depict a data set where you would have access to
-county level observations in each of the states of the original sample,
-includ- ing several characteristics of the population in each county. A
-table with all variables in the updated data set and their description
-is provided below.
+Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Black- board as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, includ- ing several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
 **Setup**
 
@@ -128,14 +109,11 @@ final_df <- left_join(baseline_df, diff1978_df, by = c("state_id", "county_id"))
 head(final_df)
 ```
 
-After fixing the dataset, we define the variables of interest as per the
-tutorial:
+After fixing the dataset, we define the variables of interest as per the tutorial:
 
 -   **Y**: Outcome, *i.e.* first difference in the divorce rate
 
--   **W**: Treatment, *i.e.* a dummy taking values 1 if a divorce law
-    was implemented between 1968 and 1973 (as per point 1.c, see STATA)
-    and 0 otherwise.
+-   **W**: Treatment, *i.e.* a dummy taking values 1 if a divorce law was implemented between 1968 and 1973 (as per point 1.c, see STATA) and 0 otherwise.
 
 -   **X**: Covariates
 
@@ -252,58 +230,6 @@ Interpretation Guidelines:
 
 ### 2(b)(ii) The Targeting Operator Characteristic
 
-#### Stefano's version 
-
-> This was just a tentative run before looking at the code. I left it here for the sake of completeness but it should by no mean be taken seriously. The official version is right next below.
-
-```{r}
-#| eval: false
-#| include: false
-
-full_predict <- predict(tau.forest)
-
-cate <- full_predict$predictions
-
-# Sorting CATE in descending order
-order_idx <- order(cate, decreasing = TRUE)
-cate_sorted <- cate[order_idx]
-
-# Computing cumulative gain
-cumulative_gain <- cumsum(cate_sorted)
-normalized_gain <- cumulative_gain / sum(cate_sorted)
-
-population_fraction <- seq_along(cate_sorted) / length(cate_sorted)
-```
-
-```{r}
-#| eval: false
-#| include: false
-
-toc_data <- data.frame(
-  population_fraction = population_fraction,
-  normalized_gain = normalized_gain
-)
-
-# Plot the TOC curve with ggplot2
-ggplot(toc_data, aes(x = population_fraction, y = normalized_gain)) +
-  geom_line() +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "steelblue") +
-  labs(title = "Targeting Operator Characteristic (TOC)",
-       x = "Fraction of Population Targeted",
-       y = "Normalized Cumulative Gain") +
-  theme_minimal()
-```
-
-Interpretation Guidelines:
-
--   The 45° line represents the baseline (no targeting benefit).
-
--   A TOC curve that substantially lies above this line indicates that prioritizing units based on the estimated CATE would yield a higher cumulative gain in treatment effect.
-
-> **What is being performed**: The Targeting Operator Characteristic (TOC) evaluates the performance of the causal forest in terms of how well the estimated treatment effects can be used for targeting. Essentially, it plots the cumulative gain (in terms of treatment effect) that one would obtain by targeting the population in order of the predicted CATEs. A TOC curve that lies substantially above the 45° line (line of equality) indicates that the forest is successful in distinguishing between units with higher versus lower treatment effects.
-
-#### Official version
-
 ```{r}
 samples.by.state <- split(seq_along(final_df$state_id), final_df$state_id)
 num.states <- length(samples.by.state)
@@ -314,7 +240,6 @@ train.forest <- causal_forest(
   covariates[train, ],
   outcome[train],
   treat[train],
-  W.hat = 0.5,
   clusters = final_df$state_id[train])
 
 tau.hat.eval <- predict(train.forest,covariates[-train, ])$predictions
@@ -324,12 +249,10 @@ eval.forest <- causal_forest(
   covariates[-train, ],
   outcome[-train],
   treat[-train],
-  W.hat = 0.5,
   clusters = final_df$state_id[-train])
 
 rate.cate <- rank_average_treatment_effect(eval.forest, tau.hat.eval)
 plot(rate.cate, main = "TOC: By decreasing estimated CATE")
-
 ```
 ```{r}
 print(rate.cate)
@@ -342,67 +265,34 @@ cat("CATE:", rate.cate$estimate,
     "\n95% CI: [", ci_lower_rate.cate, ", ", ci_upper_rate.cate, "]\n")
 ```
 
+```{r}
+#| label: Variable Importance after the split
+
+varimp_v2 <- variable_importance(eval.forest)
+
+ranked.vars <- order(varimp, decreasing = TRUE)
+
+top.vars.test <- colnames(covariates)[ranked.vars[1:5]]
+
+print(top.vars.test)
+```
+
+
 
 ### 2(b)(iii) Distribution of CATEs
 
 > Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
 
-### i. Education Rate
+### i. Religious Adherence
 
 ```{r}
-rate.educ.rate <- rank_average_treatment_effect(
-  tau.forest,
-  covariates$education_rate,
-  subset = !is.na(covariates$education_rate) # Ignore missing X-values
-  )
+driver_s1 <- "religious_adherence"
 
-plot(rate.educ.rate, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
+driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
 
-rate.educ.rate
-```
+rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-```{r}
-#| label: Heterogeneity Driver: education_rate
-
-scatter_data <- data.frame(
-  driver = (covariates[-train, ]$education_rate),
-  cate   = tau.hat.eval,
-  treat  = treat[-train]
-)
-
-scatter_data$treat <- factor(scatter_data$treat,
-                             levels = c(0,1),
-                             labels = c("Control","Treated"))
-
-ggplot(scatter_data, 
-       aes(x = driver, 
-           y = cate, 
-           colour = treat)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess",
-              se     = TRUE, 
-              aes(fill = treat)) +   
-  scale_colour_manual(values = c("steelblue", "tomato")) +
-  scale_fill_manual(  values = c("steelblue", "tomato")) +
-  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
-       x        = "Driver (Education Rate)",
-       y        = "Estimated CATE",
-       colour   = "Treatment Group",
-       fill     = "Treatment Group") +
-  theme_minimal()
-```
-
-### ii. Religious Adherence
-
-```{r}
-rate.rel.ad <- rank_average_treatment_effect(
-  tau.forest,
-  -1 * covariates$religious_adherence, # Multiply by -1 to order by decreasing index
-  subset = !is.na(covariates$religious_adherence) # Ignore missing X-values
-  )
 plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing religious adherence")
-
-rate.rel.ad
 ```
 
 ```{r}
@@ -429,7 +319,50 @@ ggplot(scatter_data,
   scale_colour_manual(values = c("steelblue", "tomato")) +
   scale_fill_manual(  values = c("steelblue", "tomato")) +
   labs(title    = "Relationship between Driver and Estimated Treatment Effects",
-       x        = "Driver (Education Rate)",
+       x        = "Driver (Religious Adherence)",
+       y        = "Estimated CATE",
+       colour   = "Treatment Group",
+       fill     = "Treatment Group") +
+  theme_minimal()
+```
+
+### ii. Domestic Violence Rate
+
+```{r}
+driver_s1 <- "domestic_violence_rate"
+
+driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
+
+rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
+
+plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing domestic violence rate")
+```
+
+```{r}
+#| label: Heterogeneity Driver: domestic_violence_rate
+
+scatter_data <- data.frame(
+  driver = (covariates[-train, ]$domestic_violence_rate),
+  cate   = tau.hat.eval,
+  treat  = treat[-train]
+)
+
+scatter_data$treat <- factor(scatter_data$treat,
+                             levels = c(0,1),
+                             labels = c("Control","Treated"))
+
+ggplot(scatter_data, 
+       aes(x = driver, 
+           y = cate, 
+           colour = treat)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess",
+              se     = TRUE, 
+              aes(fill = treat)) +   
+  scale_colour_manual(values = c("steelblue", "tomato")) +
+  scale_fill_manual(  values = c("steelblue", "tomato")) +
+  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
+       x        = "Driver (Domestic Violence)",
        y        = "Estimated CATE",
        colour   = "Treatment Group",
        fill     = "Treatment Group") +
@@ -439,12 +372,13 @@ ggplot(scatter_data,
 ### iii. Women Labour Force Participation
 
 ```{r}
-rate.wlfp <- rank_average_treatment_effect(
-  tau.forest,
-  covariates$women_labor_force_participation, # Multiply by -1 to order by decreasing index
-  subset = !is.na(covariates$women_labor_force_participation) # Ignore missing X-values
-  )
-plot(rate.wlfp, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
+driver_s1 <- "women_labor_force_participation"
+
+driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
+
+rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
+
+plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
 ```
 
 ```{r}
@@ -471,31 +405,30 @@ ggplot(scatter_data,
   scale_colour_manual(values = c("steelblue", "tomato")) +
   scale_fill_manual(  values = c("steelblue", "tomato")) +
   labs(title    = "Relationship between Driver and Estimated Treatment Effects",
-       x        = "Driver (Education Rate)",
+       x        = "Driver (Women labour force participation)",
        y        = "Estimated CATE",
        colour   = "Treatment Group",
        fill     = "Treatment Group") +
   theme_minimal()
 ```
 
-
-
-### iv. Domestic Violence Rate
+### iv. Education Rate
 
 ```{r}
-rate.wlfp <- rank_average_treatment_effect(
-  tau.forest,
-  covariates$domestic_violence_rate, # Multiply by -1 to order by decreasing index
-  subset = !is.na(covariates$domestic_violence_rate) # Ignore missing X-values
-  )
-plot(rate.wlfp, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
+driver_s1 <- "education_rate"
+
+driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
+
+rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
+
+plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
 ```
 
 ```{r}
-#| label: Heterogeneity Driver: domestic_violence_rate
+#| label: Heterogeneity Driver: education_rate
 
 scatter_data <- data.frame(
-  driver = (covariates[-train, ]$domestic_violence_rate),
+  driver = (covariates[-train, ]$education_rate),
   cate   = tau.hat.eval,
   treat  = treat[-train]
 )
@@ -549,9 +482,9 @@ tau.forest.hf <- causal_forest(covariates,
                     )
 
 # Estimate the average treatment effect (ATE)
-cate <- average_treatment_effect(tau.forest.hf, 
+cate_hf <- average_treatment_effect(tau.forest.hf, 
                                 target.sample = "all")
-cate
+cate_hf
 
 ci_lower <- cate["estimate"] - 1.96 * cate["std.err"]
 ci_upper <- cate["estimate"] + 1.96 * cate["std.err"]
@@ -561,6 +494,38 @@ cat("ATE:", cate["estimate"],
 
 ```
 
+```{r}
+blp <- best_linear_projection(tau.forest.hf, covariates[ranked.vars[1:5]])
+print(blp)
+```
+
+```{r}
+samples.by.state <- split(seq_along(final_df$state_id), final_df$state_id)
+num.states <- length(samples.by.state)
+train <- unlist(samples.by.state[sample(1:num.states, num.states / 2)])
+
+# Training forest (In-bag)
+train.forest_hf <- causal_forest(
+  covariates[train, ],
+  outcome[train],
+  treat[train],
+  honesty = FALSE,
+  clusters = final_df$state_id[train])
+
+tau.hat.eval_hf <- predict(train.forest_hf,covariates[-train, ])$predictions
+
+# Evaluation forest (Out-of-bag)
+eval.forest_hf <- causal_forest(
+  covariates[-train, ],
+  outcome[-train],
+  treat[-train],
+  honesty = FALSE,
+  clusters = final_df$state_id[-train])
+
+rate.cate_hf <- rank_average_treatment_effect(eval.forest_hf, tau.hat.eval_hf)
+plot(rate.cate_hf, main = "TOC: By decreasing estimated CATE")
+```
+
 1.  **Is your average treatment effect the same?**
 
 There are no statistical differences between our first results and the
@@ -568,27 +533,6 @@ ones obtained disabling the use of honest trees.
 
 2.  **When would you expect this to not be the case?**
 
-> Chat: When using honest trees versus non-honest trees, we generally
-> expect similar ATE estimates in large samples or when the forest is
-> well-behaved. However, differences can arise in circumstances such
-> as: 1. Small sample sizes: With fewer observations, the split between
-> training and estimation subsamples (required for honest trees) can
-> lead to less precise estimates. The “honesty” constraint might then
-> produce a noticeably different estimate compared to the full sample
-> use when honesty is disabled. 2. Complex or noisy data: When the data
-> exhibits substantial noise or complex heterogeneity, the honest
-> approach—by reducing overfitting—may yield different splits and
-> average effects. In this case, the bias-variance trade-off is shifted
-> such that the imposed honesty can lead to an ATE estimate that
-> diverges from that of the non-honest version. 3. Overfitting concerns:
-> If the non-honest trees are overfitting the data (i.e., tailoring
-> splits too closely to the particular sample noise), the honest trees
-> may provide a more stable, albeit sometimes different, estimate of the
-> ATE by using separate data to decide splits and to estimate treatment
-> effects.
+> Chat: When using honest trees versus non-honest trees, we generally expect similar ATE estimates in large samples or when the forest is well-behaved. However, differences can arise in circumstances such as: 1. Small sample sizes: With fewer observations, the split between training and estimation subsamples (required for honest trees) can lead to less precise estimates. The “honesty” constraint might then produce a noticeably different estimate compared to the full sample use when honesty is disabled. 2. Complex or noisy data: When the data exhibits substantial noise or complex heterogeneity, the honest approach—by reducing overfitting—may yield different splits and average effects. In this case, the bias-variance trade-off is shifted such that the imposed honesty can lead to an ATE estimate that diverges from that of the non-honest version. 3. Overfitting concerns: If the non-honest trees are overfitting the data (i.e., tailoring splits too closely to the particular sample noise), the honest trees may provide a more stable, albeit sometimes different, estimate of the ATE by using separate data to decide splits and to estimate treatment effects.
 
-In summary, you would expect the average treatment effect to differ
-between honest and non-honest trees when the sample size is small or the
-data is sufficiently noisy/complex so that the benefits of reduced
-overfitting in honest trees lead to a different overall picture of the
-treatment effect.
+In summary, you would expect the average treatment effect to differ between honest and non-honest trees when the sample size is small or the data is sufficiently noisy/complex so that the benefits of reduced overfitting in honest trees lead to a different overall picture of the treatment effect.
