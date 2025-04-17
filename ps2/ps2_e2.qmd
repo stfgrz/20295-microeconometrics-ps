@@ -355,6 +355,7 @@ rate.educ.rate <- rank_average_treatment_effect(
   covariates$education_rate,
   subset = !is.na(covariates$education_rate) # Ignore missing X-values
   )
+
 plot(rate.educ.rate, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
 
 rate.educ.rate
@@ -364,41 +365,32 @@ rate.educ.rate
 #| label: Heterogeneity Driver: education_rate
 
 scatter_data <- data.frame(
-  driver = covariates$education_rate,
-  cate = cate
+  driver = (covariates[-train, ]$education_rate),
+  cate   = tau.hat.eval,
+  treat  = treat[-train]
 )
 
-ggplot(scatter_data, aes(x = driver, y = cate)) +
-  geom_point(aes(color = factor(treat)), alpha = 0.5) +
-  geom_smooth(aes(group = factor(treat)), method = "loess", se = TRUE) +
-  labs(title = "Relationship between Driver and Estimated Treatment Effects",
-       x = "Driver",
-       y = "Estimated CATE",
-       color = "Treatment Group") +
+scatter_data$treat <- factor(scatter_data$treat,
+                             levels = c(0,1),
+                             labels = c("Control","Treated"))
+
+ggplot(scatter_data, 
+       aes(x = driver, 
+           y = cate, 
+           colour = treat)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess",
+              se     = TRUE, 
+              aes(fill = treat)) +   
+  scale_colour_manual(values = c("steelblue", "tomato")) +
+  scale_fill_manual(  values = c("steelblue", "tomato")) +
+  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
+       x        = "Driver (Education Rate)",
+       y        = "Estimated CATE",
+       colour   = "Treatment Group",
+       fill     = "Treatment Group") +
   theme_minimal()
 ```
-
-```{r}
-educ_toc <- rate.educ.rate$TOC
-
-ggplot(educ_toc, aes(x = q, y = estimate)) +
-  geom_point() +
-  geom_errorbar(
-    aes(
-      ymin = estimate - 1.96*std.err,
-      ymax = estimate + 1.96*std.err
-    ),
-    width = 0.02
-  ) +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  labs(
-    x    = "Treated fraction (q)",
-    y    = "Increase in divorce rates",
-    title= "TOC: By increasing education rate"
-  )
-
-```
-
 
 ### ii. Religious Adherence
 
@@ -417,18 +409,30 @@ rate.rel.ad
 #| label: Heterogeneity Driver: religious_adherence
 
 scatter_data <- data.frame(
-  driver = final_df$religious_adherence,
-  cate = cate
+  driver = (covariates[-train, ]$religious_adherence),
+  cate   = tau.hat.eval,
+  treat  = treat[-train]
 )
 
-ggplot(scatter_data, aes(x = driver, y = cate, color = factor(treat))) +
+scatter_data$treat <- factor(scatter_data$treat,
+                             levels = c(0,1),
+                             labels = c("Control","Treated"))
+
+ggplot(scatter_data, 
+       aes(x = driver, 
+           y = cate, 
+           colour = treat)) +
   geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess", se = TRUE, color = "orange") +
-  geom_smooth(aes(group = factor(treat)), method = "loess", se = TRUE) +
-  labs(title = "Relationship between Driver and Estimated Treatment Effects",
-       x = "Driver",
-       y = "Estimated CATE",
-       color = "Treatment Group") +
+  geom_smooth(method = "loess",
+              se     = TRUE, 
+              aes(fill = treat)) +   
+  scale_colour_manual(values = c("steelblue", "tomato")) +
+  scale_fill_manual(  values = c("steelblue", "tomato")) +
+  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
+       x        = "Driver (Education Rate)",
+       y        = "Estimated CATE",
+       colour   = "Treatment Group",
+       fill     = "Treatment Group") +
   theme_minimal()
 ```
 
@@ -447,22 +451,76 @@ plot(rate.wlfp, xlab = "Treated fraction", ylab = "Increase in divorce rates", m
 #| label: Heterogeneity Driver: women_labor_force_participation
 
 scatter_data <- data.frame(
-  driver = df$women_labor_force_participation,
-  cate = cate
+  driver = (covariates[-train, ]$women_labor_force_participation),
+  cate   = tau.hat.eval,
+  treat  = treat[-train]
 )
 
-ggplot(scatter_data, aes(x = driver, y = cate, color = factor(treat))) +
+scatter_data$treat <- factor(scatter_data$treat,
+                             levels = c(0,1),
+                             labels = c("Control","Treated"))
+
+ggplot(scatter_data, 
+       aes(x = driver, 
+           y = cate, 
+           colour = treat)) +
   geom_point(alpha = 0.5) +
-  geom_smooth(method = "loess", se = TRUE, color = "orange") +
-  geom_smooth(aes(group = factor(treat)), method = "loess", se = TRUE) +
-  labs(title = "Relationship between Driver and Estimated Treatment Effects",
-       x = "Driver",
-       y = "Estimated CATE",
-       color = "Treatment Group") +
+  geom_smooth(method = "loess",
+              se     = TRUE, 
+              aes(fill = treat)) +   
+  scale_colour_manual(values = c("steelblue", "tomato")) +
+  scale_fill_manual(  values = c("steelblue", "tomato")) +
+  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
+       x        = "Driver (Education Rate)",
+       y        = "Estimated CATE",
+       colour   = "Treatment Group",
+       fill     = "Treatment Group") +
   theme_minimal()
 ```
 
-Explain what is being performed in each point and interpret your output.
+
+
+### iv. Domestic Violence Rate
+
+```{r}
+rate.wlfp <- rank_average_treatment_effect(
+  tau.forest,
+  covariates$domestic_violence_rate, # Multiply by -1 to order by decreasing index
+  subset = !is.na(covariates$domestic_violence_rate) # Ignore missing X-values
+  )
+plot(rate.wlfp, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
+```
+
+```{r}
+#| label: Heterogeneity Driver: domestic_violence_rate
+
+scatter_data <- data.frame(
+  driver = (covariates[-train, ]$domestic_violence_rate),
+  cate   = tau.hat.eval,
+  treat  = treat[-train]
+)
+
+scatter_data$treat <- factor(scatter_data$treat,
+                             levels = c(0,1),
+                             labels = c("Control","Treated"))
+
+ggplot(scatter_data, 
+       aes(x = driver, 
+           y = cate, 
+           colour = treat)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess",
+              se     = TRUE, 
+              aes(fill = treat)) +   
+  scale_colour_manual(values = c("steelblue", "tomato")) +
+  scale_fill_manual(  values = c("steelblue", "tomato")) +
+  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
+       x        = "Driver (Education Rate)",
+       y        = "Estimated CATE",
+       colour   = "Treatment Group",
+       fill     = "Treatment Group") +
+  theme_minimal()
+```
 
 ## Question 2(c)
 
@@ -492,7 +550,7 @@ tau.forest.hf <- causal_forest(covariates,
 
 # Estimate the average treatment effect (ATE)
 cate <- average_treatment_effect(tau.forest.hf, 
-                                target.sample = "overlap")
+                                target.sample = "all")
 cate
 
 ci_lower <- cate["estimate"] - 1.96 * cate["std.err"]
