@@ -25,11 +25,6 @@ Wolfers (2006) did not provide a rich set of variables for this analysis, so we�
 # For this assignment specifically
 library(grf)
 
-  # Necessary packages for quantmod
-  library(zoo)
-  library(xts)
-library(quantmod)
-
 # For fancy plots
 library(ggthemes)
   # Necessary packages for viridis
@@ -61,29 +56,24 @@ conflicts_prefer(dplyr::lag)
 ```{r}
 #| label: Cleaning and fixing dummies
 
+# Load the expanded county-level panel data
 data_url <- "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/expanded_data.csv"
 df <- read.csv(data_url)
 
-# Define `urbanization` as a number (dummy)
+# Create a binary indicator for rural counties: 1 if urbanization=="Rural", 0 otherwise
 df$urbanization_dummy <- as.numeric(df$urbanization == "Rural")
 
-# Here, 0 = `Urban` and 1 = `Rural`
-
-# Define `st` as a number
+# ncode each state label as a unique integer ID (factor levels are assigned alphabetically)
 df$state_id <- as.numeric(as.factor(df$st))
-# Here, the state IDs are assigned in alphabetical order
 
 # Define the treatment dummy
 df <- df %>%
   mutate(
-    treated = ifelse(
-      lfdivlaw >= 1968 & lfdivlaw <= 1973, 1, 0)
+    treated = ifelse(lfdivlaw >= 1969 & lfdivlaw <= 1973, 1, 0)
     )
-
-# We tried defining as factors but some grf functions only work with numbers
 ```
 
-After defining correctly all of our covariates of interest, we definethe difference in the divorce rate between 1978 and 1968 and create thefinal dataset.
+After defining correctly all of our covariates of interest, we definethe difference in the divorce rate between 1978 and 1968 and create the final dataset.
 
 ```{r}
 #| label: Turning the data into first differences
@@ -91,8 +81,8 @@ After defining correctly all of our covariates of interest, we definethe differe
 df <- df %>% 
   arrange(state_id, county_id, year) %>%
   group_by(state_id) %>% 
-  mutate(div_rate_diff = div_rate_sim - lag(div_rate_sim)) %>% # I just wanted to test if `lag` works
-  ungroup()
+  mutate(div_rate_diff = div_rate_sim - lag(div_rate_sim)) %>%        # Compute year‑to‑year change in simulated divorce rate:
+  ungroup()                                                           # Remove grouping so downstream code isn’t accidentally state‑wise
 
 baseline_df <- df %>%
   filter(year == 1968) 
@@ -170,7 +160,7 @@ colnames(covariates)[ranked.vars[1:5]]
 > If the output of the causal_forest method doesn’t pass a sanity check based on your knowledge of the data, it may be worth checking whether the overlap assumption is violated. In order for conditional average treatment effects to be properly identified, a dataset’s propensity scores must be bounded away from 0 and 1. A simple way to validate this assumption is to calculate the propensity scores by regressing the treatment assignments W against X, and examining the out-of-bag predictions. Concretely, you can perform the following steps:
 
 ```{r}
-propensity.forest = regression_forest(covariates, treat)
+propensity.forest = regression_forest(covariates, treat) 
 W.hat = predict(propensity.forest)$predictions
 
 hist_df <- data.frame(propensity = W.hat)
@@ -203,9 +193,11 @@ Our histogram appears to be balanced, we will hence proceed to take into account
 
 1.  **What is the estimated averate treatment effect in this instance?**
 
-ate "estimate" gives the point estimate, while ate "std.err" gives thestandard error
+The estimate for the Conditional Averate Treatment Effect is equal to `r cate[1]`, with a variance of `r cate[2]``.
 
 2.  **Is it consistent with your answer in exercise 1.c?**
+
+Our results are consistent with the conclusions of exercise 1.c, as both the analysis show us that the difference between the treatment and control group are not statistically significant.
 
 ## Question 2(b)
 
@@ -221,8 +213,6 @@ print(blp)
 > **What is being performed**: The Best Linear Projection involves regressing the estimated conditional average treatment effects (CATEs) on the covariates. This approach checks whether the heterogeneity captured by the forest is systematically related to the observed covariates. If the coefficients (or the overall fit) are statistically significant, it provides evidence that the treatment effects vary in a predictable way with these covariates.
 
 Interpretation Guidelines:
-
--   The output will typically show a coefficient (or a set of coefficients) along with standard errors and p-values.
 
 -   A statistically significant coefficient indicates that a change in the corresponding covariate is associated with a systematic change in the treatment effect.
 
@@ -268,22 +258,17 @@ cat("CATE:", rate.cate$estimate,
 ```{r}
 #| label: Variable Importance after the split
 
-varimp_v2 <- variable_importance(eval.forest)
+varimp_as <- variable_importance(eval.forest)
+ranked.vars_as <- order(varimp_as, decreasing = TRUE)
 
-ranked.vars <- order(varimp, decreasing = TRUE)
-
-top.vars.test <- colnames(covariates)[ranked.vars[1:5]]
-
-print(top.vars.test)
+colnames(covariates)[ranked.vars_as[1:5]]
 ```
-
-
 
 ### 2(b)(iii) Distribution of CATEs
 
 > Plot the distribution of CATEs throughout the distribution of the variables you believe could drive heterogeneity (if you’ll report heterogeneous treatment effects, include graphs for its drivers).
 
-### i. Religious Adherence
+#### i. Religious Adherence
 
 ```{r}
 driver_s1 <- "religious_adherence"
@@ -296,7 +281,7 @@ plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates",
 ```
 
 ```{r}
-#| label: Heterogeneity Driver: religious_adherence
+#| label: Heterogeneity Driver - religious_adherence
 
 scatter_data <- data.frame(
   driver = (covariates[-train, ]$religious_adherence),
@@ -326,7 +311,7 @@ ggplot(scatter_data,
   theme_minimal()
 ```
 
-### ii. Domestic Violence Rate
+#### ii. Domestic Violence Rate
 
 ```{r}
 driver_s1 <- "domestic_violence_rate"
@@ -339,7 +324,7 @@ plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates",
 ```
 
 ```{r}
-#| label: Heterogeneity Driver: domestic_violence_rate
+#| label: Heterogeneity Driver - domestic_violence_rate
 
 scatter_data <- data.frame(
   driver = (covariates[-train, ]$domestic_violence_rate),
@@ -369,7 +354,7 @@ ggplot(scatter_data,
   theme_minimal()
 ```
 
-### iii. Women Labour Force Participation
+#### iii. Women Labour Force Participation
 
 ```{r}
 driver_s1 <- "women_labor_force_participation"
@@ -382,7 +367,7 @@ plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates",
 ```
 
 ```{r}
-#| label: Heterogeneity Driver: women_labor_force_participation
+#| label: Heterogeneity Driver - women_labor_force_participation
 
 scatter_data <- data.frame(
   driver = (covariates[-train, ]$women_labor_force_participation),
@@ -412,7 +397,7 @@ ggplot(scatter_data,
   theme_minimal()
 ```
 
-### iv. Education Rate
+#### iv. Education Rate
 
 ```{r}
 driver_s1 <- "education_rate"
@@ -421,11 +406,11 @@ driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ra
 
 rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
 
-plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing women labour force participation")
+plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
 ```
 
 ```{r}
-#| label: Heterogeneity Driver: education_rate
+#| label: Heterogeneity Driver - education_rate
 
 scatter_data <- data.frame(
   driver = (covariates[-train, ]$education_rate),
@@ -448,7 +433,49 @@ ggplot(scatter_data,
   scale_colour_manual(values = c("steelblue", "tomato")) +
   scale_fill_manual(  values = c("steelblue", "tomato")) +
   labs(title    = "Relationship between Driver and Estimated Treatment Effects",
-       x        = "Driver (Education Rate)",
+       x        = "Driver (Education rate)",
+       y        = "Estimated CATE",
+       colour   = "Treatment Group",
+       fill     = "Treatment Group") +
+  theme_minimal()
+```
+#### v. Childcare Availability
+
+```{r}
+driver_s1 <- "childcare_availability"
+
+driver <-  covariates[-train, driver_s1]  # Negate if needed for direction of ranking
+
+rate.rel.ad <- rank_average_treatment_effect(eval.forest, -1 * driver, subset = !is.na(driver))
+
+plot(rate.rel.ad, xlab = "Treated fraction", ylab = "Increase in divorce rates", main = "TOC: By increasing education rate")
+```
+
+```{r}
+#| label: Heterogeneity Driver - childcare_availability
+
+scatter_data <- data.frame(
+  driver = (covariates[-train, ]$childcare_availability),
+  cate   = tau.hat.eval,
+  treat  = treat[-train]
+)
+
+scatter_data$treat <- factor(scatter_data$treat,
+                             levels = c(0,1),
+                             labels = c("Control","Treated"))
+
+ggplot(scatter_data, 
+       aes(x = driver, 
+           y = cate, 
+           colour = treat)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "loess",
+              se     = TRUE, 
+              aes(fill = treat)) +   
+  scale_colour_manual(values = c("steelblue", "tomato")) +
+  scale_fill_manual(  values = c("steelblue", "tomato")) +
+  labs(title    = "Relationship between Driver and Estimated Treatment Effects",
+       x        = "Driver (Education rate)",
        y        = "Estimated CATE",
        colour   = "Treatment Group",
        fill     = "Treatment Group") +
@@ -459,7 +486,7 @@ ggplot(scatter_data,
 
 > Discuss your results. Did you find any evidence of heterogeneous treatment effects? Justify your answer based on your output in the previous items.
 
-
+Points 2(b)(i) and 2(b)(iii) both appear to confirm that heterogeneous treatment effects are present and, in particular, that *religious adherence* plays a fundamental role in driving such heterogeneity; namely, an increase in such driver is associated to a statistically significant reduction in the divorce rate.
 
 ## Question 2(d)
 
@@ -467,12 +494,18 @@ ggplot(scatter_data,
 
 ### i. Honest Trees Explanations
 
-Inserisci sezione dove spieghi cosa sono gli honest trees
+An “honest” tree enforces a strict sample‐splitting procedure within each tree: the data assigned to a given tree are randomly partitioned into two disjoint halves. One half (the splitting sample) is used solely to choose the tree structure (i.e. where to split on covariates), and the other half (the estimation sample) is used exclusively to estimate treatment effects in each leaf. By decoupling split‐selection from effect‐estimation, honesty prevents the tree from overfitting the noise in the data:
+
+*   **Unbiased effect estimates**: Because the same observations are not used both to pick splits and to estimate effects, the leaf‐level treatment effect estimates are conditionally unbiased.
+*   **Valid inference**: Under regularity conditions (Wager & Athey 2017, §2.4), honest forests admit valid confidence intervals for both the ATE and CATEs.
+*   **Reduced overfitting**: Honesty forces the forest to generalize rather than tailor splits to idiosyncratic sample noise, which is especially important when assessing heterogeneous effects.
+
+In grf, honesty is the default (honesty = TRUE). It’s a key ingredient for trustworthy inference: without it, forests can exaggerate heterogeneity (by capitalizing on noise) and understate uncertainty.
 
 ### ii. Comparison of Results
 
 ```{r}
-#| label: Estimating the causal forest
+#| label: Estimating the causal forest without honest trees
 
 # Fit the causal forest
 tau.forest.hf <- causal_forest(covariates,
@@ -528,11 +561,10 @@ plot(rate.cate_hf, main = "TOC: By decreasing estimated CATE")
 
 1.  **Is your average treatment effect the same?**
 
-There are no statistical differences between our first results and the
-ones obtained disabling the use of honest trees.
+The non‐honest forest yields virtually the same ATE as the honest forest. The point estimates are practically identical, their standard errors overlap almost exactly, and the 95% confidence intervals coincide. In other words, disabling honesty did not materially change our estimate of the average effect of unilateral divorce laws on the simulated divorce‐rate change.
 
 2.  **When would you expect this to not be the case?**
 
-> Chat: When using honest trees versus non-honest trees, we generally expect similar ATE estimates in large samples or when the forest is well-behaved. However, differences can arise in circumstances such as: 1. Small sample sizes: With fewer observations, the split between training and estimation subsamples (required for honest trees) can lead to less precise estimates. The “honesty” constraint might then produce a noticeably different estimate compared to the full sample use when honesty is disabled. 2. Complex or noisy data: When the data exhibits substantial noise or complex heterogeneity, the honest approach—by reducing overfitting—may yield different splits and average effects. In this case, the bias-variance trade-off is shifted such that the imposed honesty can lead to an ATE estimate that diverges from that of the non-honest version. 3. Overfitting concerns: If the non-honest trees are overfitting the data (i.e., tailoring splits too closely to the particular sample noise), the honest trees may provide a more stable, albeit sometimes different, estimate of the ATE by using separate data to decide splits and to estimate treatment effects.
+When using honest trees versus non-honest trees, we generally expect similar ATE estimates in large samples or when the forest is well-behaved. However, differences can arise in circumstances such as: 1. Small sample sizes: With fewer observations, the split between training and estimation subsamples (required for honest trees) can lead to less precise estimates. The “honesty” constraint might then produce a noticeably different estimate compared to the full sample use when honesty is disabled. 2. Complex or noisy data: When the data exhibits substantial noise or complex heterogeneity, the honest approach—by reducing overfitting—may yield different splits and average effects. In this case, the bias-variance trade-off is shifted such that the imposed honesty can lead to an ATE estimate that diverges from that of the non-honest version. 3. Overfitting concerns: If the non-honest trees are overfitting the data (i.e., tailoring splits too closely to the particular sample noise), the honest trees may provide a more stable, albeit sometimes different, estimate of the ATE by using separate data to decide splits and to estimate treatment effects.
 
 In summary, you would expect the average treatment effect to differ between honest and non-honest trees when the sample size is small or the data is sufficiently noisy/complex so that the benefits of reduced overfitting in honest trees lead to a different overall picture of the treatment effect.
