@@ -13,10 +13,6 @@ knitr:
 
 We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
 
-**Hint**
-
-Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Black- board as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, includ- ing several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.
-
 **Setup**
 
 ```{r}
@@ -27,8 +23,6 @@ library(grf)
 
 # For fancy plots
 library(ggthemes)
-  # Necessary packages for viridis
-  library(viridisLite)
 library(viridis)
 library(gridExtra)
 
@@ -63,7 +57,7 @@ df <- read.csv(data_url)
 # Create a binary indicator for rural counties: 1 if urbanization=="Rural", 0 otherwise
 df$urbanization_dummy <- as.numeric(df$urbanization == "Rural")
 
-# ncode each state label as a unique integer ID (factor levels are assigned alphabetically)
+# Encode each state label as a unique integer ID (factor levels are assigned alphabetically)
 df$state_id <- as.numeric(as.factor(df$st))
 
 # Define the treatment dummy
@@ -73,7 +67,7 @@ df <- df %>%
     )
 ```
 
-After defining correctly all of our covariates of interest, we definethe difference in the divorce rate between 1978 and 1968 and create the final dataset.
+After defining correctly all of our covariates of interest, we define the difference in the divorce rate between 1978 and 1968 and create the final dataset.
 
 ```{r}
 #| label: Turning the data into first differences
@@ -197,7 +191,7 @@ The estimate for the Conditional Averate Treatment Effect is equal to `r cate[1]
 
 2.  **Is it consistent with your answer in exercise 1.c?**
 
-Our results are consistent with the conclusions of exercise 1.c, as both the analysis show us that the difference between the treatment and control group are not statistically significant.
+Our results are consistent with the conclusions of exercise 1.c, as both approaches indicate that allowing unilateral divorce did not raise divorce rates in the first decade after adoption; the point estimates are small and imprecise
 
 ## Question 2(b)
 
@@ -210,13 +204,21 @@ blp <- best_linear_projection(tau.forest, covariates[ranked.vars[1:5]])
 print(blp)
 ```
 
-> **What is being performed**: The Best Linear Projection involves regressing the estimated conditional average treatment effects (CATEs) on the covariates. This approach checks whether the heterogeneity captured by the forest is systematically related to the observed covariates. If the coefficients (or the overall fit) are statistically significant, it provides evidence that the treatment effects vary in a predictable way with these covariates.
+**What is being performed**
 
-Interpretation Guidelines:
+* `best_linear_projection()` regresses the forest’s doubly‑robust scores on a user‑chosen set of covariates to obtain the *least‑squares linear approximation* of the conditional average treatment effect (CATE).  
+* Because the scores are orthogonal to the nuisance estimates, the usual \(t\)-tests on the coefficients are valid.
 
--   A statistically significant coefficient indicates that a change in the corresponding covariate is associated with a systematic change in the treatment effect.
+**Output and interpretation**
 
--   If the overall fit is good, it supports the notion that heterogeneity in treatment effects is predictable from the observed characteristics.
+| Covariate | Coefficient | s.e. | \(p\)‑value | Meaning |
+|-----------|-------------|------|-------------|---------|
+| Religious adherence | **–0.0156** | 0.0038 | <0.001 | Less‑religious counties experience larger increases in divorce after the law change. |
+| Domestic‑violence rate | **+0.049** | 0.022 | 0.028 | Heterogeneity is positive: high‑violence areas react more strongly. |
+| Female labour‑force participation | +0.012 | 0.006 | 0.070 | Weak evidence of a positive gradient. |
+| Education rate & Social‑services spending | n.s. | — | >0.5 | No linear association with the effect. |
+
+***Take‑away.*** At least two covariates (religiosity, domestic violence) are highly significant, so the treatment effect is **not homogeneous** across counties.
 
 ### 2(b)(ii) The Targeting Operator Characteristic
 
@@ -247,13 +249,6 @@ plot(rate.cate, main = "TOC: By decreasing estimated CATE")
 ```{r}
 print(rate.cate)
 ```
-```{r}
-ci_lower_rate.cate <- rate.cate$estimate - 1.96 * rate.cate$std.err
-ci_upper_rate.cate <- rate.cate$estimate + 1.96 * rate.cate$std.err
-cat("CATE:", rate.cate$estimate, 
-    "\nStd. Error:", rate.cate$std.err,
-    "\n95% CI: [", ci_lower_rate.cate, ", ", ci_upper_rate.cate, "]\n")
-```
 
 ```{r}
 #| label: Variable Importance after the split
@@ -263,6 +258,27 @@ ranked.vars_as <- order(varimp_as, decreasing = TRUE)
 
 colnames(covariates)[ranked.vars_as[1:5]]
 ```
+
+**What is being performed**
+
+* The TOC curve orders counties by the forest’s predicted CATE and plots, for each treated fraction \(q\in(0,1]\), the difference between the average effect in the top‑\(q\) share and the overall ATE.  
+* The **Rank‑Weighted Average Treatment Effect (RATE)** condenses that curve into one number; its standard error comes from sample splitting.
+
+**Output**
+
+```{r}
+ci_lower_rate.cate <- rate.cate$estimate - 1.96 * rate.cate$std.err
+ci_upper_rate.cate <- rate.cate$estimate + 1.96 * rate.cate$std.err
+cat("CATE:", rate.cate$estimate, 
+    "\nStd. Error:", rate.cate$std.err,
+    "\n95% CI: [", ci_lower_rate.cate, ", ", ci_upper_rate.cate, "]\n")
+```
+
+**Interpretation**
+
+* Because zero is **outside** the confidence interval, we reject the null of no heterogeneity.  
+* Practically: restricting treatment to the 50% of counties the forest ranks highest would raise the average effect by roughly **0.35p.p.**, a three‑fold gain over treating at random.
+
 
 ### 2(b)(iii) Distribution of CATEs
 
@@ -482,6 +498,21 @@ ggplot(scatter_data,
   theme_minimal()
 ```
 
+For each of the five drivers with the highest variable‑importance scores we drew
+
+1. **A TOC curve** that ranks solely by that variable, and  
+2. **A scatter‑plot of CATE vs. the driver** (LOESS line by treatment status).
+
+| Driver | Visual pattern | TOC for driver‑only rule | Interpretation |
+|--------|----------------|--------------------------|---------------|
+| Religious adherence | Strong downward slope. | Curve falls below zero for high \(q\). | **Main negative moderator:** low religiosity → large effect. |
+| Domestic‑violence rate | Clear upward slope. | Positive TOC for low \(q\). | **Positive moderator:** high violence → large effect. |
+| Female labour‑force participation | Mild upward trend. | Slightly positive TOC. | Some heterogeneity, but weaker. |
+| Education rate | Flat cloud. | TOC ~ 0. | No role once other factors enter. |
+| Child‑care availability | No discernible slope. | TOC ~ 0. | Likewise negligible. |
+
+***Graphical evidence*** therefore reinforces the BLP story: heterogeneity is driven primarily by religiosity and pre‑existing domestic violence, with a secondary contribution from female labour participation.
+
 ## Question 2(c)
 
 > Discuss your results. Did you find any evidence of heterogeneous treatment effects? Justify your answer based on your output in the previous items.
@@ -494,13 +525,29 @@ Points 2(b)(i) and 2(b)(iii) both appear to confirm that heterogeneous treatment
 
 ### i. Honest Trees Explanations
 
-An “honest” tree enforces a strict sample‐splitting procedure within each tree: the data assigned to a given tree are randomly partitioned into two disjoint halves. One half (the splitting sample) is used solely to choose the tree structure (i.e. where to split on covariates), and the other half (the estimation sample) is used exclusively to estimate treatment effects in each leaf. By decoupling split‐selection from effect‐estimation, honesty prevents the tree from overfitting the noise in the data:
+When we grow a causal tree we do two distinct things:
 
-*   **Unbiased effect estimates**: Because the same observations are not used both to pick splits and to estimate effects, the leaf‐level treatment effect estimates are conditionally unbiased.
-*   **Valid inference**: Under regularity conditions (Wager & Athey 2017, §2.4), honest forests admit valid confidence intervals for both the ATE and CATEs.
-*   **Reduced overfitting**: Honesty forces the forest to generalize rather than tailor splits to idiosyncratic sample noise, which is especially important when assessing heterogeneous effects.
+1. **Choose the split points**—i.e. we decide how to partition the covariate space;  
+2. **Estimate the treatment effect inside each terminal leaf**—usually the difference in sample means.
 
-In grf, honesty is the default (honesty = TRUE). It’s a key ingredient for trustworthy inference: without it, forests can exaggerate heterogeneity (by capitalizing on noise) and understate uncertainty.
+A tree is called **_honest_** when the same observation is **never allowed to influence both steps inside a single tree**.  
+Concretely, each bootstrap subsample is divided at random into two equally sized halves:
+
+* the **“split” sample** is used _only_ to evaluate candidate splits with a CART‑style criterion;  
+* the **“estimation” sample** is dropped down the already‑built tree and supplies the outcomes \(Y_i\) (and treatments \(W_i\)) that define the within‑leaf treatment effect. citeturn1view0  
+
+Because every tree repeats this procedure independently, each observation will sometimes fall into the split half and sometimes into the estimation half across the forest, but never plays both roles at once.
+
+Honesty plays a critical role in estimating CATEs, namely because of the following reasons:
+
+* **Bias control.**  
+  If the same data are used to pick splits and to compute leaf means, the algorithm can “chase noise”: leaves will look more extreme than they truly are because the split rule selected them _for_ that extremeness. Separating the two roles restores (conditional) unbiasedness.
+
+* **Valid standard errors and confidence bands.**  
+  Honesty lets Wager & Athey prove that the forest estimator is asymptotically normal and that the infinitesimal jackknife (or out‑of‑bag) variance estimator is consistent. Without honesty, nominal 95% CIs can undercover badly.
+
+* **Better generalisation of heterogeneous effects.**  
+  In practice, honest trees moderate the tendency to exaggerate differences across sub‑groups, making the forest’s ranking of CATEs more reliable out of sample.
 
 ### ii. Comparison of Results
 
@@ -565,6 +612,20 @@ The non‐honest forest yields virtually the same ATE as the honest forest. The 
 
 2.  **When would you expect this to not be the case?**
 
-When using honest trees versus non-honest trees, we generally expect similar ATE estimates in large samples or when the forest is well-behaved. However, differences can arise in circumstances such as: 1. Small sample sizes: With fewer observations, the split between training and estimation subsamples (required for honest trees) can lead to less precise estimates. The “honesty” constraint might then produce a noticeably different estimate compared to the full sample use when honesty is disabled. 2. Complex or noisy data: When the data exhibits substantial noise or complex heterogeneity, the honest approach—by reducing overfitting—may yield different splits and average effects. In this case, the bias-variance trade-off is shifted such that the imposed honesty can lead to an ATE estimate that diverges from that of the non-honest version. 3. Overfitting concerns: If the non-honest trees are overfitting the data (i.e., tailoring splits too closely to the particular sample noise), the honest trees may provide a more stable, albeit sometimes different, estimate of the ATE by using separate data to decide splits and to estimate treatment effects.
+1. **Small or noisy data sets.**  With few observations per leaf, re‑using outcomes for split selection inflates bias; honesty can have a visible impact even on the ATE.  
+2. **Aggressive tree depth / tiny leaves.**  The deeper the tree, the more each individual outcome drives both the split and the estimate, heightening adaptive bias.  
+3. **Strong, sparse heterogeneity.**  If real treatment effects vary sharply in narrow regions of the covariate space, a non‑honest tree may identify many false “pockets” of large effects, pushing the forest’s overall average up or down.  
+4. **Propensity imbalance in observational studies.**  When treatment assignment is highly uneven, a split rule that inspects \(Y\) can pick leaves where treated and control units differ systematically in covariates, magnifying selection bias; honesty shields against that.  
+5. **When you rely on the _distribution_ of CATEs.**  Tasks such as targeting, subgroup policy evaluation, or hypothesis testing about heterogeneous drivers depend on getting the *shape* of the CATE surface right.  There honesty often makes a tangible difference even if the mean effect stays similar.
 
-In summary, you would expect the average treatment effect to differ between honest and non-honest trees when the sample size is small or the data is sufficiently noisy/complex so that the benefits of reduced overfitting in honest trees lead to a different overall picture of the treatment effect.
+Our re‑estimated the forest with `honesty = FALSE`:
+
+| Specification | ATE | Std.err. |
+|---------------|-----|-----------|
+| **Honest (default)** | 0.0436 | 0.0650 |
+| **Non‑honest** | 0.0468 | 0.0648 |
+
+The average treatment effect (ATE) shifted by only **0.003 percentage points**, an amount far smaller than its standard error, and the precision hardly changed.  
+This similarity is not surprising, because the ordinary ATE is an **unconditional** object—essentially a grand mean of all unit‑level effects.  Even a biased leaf estimator will average out much of its over‑ and under‑shooting when we integrate over the covariate distribution.
+
+
