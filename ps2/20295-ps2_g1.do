@@ -390,20 +390,156 @@ So that this dummy will equal 1 for all observations 10 or more years before the
 
 	/* (i) Run the regresson below, using the unilateral divorce dummies Dτ st you created and sector (πs) and year (γt) fixed effects. */
 	
+encode st, generate(state)
+keep if year >= 1956 & year <= 1988
+gen IMP_UNILATERAL = 0
+replace IMP_UNILATERAL = 1 if lfdivlaw <= year
+gen no_law = 0 
+replace no_law=1 if lfdivlaw==2000
+xtset state year
+
+gen tau = year - lfdivlaw
+tab tau
+
+gen lead10 = 0
+replace lead10 = 1 if tau <=-10
+
+*Lead and lag dummies
+forvalues k = 9(-1)2 {
+gen lead`k' = tau == -`k'
+}
+
+forvalues k = 0/14 {
+gen lag`k' = tau == `k'
+}
+gen lag15 = 0
+replace lag15 = 1 if tau >= 15
+
+*Generate the linear and the squared time trends
+forval i=1/51{
+	bysort state (year): gen time_trend_`i'=_n if state==`i' 
+	replace time_trend_`i'=0 if time_trend_`i'==.
+}
+
+forval i = 1/51 {
+    gen timetrend_square_`i' = time_trend_`i'^2
+}
+
+reghdfe div_rate lead* lag* [aweight = stpop], absorb(i.year i.state) cluster(state)
+estimates store reg_simple
+outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg1.xlsx", title("regression ex i point i") label excel replace
+
+	
 	/* (ii) Perform the same regression as the one described above, now including state-specific linear time trends. */
+	
+reghdfe div_rate lead* lag* time_trend_* [aweight = stpop], absorb(i.year i.state) cluster(state)
+estimates store reg_timetrend
+outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg2.xlsx", title("regression ex i point ii") label excel replace
+
 	
 	/* (iii) In addition to state-specific linear time trends, include also quadratic state-specific time trends. */
 	
+reghdfe div_rate lead* lag* time_trend_* timetrend_square_* [aweight = stpop], absorb(i.year i.state) cluster(state)
+estimates store reg_sqtime
+outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg3.xlsx", title("regression ex i point iii") label excel replace
+
+	
 	/* (iv) Interpret the results of all 3 regressions. What can we see in the behaviour of divorce rates through this analysis that was not possible in the single coefficient analysis? */
 	
+*The event study regressions offers a clearer perspective on the changing effects of unilateral divorce laws compared to the findings and analysis of question (e). 
+*In particular, it is clear that right after the reform is implemented, divorce rates experience a positive and statistically significant increase. The first two post-reform years show statistically significant increases, suggesting that the laws had an immediate effect. The interpretation of this phenomenon is clear: when divorce became easier to obtain, all those couples that were under strain, were finally able to divorce. The effects become not statistically different from zero after the third year. This shows a slight short run increase of divorce rates, that is very short lived. 
+*Before the legal reform, coefficients were small and statistically insignificant. This is important to note because it points towards the fact that, without the reform, divorce rates in treated and untreated states were similar. In the longer run, it appears like divorce rate decreases after the ninth year after the introduction of the law. This result is not robust to the introduction of the linear and quadratic terms. 
+*When introducing state-specific linear trends, the effect appears to remain for longer, with it staying positive until after 5 years from the introduction of the unilateral divorce law. This is in line with the fact that, if states were on different trajectories before the introduction of the law, not including the time trends might bring to wrongly estimating the impact. 
+*When including also the quadratic time trends, we see a short lived increase in the divorce rates , that quickly fades at the third year. These results are similar to the ones found in the simple regression without the linear trends.  
+*However it is important to note that most coefficients remain statistically insignificant. In fact, only few coefficients of early post-treatment years show robust effects, and these become less precise as we control for linear and quadratic trends. This points towards the fact that there might be a real short-run response, but long-term effects are negligible or too noisy to detect confidently.
+
 
 /* (j) Use the Stata command coefplot (or any other command of your choosing) to create a graph reporting the coefficients and the 95% confidence intervals of your 3 event-study regressions. */
 
+coefplot ///
+    (reg_simple, label("Simple Regression") msymbol(O) mcolor(blue)) ///
+    (reg_timetrend, label("Linear Trend") msymbol(D) mcolor(red)) ///
+    (reg_sqtime, label("Quadratic Trend") msymbol(T) mcolor(green)) ///
+    , drop(_cons) ///
+    keep(lead* lag*) ///
+    xline(11, lpattern(dash) lcolor(gs10)) ///
+    ciopts(recast(rcap) lwidth(medthin)) ///
+    xlabel(1 "L10" 2 "L9" 3 "L8" 4 "L7" 5 "L6" 6 "L5" 7 "L4" 8 "L3" 9 "L2" 10 "L1" ///
+           11 "0" 12 "1" 13 "2" 14 "3" 15 "4" 16 "5" 17 "6" 18 "7" 19 "8" 20 "9" 21 "10" ///
+           22 "11" 23 "12" 24 "13" 25 "14" 26 "15", angle(45)) ///
+    ylabel(, angle(horizontal)) ///
+    xtitle("Event Time") ///
+    ytitle("Coefficient") ///
+    title("Event-Study Estimates with 95% Confidence Intervals") ///
+    vertical
+
+
 /* (k) Wolfers (2006) presents a summary of the debate regarding the influence of the unilateral divorce law in the divorce rates. How do the conclusions of the paper differ from Friedberg (1998)? How does the author rationalize the difference in his findings? */
+
+*Wolfers (2006) differs from Friedberg (1998) in both conclusions and interpretation. While Friedberg finds that unilateral divorce laws account for about one-sixth of the rise in divorce rates since the late 1960s, Wolfers argues that her results may confound preexisting trends with the effects of the policy. Wolfers finds that although divorce rates rise sharply after the adoption of unilateral divorce laws, this increase is not persistent. In fact, about 15 years later, early adopters tend to have lower divorce rates. He rationalizes the difference by highlighting that Friedberg's analysis may not adequately separate dynamic policy effects from underlying state-specific trends.
 
 /* (l) Several different procedures to estimate a staggered Difference-in-Differences analysis have been proposed recently. Let us now perform one of these procedures. You will use command eventstudyinteract in Stata, based on Sun and Abraham (2021) 
 
 Now perform an analogous analysis to the event-study regression in exercise (i) based on the Sun and Abraham (2021) estimation. Once again, report your results in an event-study graph. Are your results consistent with the ones from the original paper? Briefly explain what kind of correction your proposed algorithm is performing.*/
+
+drop time_trend_*
+drop timetrend_square_*
+
+*simple
+eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) control_cohort(no_law) absorb(i.year i.state) vce( cluster state)
+estimates store reg_interact_simple
+outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg4.xlsx", title("regression ex l 1") label excel replace
+matrix C = e(b_iw)
+mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
+matrix C = C \ A'
+matrix list C
+coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
+				title("Simple Event Study") xlabel(, alternate)
+
+*linear time trends
+
+forval i=1/51{
+	bysort state (year): gen time_trend_`i'=_n if state==`i' 
+	replace time_trend_`i'=0 if time_trend_`i'==.
+}
+local lineartime time_trend_*
+
+eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) covariates(`lineartime') control_cohort(no_law) absorb(i.year i.state ) vce(cluster state)
+estimates store reg_interact_linear
+outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg5.xlsx", title("regression ex l 2") label excel replace
+*graph
+matrix C = e(b_iw)
+mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
+matrix C = C \ A'
+matrix list C
+coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
+				title("Event Study with Linear Time Trends") xlabel(, alternate)
+				
+*squared time trends
+
+
+forval i=1/51{
+	bysort state (year): gen timetrend_sq_`i'=_n^2 if state==`i'
+	replace timetrend_sq_`i'=0 if timetrend_sq_`i'==.
+}
+local squaretrend timetrend_sq_*
+
+eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) control_cohort(no_law) covariates(`lineartime' `squaretrend') absorb(i.year i.state) vce(cluster state)
+estimates store reg_interact_squared
+outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg6.xlsx", title("regression ex l 3") label excel replace
+*graph
+matrix C = e(b_iw)
+mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
+matrix C = C \ A'
+matrix list C
+coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
+				title("Event Study with Square Time Trends") xlabel(, alternate)
+				
+
+*In Sun and Abraham (2021) the following is discussed: with heterogenous treatment effects, standard event-study coefficients are not able to capture the dynamic treatment effects. So, with the eventstudyinteract command, the estimators are "interaction-weighted": at first, the CATT (Cohort-specific Average Treatment effect on the Treated) is estimated , then the CATT estimates are averaged across cohorts at a given relative period. These estimators are robust to heterogeneous treatment effects. 
+
+*Comparison with the results from the original paper:
+*In general, the results found in this exercise are in line with what was found by the original paper, so in both cases what has been found is a short run increase in the divorce rates in the first years after the introduction of the unilateral divorce laws. After a couple of years, the effect becomes insignifcantly different from zero. When adding squared time trends, there is an unusual output. In particular, ten years before the introduction of the law, there is a significantly positive effect, that then is zero for most of the other time periods analyzed, and it becomes significantly negative after the eleventh period after the introduction of the law. 
 
 
 	
