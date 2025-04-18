@@ -107,8 +107,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Exercise 2</h1>
 <hr>
 <p>We will now use causal forests to assess if there’s any evidence of heterogeneous treatment effects of unilateral divorce laws on divorce rates. The original data set used in Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Blackboard as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, including several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.</p>
-<p><strong>Hint</strong></p>
-<p>Wolfers (2006) did not provide a rich set of variables for this analysis, so we’ll use an expanded version based on simulated observations (the data set is provided on Black- board as expanded data.csv. These will depict a data set where you would have access to county level observations in each of the states of the original sample, includ- ing several characteristics of the population in each county. A table with all variables in the updated data set and their description is provided below.</p>
 <p><strong>Setup</strong></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For this assignment specifically</span></span>
@@ -116,29 +114,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># For fancy plots</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggthemes)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Necessary packages for viridis</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">library</span>(viridisLite)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Packages related to tidyverse, for data manipulation</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="co"># includes (lubridate), (dplyr), (ggplot2), (tidyr), (tidyselect)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(viridis)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: viridisLite</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Packages related to tidyverse, for data manipulation</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="co"># includes (lubridate), (dplyr), (ggplot2), (tidyr), (tidyselect)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 ✔ dplyr     1.1.4     ✔ readr     2.1.5
 ✔ forcats   1.0.0     ✔ stringr   1.5.1
 ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
 ✔ lubridate 1.9.4     ✔ tidyr     1.3.1
-✔ purrr     1.0.2     
-── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✔ purrr     1.0.2     </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ✖ dplyr::combine() masks gridExtra::combine()
 ✖ dplyr::filter()  masks stats::filter()
 ✖ dplyr::lag()     masks stats::lag()
 ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tinytex)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fastDummies)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stargazer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tinytex)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fastDummies)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stargazer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 Please cite as: 
@@ -146,20 +147,20 @@ Please cite as:
  Hlavac, Marek (2022). stargazer: Well-Formatted Regression and Summary Statistics Tables.
  R package version 5.2.3. https://CRAN.R-project.org/package=stargazer </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># To handle time changes</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(timechange)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># To solve conflicts</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(conflicted)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">conflicts_prefer</span>(dplyr<span class="sc">::</span>filter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># To handle time changes</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(timechange)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># To solve conflicts</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(conflicted)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">conflicts_prefer</span>(dplyr<span class="sc">::</span>filter)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>[conflicted] Will prefer dplyr::filter over any other package.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">conflicts_prefer</span>(dplyr<span class="sc">::</span>lag)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">conflicts_prefer</span>(dplyr<span class="sc">::</span>lag)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>[conflicted] Will prefer dplyr::lag over any other package.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># IMPORTANT: run twice to solve the errors</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># IMPORTANT: run twice to solve the errors</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="question-2a" class="level2">
 <h2 class="anchored" data-anchor-id="question-2a">Question 2(a)</h2>
@@ -167,43 +168,43 @@ Please cite as:
 <p>Structure your data set accordingly to assess whether the introduction of the unilateral divorce law had an effect on divorce rates for our sample at the county level. Estimate a causal forest using the causal forest command from package grf.</p>
 </blockquote>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the expanded county-level panel data</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>data_url <span class="ot">&lt;-</span> <span class="st">"https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/expanded_data.csv"</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(data_url)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary indicator for rural counties: 1 if urbanization=="Rural", 0 otherwise</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>urbanization_dummy <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(df<span class="sc">$</span>urbanization <span class="sc">==</span> <span class="st">"Rural"</span>)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ncode each state label as a unique integer ID (factor levels are assigned alphabetically)</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>state_id <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(df<span class="sc">$</span>st))</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the treatment dummy</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">treated =</span> <span class="fu">ifelse</span>(lfdivlaw <span class="sc">&gt;=</span> <span class="dv">1968</span> <span class="sc">&amp;</span> lfdivlaw <span class="sc">&lt;=</span> <span class="dv">1973</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the expanded county-level panel data</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>data_url <span class="ot">&lt;-</span> <span class="st">"https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/expanded_data.csv"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(data_url)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a binary indicator for rural counties: 1 if urbanization=="Rural", 0 otherwise</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>urbanization_dummy <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(df<span class="sc">$</span>urbanization <span class="sc">==</span> <span class="st">"Rural"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Encode each state label as a unique integer ID (factor levels are assigned alphabetically)</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>state_id <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">as.factor</span>(df<span class="sc">$</span>st))</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the treatment dummy</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">treated =</span> <span class="fu">ifelse</span>(lfdivlaw <span class="sc">&gt;=</span> <span class="dv">1969</span> <span class="sc">&amp;</span> lfdivlaw <span class="sc">&lt;=</span> <span class="dv">1973</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>After defining correctly all of our covariates of interest, we definethe difference in the divorce rate between 1978 and 1968 and create the final dataset.</p>
+<p>After defining correctly all of our covariates of interest, we define the difference in the divorce rate between 1978 and 1968 and create the final dataset.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(state_id, county_id, year) <span class="sc">%&gt;%</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(state_id) <span class="sc">%&gt;%</span> </span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">div_rate_diff =</span> div_rate_sim <span class="sc">-</span> <span class="fu">lag</span>(div_rate_sim)) <span class="sc">%&gt;%</span>        <span class="co"># Compute year‑to‑year change in simulated divorce rate:</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()                                                           <span class="co"># Remove grouping so downstream code isn’t accidentally state‑wise</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>baseline_df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">1968</span>) </span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>diff1978_df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">1978</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(state_id, county_id, div_rate_diff)</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge the baseline covariates with the first difference variable.</span></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>final_df <span class="ot">&lt;-</span> <span class="fu">left_join</span>(baseline_df, diff1978_df, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"state_id"</span>, <span class="st">"county_id"</span>))</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="co"># I don't really understand how we created the .x and .y divorce rate variables -&gt; STICK TO THE Y VERSION, IT IS CORRECT</span></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(final_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(state_id, county_id, year) <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(state_id) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">div_rate_diff =</span> div_rate_sim <span class="sc">-</span> <span class="fu">lag</span>(div_rate_sim)) <span class="sc">%&gt;%</span>        <span class="co"># Compute year‑to‑year change in simulated divorce rate:</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()                                                           <span class="co"># Remove grouping so downstream code isn’t accidentally state‑wise</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>baseline_df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">1968</span>) </span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>diff1978_df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">1978</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(state_id, county_id, div_rate_diff)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge the baseline covariates with the first difference variable.</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>final_df <span class="ot">&lt;-</span> <span class="fu">left_join</span>(baseline_df, diff1978_df, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"state_id"</span>, <span class="st">"county_id"</span>))</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="co"># I don't really understand how we created the .x and .y divorce rate variables -&gt; STICK TO THE Y VERSION, IT IS CORRECT</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(final_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 23
   div_rate_sim  year lfdivlaw education_rate childcare_availability
@@ -230,51 +231,51 @@ Please cite as:
 <li><p><strong>X</strong>: Covariates</p></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>outcome <span class="ot">&lt;-</span> final_df<span class="sc">$</span>div_rate_diff.y</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>treat <span class="ot">&lt;-</span> final_df<span class="sc">$</span>treated</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>covariates <span class="ot">&lt;-</span> <span class="fu">subset</span>(final_df, </span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">select =</span> <span class="fu">c</span>(<span class="st">"education_rate"</span>,</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"childcare_availability"</span>,</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"unemployment_rate"</span>,</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"median_income"</span>,</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"urbanization_dummy"</span>,</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"marriage_rate"</span>,</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"religious_adherence"</span>,</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"alcohol_consumption"</span>,</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"domestic_violence_rate"</span>,</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"women_labor_force_participation"</span>,</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"crime_rate"</span>,</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"social_services_spending"</span>)</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>                     )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>outcome <span class="ot">&lt;-</span> final_df<span class="sc">$</span>div_rate_diff.y</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>treat <span class="ot">&lt;-</span> final_df<span class="sc">$</span>treated</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>covariates <span class="ot">&lt;-</span> <span class="fu">subset</span>(final_df, </span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">select =</span> <span class="fu">c</span>(<span class="st">"education_rate"</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"childcare_availability"</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"unemployment_rate"</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"median_income"</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"urbanization_dummy"</span>,</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"marriage_rate"</span>,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"religious_adherence"</span>,</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"alcohol_consumption"</span>,</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"domestic_violence_rate"</span>,</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"women_labor_force_participation"</span>,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"crime_rate"</span>,</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>                            <span class="st">"social_services_spending"</span>)</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>                     )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can now estimate the causal forest</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>tau.forest <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(covariates,</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                    outcome, </span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                    treat</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                    )</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>cate <span class="ot">&lt;-</span> <span class="fu">average_treatment_effect</span>(tau.forest, </span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>                                <span class="at">target.sample =</span> <span class="st">"all"</span>)</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>ci_lower <span class="ot">&lt;-</span> cate[<span class="st">"estimate"</span>] <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> cate[<span class="st">"std.err"</span>]</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>ci_upper <span class="ot">&lt;-</span> cate[<span class="st">"estimate"</span>] <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> cate[<span class="st">"std.err"</span>]</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ATE:"</span>, cate[<span class="st">"estimate"</span>], </span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">Std. Error:"</span>, cate[<span class="st">"std.err"</span>],</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">95% CI: ["</span>, ci_lower, <span class="st">", "</span>, ci_upper, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>tau.forest <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(covariates,</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>                    outcome, </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>                    treat</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>cate <span class="ot">&lt;-</span> <span class="fu">average_treatment_effect</span>(tau.forest, </span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                                <span class="at">target.sample =</span> <span class="st">"all"</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>ci_lower <span class="ot">&lt;-</span> cate[<span class="st">"estimate"</span>] <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> cate[<span class="st">"std.err"</span>]</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>ci_upper <span class="ot">&lt;-</span> cate[<span class="st">"estimate"</span>] <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> cate[<span class="st">"std.err"</span>]</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ATE:"</span>, cate[<span class="st">"estimate"</span>], </span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">Std. Error:"</span>, cate[<span class="st">"std.err"</span>],</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">95% CI: ["</span>, ci_lower, <span class="st">", "</span>, ci_upper, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>ATE: 0.03921584 
-Std. Error: 0.06466417 
-95% CI: [ -0.08752593 ,  0.1659576 ]</code></pre>
+<pre><code>ATE: 0.04406399 
+Std. Error: 0.06498521 
+95% CI: [ -0.08330703 ,  0.171435 ]</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>varimp <span class="ot">&lt;-</span> <span class="fu">variable_importance</span>(tau.forest)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>ranked.vars <span class="ot">&lt;-</span> <span class="fu">order</span>(varimp, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(covariates)[ranked.vars[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>varimp <span class="ot">&lt;-</span> <span class="fu">variable_importance</span>(tau.forest)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>ranked.vars <span class="ot">&lt;-</span> <span class="fu">order</span>(varimp, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(covariates)[ranked.vars[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "religious_adherence"             "domestic_violence_rate"         
 [3] "women_labor_force_participation" "education_rate"                 
@@ -285,29 +286,29 @@ Std. Error: 0.06466417
 <p>If the output of the causal_forest method doesn’t pass a sanity check based on your knowledge of the data, it may be worth checking whether the overlap assumption is violated. In order for conditional average treatment effects to be properly identified, a dataset’s propensity scores must be bounded away from 0 and 1. A simple way to validate this assumption is to calculate the propensity scores by regressing the treatment assignments W against X, and examining the out-of-bag predictions. Concretely, you can perform the following steps:</p>
 </blockquote>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>propensity.forest <span class="ot">=</span> <span class="fu">regression_forest</span>(covariates, treat) </span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>W.hat <span class="ot">=</span> <span class="fu">predict</span>(propensity.forest)<span class="sc">$</span>predictions</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>hist_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">propensity =</span> W.hat)</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(hist_df, <span class="fu">aes</span>(<span class="at">x =</span> propensity)) <span class="sc">+</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">binwidth   =</span> <span class="fl">0.01</span>,           <span class="co"># adjust bin width to taste</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill       =</span> <span class="st">"steelblue"</span>,    <span class="co"># nice solid fill color</span></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">color      =</span> <span class="st">"white"</span>,        <span class="co"># border color between bins</span></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">alpha      =</span> <span class="fl">0.8</span>             <span class="co"># slight transparency</span></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distribution of Propensity Scores"</span>,</span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">x     =</span> <span class="st">"Propensity Score"</span>,</span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y     =</span> <span class="st">"Count"</span></span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span>              <span class="co"># clean, uncluttered look</span></span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title   =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">16</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title   =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>),</span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text    =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>)</span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>propensity.forest <span class="ot">=</span> <span class="fu">regression_forest</span>(covariates, treat) </span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>W.hat <span class="ot">=</span> <span class="fu">predict</span>(propensity.forest)<span class="sc">$</span>predictions</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>hist_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">propensity =</span> W.hat)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(hist_df, <span class="fu">aes</span>(<span class="at">x =</span> propensity)) <span class="sc">+</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">binwidth   =</span> <span class="fl">0.01</span>,           <span class="co"># adjust bin width to taste</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill       =</span> <span class="st">"steelblue"</span>,    <span class="co"># nice solid fill color</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">color      =</span> <span class="st">"white"</span>,        <span class="co"># border color between bins</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">alpha      =</span> <span class="fl">0.8</span>             <span class="co"># slight transparency</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Distribution of Propensity Scores"</span>,</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">x     =</span> <span class="st">"Propensity Score"</span>,</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y     =</span> <span class="st">"Count"</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span>              <span class="co"># clean, uncluttered look</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title   =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">16</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title   =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">14</span>),</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text    =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>)</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -326,11 +327,11 @@ Std. Error: 0.06466417
 <ol type="1">
 <li><strong>What is the estimated averate treatment effect in this instance?</strong></li>
 </ol>
-<p>The estimate for the Conditional Averate Treatment Effect is equal to 0.0392158, with a variance of 0.0646642`.</p>
+<p>The estimate for the Conditional Averate Treatment Effect is equal to 0.044064, with a variance of 0.0649852`.</p>
 <ol start="2" type="1">
 <li><strong>Is it consistent with your answer in exercise 1.c?</strong></li>
 </ol>
-<p>Our results are consistent with the conclusions of exercise 1.c, as both the analysis show us that the difference between the treatment and control group are not statistically significant.</p>
+<p>Our results are consistent with the conclusions of exercise 1.c, as both approaches indicate that allowing unilateral divorce did not raise divorce rates in the first decade after adoption; the point estimates are small and imprecise</p>
 </section>
 <section id="question-2b" class="level2">
 <h2 class="anchored" data-anchor-id="question-2b">Question 2(b)</h2>
@@ -338,59 +339,106 @@ Std. Error: 0.06466417
 <section id="bi-the-best-linear-projection" class="level3">
 <h3 class="anchored" data-anchor-id="bi-the-best-linear-projection">2(b)(i) The Best Linear Projection</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>blp <span class="ot">&lt;-</span> <span class="fu">best_linear_projection</span>(tau.forest, covariates[ranked.vars[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]])</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(blp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>blp <span class="ot">&lt;-</span> <span class="fu">best_linear_projection</span>(tau.forest, covariates[ranked.vars[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]])</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(blp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Best linear projection of the conditional average treatment effect.
 Confidence intervals are cluster- and heteroskedasticity-robust (HC3):
 
                                    Estimate  Std. Error t value  Pr(&gt;|t|)    
-(Intercept)                     -0.43525434  0.56367386 -0.7722   0.44010    
-religious_adherence             -0.01611049  0.00374547 -4.3013 1.778e-05 ***
-domestic_violence_rate           0.04760528  0.02222134  2.1423   0.03229 *  
-women_labor_force_participation  0.01273886  0.00641606  1.9855   0.04723 *  
-education_rate                   0.00271004  0.00453074  0.5981   0.54981    
-crime_rate                       0.00019323  0.00024867  0.7770   0.43723    
+(Intercept)                     -0.42552393  0.56675312 -0.7508   0.45285    
+religious_adherence             -0.01580289  0.00376403 -4.1984 2.804e-05 ***
+domestic_violence_rate           0.04836849  0.02232041  2.1670   0.03035 *  
+women_labor_force_participation  0.01224897  0.00646723  1.8940   0.05837 .  
+education_rate                   0.00277451  0.00455327  0.6093   0.54236    
+crime_rate                       0.00019138  0.00024985  0.7660   0.44376    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
-<blockquote class="blockquote">
-<p><strong>What is being performed</strong>: The Best Linear Projection involves regressing the estimated conditional average treatment effects (CATEs) on the covariates. This approach checks whether the heterogeneity captured by the forest is systematically related to the observed covariates. If the coefficients (or the overall fit) are statistically significant, it provides evidence that the treatment effects vary in a predictable way with these covariates.</p>
-</blockquote>
-<p>Interpretation Guidelines:</p>
+<p><strong>What is being performed</strong></p>
 <ul>
-<li><p>The output will typically show a coefficient (or a set of coefficients) along with standard errors and p-values.</p></li>
-<li><p>A statistically significant coefficient indicates that a change in the corresponding covariate is associated with a systematic change in the treatment effect.</p></li>
-<li><p>If the overall fit is good, it supports the notion that heterogeneity in treatment effects is predictable from the observed characteristics.</p></li>
+<li><code>best_linear_projection()</code> regresses the forest’s doubly‑robust scores on a user‑chosen set of covariates to obtain the <em>least‑squares linear approximation</em> of the conditional average treatment effect (CATE).<br>
+</li>
+<li>Because the scores are orthogonal to the nuisance estimates, the usual (t)-tests on the coefficients are valid.</li>
 </ul>
+<p><strong>Output and interpretation</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 25%">
+<col style="width: 11%">
+<col style="width: 25%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Covariate</th>
+<th>Coefficient</th>
+<th>s.e.</th>
+<th>(p)‑value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Religious adherence</td>
+<td><strong>–0.0156</strong></td>
+<td>0.0038</td>
+<td>&lt;0.001</td>
+<td>Less‑religious counties experience larger increases in divorce after the law change.</td>
+</tr>
+<tr class="even">
+<td>Domestic‑violence rate</td>
+<td><strong>+0.049</strong></td>
+<td>0.022</td>
+<td>0.028</td>
+<td>Heterogeneity is positive: high‑violence areas react more strongly.</td>
+</tr>
+<tr class="odd">
+<td>Female labour‑force participation</td>
+<td>+0.012</td>
+<td>0.006</td>
+<td>0.070</td>
+<td>Weak evidence of a positive gradient.</td>
+</tr>
+<tr class="even">
+<td>Education rate &amp; Social‑services spending</td>
+<td>n.s.</td>
+<td>—</td>
+<td>&gt;0.5</td>
+<td>No linear association with the effect.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><em>Take‑away.</em></strong> At least two covariates (religiosity, domestic violence) are highly significant, so the treatment effect is <strong>not homogeneous</strong> across counties.</p>
 </section>
 <section id="bii-the-targeting-operator-characteristic" class="level3">
 <h3 class="anchored" data-anchor-id="bii-the-targeting-operator-characteristic">2(b)(ii) The Targeting Operator Characteristic</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>samples.by.state <span class="ot">&lt;-</span> <span class="fu">split</span>(<span class="fu">seq_along</span>(final_df<span class="sc">$</span>state_id), final_df<span class="sc">$</span>state_id)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>num.states <span class="ot">&lt;-</span> <span class="fu">length</span>(samples.by.state)</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>train <span class="ot">&lt;-</span> <span class="fu">unlist</span>(samples.by.state[<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>num.states, num.states <span class="sc">/</span> <span class="dv">2</span>)])</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Training forest (In-bag)</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>train.forest <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  covariates[train, ],</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  outcome[train],</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  treat[train],</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">clusters =</span> final_df<span class="sc">$</span>state_id[train])</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>tau.hat.eval <span class="ot">&lt;-</span> <span class="fu">predict</span>(train.forest,covariates[<span class="sc">-</span>train, ])<span class="sc">$</span>predictions</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluation forest (Out-of-bag)</span></span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>eval.forest <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(</span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  covariates[<span class="sc">-</span>train, ],</span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>  outcome[<span class="sc">-</span>train],</span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>  treat[<span class="sc">-</span>train],</span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">clusters =</span> final_df<span class="sc">$</span>state_id[<span class="sc">-</span>train])</span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>rate.cate <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest, tau.hat.eval)</span>
-<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.cate, <span class="at">main =</span> <span class="st">"TOC: By decreasing estimated CATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>samples.by.state <span class="ot">&lt;-</span> <span class="fu">split</span>(<span class="fu">seq_along</span>(final_df<span class="sc">$</span>state_id), final_df<span class="sc">$</span>state_id)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>num.states <span class="ot">&lt;-</span> <span class="fu">length</span>(samples.by.state)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>train <span class="ot">&lt;-</span> <span class="fu">unlist</span>(samples.by.state[<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>num.states, num.states <span class="sc">/</span> <span class="dv">2</span>)])</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Training forest (In-bag)</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>train.forest <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  covariates[train, ],</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  outcome[train],</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  treat[train],</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">clusters =</span> final_df<span class="sc">$</span>state_id[train])</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>tau.hat.eval <span class="ot">&lt;-</span> <span class="fu">predict</span>(train.forest,covariates[<span class="sc">-</span>train, ])<span class="sc">$</span>predictions</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluation forest (Out-of-bag)</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>eval.forest <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  covariates[<span class="sc">-</span>train, ],</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>  outcome[<span class="sc">-</span>train],</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>  treat[<span class="sc">-</span>train],</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">clusters =</span> final_df<span class="sc">$</span>state_id[<span class="sc">-</span>train])</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>rate.cate <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest, tau.hat.eval)</span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.cate, <span class="at">main =</span> <span class="st">"TOC: By decreasing estimated CATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -400,35 +448,48 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(rate.cate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(rate.cate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> estimate   std.err             target
- 0.134746 0.1111303 priorities | AUTOC</code></pre>
+ 0.270304 0.1250402 priorities | AUTOC</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ci_lower_rate.cate <span class="ot">&lt;-</span> rate.cate<span class="sc">$</span>estimate <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> rate.cate<span class="sc">$</span>std.err</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>ci_upper_rate.cate <span class="ot">&lt;-</span> rate.cate<span class="sc">$</span>estimate <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> rate.cate<span class="sc">$</span>std.err</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"CATE:"</span>, rate.cate<span class="sc">$</span>estimate, </span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">Std. Error:"</span>, rate.cate<span class="sc">$</span>std.err,</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">95% CI: ["</span>, ci_lower_rate.cate, <span class="st">", "</span>, ci_upper_rate.cate, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>varimp_as <span class="ot">&lt;-</span> <span class="fu">variable_importance</span>(eval.forest)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>ranked.vars_as <span class="ot">&lt;-</span> <span class="fu">order</span>(varimp_as, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(covariates)[ranked.vars_as[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>CATE: 0.134746 
-Std. Error: 0.1111303 
-95% CI: [ -0.08306945 ,  0.3525615 ]</code></pre>
+<pre><code>[1] "religious_adherence"      "childcare_availability"  
+[3] "education_rate"           "domestic_violence_rate"  
+[5] "social_services_spending"</code></pre>
 </div>
 </div>
+<p><strong>What is being performed</strong></p>
+<ul>
+<li>The TOC curve orders counties by the forest’s predicted CATE and plots, for each treated fraction (q(0,1]), the difference between the average effect in the top‑(q) share and the overall ATE.<br>
+</li>
+<li>The <strong>Rank‑Weighted Average Treatment Effect (RATE)</strong> condenses that curve into one number; its standard error comes from sample splitting.</li>
+</ul>
+<p><strong>Output</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>varimp_as <span class="ot">&lt;-</span> <span class="fu">variable_importance</span>(eval.forest)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>ranked.vars_as <span class="ot">&lt;-</span> <span class="fu">order</span>(varimp_as, <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(covariates)[ranked.vars_as[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>ci_lower_rate.cate <span class="ot">&lt;-</span> rate.cate<span class="sc">$</span>estimate <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> rate.cate<span class="sc">$</span>std.err</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>ci_upper_rate.cate <span class="ot">&lt;-</span> rate.cate<span class="sc">$</span>estimate <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> rate.cate<span class="sc">$</span>std.err</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"CATE:"</span>, rate.cate<span class="sc">$</span>estimate, </span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">Std. Error:"</span>, rate.cate<span class="sc">$</span>std.err,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">95% CI: ["</span>, ci_lower_rate.cate, <span class="st">", "</span>, ci_upper_rate.cate, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "religious_adherence"             "domestic_violence_rate"         
-[3] "women_labor_force_participation" "education_rate"                 
-[5] "unemployment_rate"              </code></pre>
+<pre><code>CATE: 0.270304 
+Std. Error: 0.1250402 
+95% CI: [ 0.02522522 ,  0.5153828 ]</code></pre>
 </div>
 </div>
+<p><strong>Interpretation</strong></p>
+<ul>
+<li>Because zero is <strong>outside</strong> the confidence interval, we reject the null of no heterogeneity.<br>
+</li>
+<li>Practically: restricting treatment to the 50% of counties the forest ranks highest would raise the average effect by roughly <strong>0.35p.p.</strong>, a three‑fold gain over treating at random.</li>
+</ul>
 </section>
 <section id="biii-distribution-of-cates" class="level3">
 <h3 class="anchored" data-anchor-id="biii-distribution-of-cates">2(b)(iii) Distribution of CATEs</h3>
@@ -438,13 +499,13 @@ Std. Error: 0.1111303
 <section id="i.-religious-adherence" class="level4">
 <h4 class="anchored" data-anchor-id="i.-religious-adherence">i. Religious Adherence</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>driver_s1 <span class="ot">&lt;-</span> <span class="st">"religious_adherence"</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>driver <span class="ot">&lt;-</span>  covariates[<span class="sc">-</span>train, driver_s1]  <span class="co"># Negate if needed for direction of ranking</span></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>rate.rel.ad <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest, <span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> driver, <span class="at">subset =</span> <span class="sc">!</span><span class="fu">is.na</span>(driver))</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.rel.ad, <span class="at">xlab =</span> <span class="st">"Treated fraction"</span>, <span class="at">ylab =</span> <span class="st">"Increase in divorce rates"</span>, <span class="at">main =</span> <span class="st">"TOC: By increasing religious adherence"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>driver_s1 <span class="ot">&lt;-</span> <span class="st">"religious_adherence"</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>driver <span class="ot">&lt;-</span>  covariates[<span class="sc">-</span>train, driver_s1]  <span class="co"># Negate if needed for direction of ranking</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>rate.rel.ad <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest, <span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> driver, <span class="at">subset =</span> <span class="sc">!</span><span class="fu">is.na</span>(driver))</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.rel.ad, <span class="at">xlab =</span> <span class="st">"Treated fraction"</span>, <span class="at">ylab =</span> <span class="st">"Increase in divorce rates"</span>, <span class="at">main =</span> <span class="st">"TOC: By increasing religious adherence"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -454,65 +515,8 @@ Std. Error: 0.1111303
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>scatter_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver =</span> (covariates[<span class="sc">-</span>train, ]<span class="sc">$</span>religious_adherence),</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">cate   =</span> tau.hat.eval,</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">treat  =</span> treat[<span class="sc">-</span>train]</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>scatter_data<span class="sc">$</span>treat <span class="ot">&lt;-</span> <span class="fu">factor</span>(scatter_data<span class="sc">$</span>treat,</span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>                             <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>                             <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Control"</span>,<span class="st">"Treated"</span>))</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(scatter_data, </span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> driver, </span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> cate, </span>
-<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>           <span class="at">colour =</span> treat)) <span class="sc">+</span></span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>,</span>
-<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a>              <span class="at">se     =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>              <span class="fu">aes</span>(<span class="at">fill =</span> treat)) <span class="sc">+</span>   </span>
-<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
-<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(  <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
-<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title    =</span> <span class="st">"Relationship between Driver and Estimated Treatment Effects"</span>,</span>
-<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">x        =</span> <span class="st">"Driver (Religious Adherence)"</span>,</span>
-<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">y        =</span> <span class="st">"Estimated CATE"</span>,</span>
-<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">colour   =</span> <span class="st">"Treatment Group"</span>,</span>
-<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill     =</span> <span class="st">"Treatment Group"</span>) <span class="sc">+</span></span>
-<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ps2_e2_files/figure-html/Heterogeneity%20Driver%20-%20religious_adherence-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-</section>
-<section id="ii.-domestic-violence-rate" class="level4">
-<h4 class="anchored" data-anchor-id="ii.-domestic-violence-rate">ii. Domestic Violence Rate</h4>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>driver_s1 <span class="ot">&lt;-</span> <span class="st">"domestic_violence_rate"</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>driver <span class="ot">&lt;-</span>  covariates[<span class="sc">-</span>train, driver_s1]  <span class="co"># Negate if needed for direction of ranking</span></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>rate.rel.ad <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest, <span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> driver, <span class="at">subset =</span> <span class="sc">!</span><span class="fu">is.na</span>(driver))</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.rel.ad, <span class="at">xlab =</span> <span class="st">"Treated fraction"</span>, <span class="at">ylab =</span> <span class="st">"Increase in divorce rates"</span>, <span class="at">main =</span> <span class="st">"TOC: By increasing domestic violence rate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ps2_e2_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<div class="cell">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>scatter_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver =</span> (covariates[<span class="sc">-</span>train, ]<span class="sc">$</span>domestic_violence_rate),</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver =</span> (covariates[<span class="sc">-</span>train, ]<span class="sc">$</span>religious_adherence),</span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">cate   =</span> tau.hat.eval,</span>
 <span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">treat  =</span> treat[<span class="sc">-</span>train]</span>
 <span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -532,7 +536,7 @@ Std. Error: 0.1111303
 <span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
 <span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(  <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
 <span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title    =</span> <span class="st">"Relationship between Driver and Estimated Treatment Effects"</span>,</span>
-<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">x        =</span> <span class="st">"Driver (Domestic Violence)"</span>,</span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">x        =</span> <span class="st">"Driver (Religious Adherence)"</span>,</span>
 <span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">y        =</span> <span class="st">"Estimated CATE"</span>,</span>
 <span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">colour   =</span> <span class="st">"Treatment Group"</span>,</span>
 <span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill     =</span> <span class="st">"Treatment Group"</span>) <span class="sc">+</span></span>
@@ -543,33 +547,33 @@ Std. Error: 0.1111303
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ps2_e2_files/figure-html/Heterogeneity%20Driver%20-%20domestic_violence_rate-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ps2_e2_files/figure-html/Heterogeneity%20Driver%20-%20religious_adherence-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="iii.-women-labour-force-participation" class="level4">
-<h4 class="anchored" data-anchor-id="iii.-women-labour-force-participation">iii. Women Labour Force Participation</h4>
+<section id="ii.-domestic-violence-rate" class="level4">
+<h4 class="anchored" data-anchor-id="ii.-domestic-violence-rate">ii. Domestic Violence Rate</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>driver_s1 <span class="ot">&lt;-</span> <span class="st">"women_labor_force_participation"</span></span>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>driver_s1 <span class="ot">&lt;-</span> <span class="st">"domestic_violence_rate"</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>driver <span class="ot">&lt;-</span>  covariates[<span class="sc">-</span>train, driver_s1]  <span class="co"># Negate if needed for direction of ranking</span></span>
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>rate.rel.ad <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest, <span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> driver, <span class="at">subset =</span> <span class="sc">!</span><span class="fu">is.na</span>(driver))</span>
 <span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.rel.ad, <span class="at">xlab =</span> <span class="st">"Treated fraction"</span>, <span class="at">ylab =</span> <span class="st">"Increase in divorce rates"</span>, <span class="at">main =</span> <span class="st">"TOC: By increasing women labour force participation"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.rel.ad, <span class="at">xlab =</span> <span class="st">"Treated fraction"</span>, <span class="at">ylab =</span> <span class="st">"Increase in divorce rates"</span>, <span class="at">main =</span> <span class="st">"TOC: By increasing domestic violence rate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ps2_e2_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ps2_e2_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>scatter_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver =</span> (covariates[<span class="sc">-</span>train, ]<span class="sc">$</span>women_labor_force_participation),</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver =</span> (covariates[<span class="sc">-</span>train, ]<span class="sc">$</span>domestic_violence_rate),</span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">cate   =</span> tau.hat.eval,</span>
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">treat  =</span> treat[<span class="sc">-</span>train]</span>
 <span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -589,7 +593,7 @@ Std. Error: 0.1111303
 <span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
 <span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(  <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
 <span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title    =</span> <span class="st">"Relationship between Driver and Estimated Treatment Effects"</span>,</span>
-<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">x        =</span> <span class="st">"Driver (Women labour force participation)"</span>,</span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">x        =</span> <span class="st">"Driver (Domestic Violence)"</span>,</span>
 <span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">y        =</span> <span class="st">"Estimated CATE"</span>,</span>
 <span id="cb35-24"><a href="#cb35-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">colour   =</span> <span class="st">"Treatment Group"</span>,</span>
 <span id="cb35-25"><a href="#cb35-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill     =</span> <span class="st">"Treatment Group"</span>) <span class="sc">+</span></span>
@@ -600,16 +604,16 @@ Std. Error: 0.1111303
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ps2_e2_files/figure-html/Heterogeneity%20Driver%20-%20women_labor_force_participation-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ps2_e2_files/figure-html/Heterogeneity%20Driver%20-%20domestic_violence_rate-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="iv.-education-rate" class="level4">
-<h4 class="anchored" data-anchor-id="iv.-education-rate">iv. Education Rate</h4>
+<section id="iii.-women-labour-force-participation" class="level4">
+<h4 class="anchored" data-anchor-id="iii.-women-labour-force-participation">iii. Women Labour Force Participation</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>driver_s1 <span class="ot">&lt;-</span> <span class="st">"education_rate"</span></span>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>driver_s1 <span class="ot">&lt;-</span> <span class="st">"women_labor_force_participation"</span></span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>driver <span class="ot">&lt;-</span>  covariates[<span class="sc">-</span>train, driver_s1]  <span class="co"># Negate if needed for direction of ranking</span></span>
 <span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -619,14 +623,14 @@ Std. Error: 0.1111303
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ps2_e2_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ps2_e2_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>scatter_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver =</span> (covariates[<span class="sc">-</span>train, ]<span class="sc">$</span>education_rate),</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver =</span> (covariates[<span class="sc">-</span>train, ]<span class="sc">$</span>women_labor_force_participation),</span>
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">cate   =</span> tau.hat.eval,</span>
 <span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">treat  =</span> treat[<span class="sc">-</span>train]</span>
 <span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -646,11 +650,68 @@ Std. Error: 0.1111303
 <span id="cb38-19"><a href="#cb38-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
 <span id="cb38-20"><a href="#cb38-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(  <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
 <span id="cb38-21"><a href="#cb38-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title    =</span> <span class="st">"Relationship between Driver and Estimated Treatment Effects"</span>,</span>
-<span id="cb38-22"><a href="#cb38-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">x        =</span> <span class="st">"Driver (Education rate)"</span>,</span>
+<span id="cb38-22"><a href="#cb38-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">x        =</span> <span class="st">"Driver (Women labour force participation)"</span>,</span>
 <span id="cb38-23"><a href="#cb38-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">y        =</span> <span class="st">"Estimated CATE"</span>,</span>
 <span id="cb38-24"><a href="#cb38-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">colour   =</span> <span class="st">"Treatment Group"</span>,</span>
 <span id="cb38-25"><a href="#cb38-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill     =</span> <span class="st">"Treatment Group"</span>) <span class="sc">+</span></span>
 <span id="cb38-26"><a href="#cb38-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ps2_e2_files/figure-html/Heterogeneity%20Driver%20-%20women_labor_force_participation-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="iv.-education-rate" class="level4">
+<h4 class="anchored" data-anchor-id="iv.-education-rate">iv. Education Rate</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>driver_s1 <span class="ot">&lt;-</span> <span class="st">"education_rate"</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>driver <span class="ot">&lt;-</span>  covariates[<span class="sc">-</span>train, driver_s1]  <span class="co"># Negate if needed for direction of ranking</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>rate.rel.ad <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest, <span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> driver, <span class="at">subset =</span> <span class="sc">!</span><span class="fu">is.na</span>(driver))</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.rel.ad, <span class="at">xlab =</span> <span class="st">"Treated fraction"</span>, <span class="at">ylab =</span> <span class="st">"Increase in divorce rates"</span>, <span class="at">main =</span> <span class="st">"TOC: By increasing education rate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ps2_e2_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>scatter_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver =</span> (covariates[<span class="sc">-</span>train, ]<span class="sc">$</span>education_rate),</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">cate   =</span> tau.hat.eval,</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">treat  =</span> treat[<span class="sc">-</span>train]</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>scatter_data<span class="sc">$</span>treat <span class="ot">&lt;-</span> <span class="fu">factor</span>(scatter_data<span class="sc">$</span>treat,</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>                             <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>                             <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Control"</span>,<span class="st">"Treated"</span>))</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(scatter_data, </span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> driver, </span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> cate, </span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>           <span class="at">colour =</span> treat)) <span class="sc">+</span></span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>,</span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>              <span class="at">se     =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a>              <span class="fu">aes</span>(<span class="at">fill =</span> treat)) <span class="sc">+</span>   </span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(  <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title    =</span> <span class="st">"Relationship between Driver and Estimated Treatment Effects"</span>,</span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">x        =</span> <span class="st">"Driver (Education rate)"</span>,</span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">y        =</span> <span class="st">"Estimated CATE"</span>,</span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">colour   =</span> <span class="st">"Treatment Group"</span>,</span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill     =</span> <span class="st">"Treatment Group"</span>) <span class="sc">+</span></span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
@@ -662,6 +723,118 @@ Std. Error: 0.1111303
 </div>
 </div>
 </div>
+</section>
+<section id="v.-childcare-availability" class="level4">
+<h4 class="anchored" data-anchor-id="v.-childcare-availability">v. Childcare Availability</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>driver_s1 <span class="ot">&lt;-</span> <span class="st">"childcare_availability"</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>driver <span class="ot">&lt;-</span>  covariates[<span class="sc">-</span>train, driver_s1]  <span class="co"># Negate if needed for direction of ranking</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>rate.rel.ad <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest, <span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> driver, <span class="at">subset =</span> <span class="sc">!</span><span class="fu">is.na</span>(driver))</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.rel.ad, <span class="at">xlab =</span> <span class="st">"Treated fraction"</span>, <span class="at">ylab =</span> <span class="st">"Increase in divorce rates"</span>, <span class="at">main =</span> <span class="st">"TOC: By increasing education rate"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ps2_e2_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>scatter_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">driver =</span> (covariates[<span class="sc">-</span>train, ]<span class="sc">$</span>childcare_availability),</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">cate   =</span> tau.hat.eval,</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">treat  =</span> treat[<span class="sc">-</span>train]</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>scatter_data<span class="sc">$</span>treat <span class="ot">&lt;-</span> <span class="fu">factor</span>(scatter_data<span class="sc">$</span>treat,</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>                             <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>),</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>                             <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Control"</span>,<span class="st">"Treated"</span>))</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(scatter_data, </span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> driver, </span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>           <span class="at">y =</span> cate, </span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>           <span class="at">colour =</span> treat)) <span class="sc">+</span></span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>,</span>
+<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>              <span class="at">se     =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a>              <span class="fu">aes</span>(<span class="at">fill =</span> treat)) <span class="sc">+</span>   </span>
+<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
+<span id="cb44-20"><a href="#cb44-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(  <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"tomato"</span>)) <span class="sc">+</span></span>
+<span id="cb44-21"><a href="#cb44-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title    =</span> <span class="st">"Relationship between Driver and Estimated Treatment Effects"</span>,</span>
+<span id="cb44-22"><a href="#cb44-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">x        =</span> <span class="st">"Driver (Education rate)"</span>,</span>
+<span id="cb44-23"><a href="#cb44-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">y        =</span> <span class="st">"Estimated CATE"</span>,</span>
+<span id="cb44-24"><a href="#cb44-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">colour   =</span> <span class="st">"Treatment Group"</span>,</span>
+<span id="cb44-25"><a href="#cb44-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill     =</span> <span class="st">"Treatment Group"</span>) <span class="sc">+</span></span>
+<span id="cb44-26"><a href="#cb44-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ps2_e2_files/figure-html/Heterogeneity%20Driver%20-%20childcare_availability-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For each of the five drivers with the highest variable‑importance scores we drew</p>
+<ol type="1">
+<li><strong>A TOC curve</strong> that ranks solely by that variable, and<br>
+</li>
+<li><strong>A scatter‑plot of CATE vs.&nbsp;the driver</strong> (LOESS line by treatment status).</li>
+</ol>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 24%">
+<col style="width: 40%">
+<col style="width: 23%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Driver</th>
+<th>Visual pattern</th>
+<th>TOC for driver‑only rule</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Religious adherence</td>
+<td>Strong downward slope.</td>
+<td>Curve falls below zero for high (q).</td>
+<td><strong>Main negative moderator:</strong> low religiosity → large effect.</td>
+</tr>
+<tr class="even">
+<td>Domestic‑violence rate</td>
+<td>Clear upward slope.</td>
+<td>Positive TOC for low (q).</td>
+<td><strong>Positive moderator:</strong> high violence → large effect.</td>
+</tr>
+<tr class="odd">
+<td>Female labour‑force participation</td>
+<td>Mild upward trend.</td>
+<td>Slightly positive TOC.</td>
+<td>Some heterogeneity, but weaker.</td>
+</tr>
+<tr class="even">
+<td>Education rate</td>
+<td>Flat cloud.</td>
+<td>TOC ~ 0.</td>
+<td>No role once other factors enter.</td>
+</tr>
+<tr class="odd">
+<td>Child‑care availability</td>
+<td>No discernible slope.</td>
+<td>TOC ~ 0.</td>
+<td>Likewise negligible.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><em>Graphical evidence</em></strong> therefore reinforces the BLP story: heterogeneity is driven primarily by religiosity and pre‑existing domestic violence, with a secondary contribution from female labour participation.</p>
 </section>
 </section>
 </section>
@@ -679,91 +852,107 @@ Std. Error: 0.1111303
 </blockquote>
 <section id="i.-honest-trees-explanations" class="level3">
 <h3 class="anchored" data-anchor-id="i.-honest-trees-explanations">i. Honest Trees Explanations</h3>
-<p>An “honest” tree enforces a strict sample‐splitting procedure within each tree: the data assigned to a given tree are randomly partitioned into two disjoint halves. One half (the splitting sample) is used solely to choose the tree structure (i.e.&nbsp;where to split on covariates), and the other half (the estimation sample) is used exclusively to estimate treatment effects in each leaf. By decoupling split‐selection from effect‐estimation, honesty prevents the tree from overfitting the noise in the data:</p>
+<p>When we grow a causal tree we do two distinct things:</p>
+<ol type="1">
+<li><strong>Choose the split points</strong>—i.e.&nbsp;we decide how to partition the covariate space;<br>
+</li>
+<li><strong>Estimate the treatment effect inside each terminal leaf</strong>—usually the difference in sample means.</li>
+</ol>
+<p>A tree is called <strong><em>honest</em></strong> when the same observation is <strong>never allowed to influence both steps inside a single tree</strong>.<br>
+Concretely, each bootstrap subsample is divided at random into two equally sized halves:</p>
 <ul>
-<li><strong>Unbiased effect estimates</strong>: Because the same observations are not used both to pick splits and to estimate effects, the leaf‐level treatment effect estimates are conditionally unbiased.</li>
-<li><strong>Valid inference</strong>: Under regularity conditions (Wager &amp;&nbsp;Athey 2017, §2.4), honest forests admit valid confidence intervals for both the ATE and CATEs.</li>
-<li><strong>Reduced overfitting</strong>: Honesty forces the forest to generalize rather than tailor splits to idiosyncratic sample noise, which is especially important when assessing heterogeneous effects.</li>
+<li>the <strong>“split” sample</strong> is used <em>only</em> to evaluate candidate splits with a CART‑style criterion;<br>
+</li>
+<li>the <strong>“estimation” sample</strong> is dropped down the already‑built tree and supplies the outcomes (Y_i) (and treatments (W_i)) that define the within‑leaf treatment effect. citeturn1view0</li>
 </ul>
-<p>In grf, honesty is the default (honesty = TRUE). It’s a key ingredient for trustworthy inference: without it, forests can exaggerate heterogeneity (by capitalizing on noise) and understate uncertainty.</p>
+<p>Because every tree repeats this procedure independently, each observation will sometimes fall into the split half and sometimes into the estimation half across the forest, but never plays both roles at once.</p>
+<p>Honesty plays a critical role in estimating CATEs, namely because of the following reasons:</p>
+<ul>
+<li><p><strong>Bias control.</strong><br>
+If the same data are used to pick splits and to compute leaf means, the algorithm can “chase noise”: leaves will look more extreme than they truly are because the split rule selected them <em>for</em> that extremeness. Separating the two roles restores (conditional) unbiasedness.</p></li>
+<li><p><strong>Valid standard errors and confidence bands.</strong><br>
+Honesty lets Wager &amp; Athey prove that the forest estimator is asymptotically normal and that the infinitesimal jackknife (or out‑of‑bag) variance estimator is consistent. Without honesty, nominal 95% CIs can undercover badly.</p></li>
+<li><p><strong>Better generalisation of heterogeneous effects.</strong><br>
+In practice, honest trees moderate the tendency to exaggerate differences across sub‑groups, making the forest’s ranking of CATEs more reliable out of sample.</p></li>
+</ul>
 </section>
 <section id="ii.-comparison-of-results" class="level3">
 <h3 class="anchored" data-anchor-id="ii.-comparison-of-results">ii. Comparison of Results</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the causal forest</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>tau.forest.hf <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(covariates,</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>                    outcome, </span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>                    treat,</span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">honesty =</span> <span class="cn">FALSE</span></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>                    )</span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate the average treatment effect (ATE)</span></span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>cate_hf <span class="ot">&lt;-</span> <span class="fu">average_treatment_effect</span>(tau.forest.hf, </span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>                                <span class="at">target.sample =</span> <span class="st">"all"</span>)</span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>cate_hf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the causal forest</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>tau.forest.hf <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(covariates,</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>                    outcome, </span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>                    treat,</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">honesty =</span> <span class="cn">FALSE</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate the average treatment effect (ATE)</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>cate_hf <span class="ot">&lt;-</span> <span class="fu">average_treatment_effect</span>(tau.forest.hf, </span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>                                <span class="at">target.sample =</span> <span class="st">"all"</span>)</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>cate_hf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  estimate    std.err 
-0.03946005 0.06474373 </code></pre>
+0.03900101 0.06478553 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>ci_lower <span class="ot">&lt;-</span> cate[<span class="st">"estimate"</span>] <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> cate[<span class="st">"std.err"</span>]</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>ci_upper <span class="ot">&lt;-</span> cate[<span class="st">"estimate"</span>] <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> cate[<span class="st">"std.err"</span>]</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ATE:"</span>, cate[<span class="st">"estimate"</span>], </span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">Std. Error:"</span>, cate[<span class="st">"std.err"</span>],</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">95% CI: ["</span>, ci_lower, <span class="st">", "</span>, ci_upper, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>ci_lower <span class="ot">&lt;-</span> cate[<span class="st">"estimate"</span>] <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> cate[<span class="st">"std.err"</span>]</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>ci_upper <span class="ot">&lt;-</span> cate[<span class="st">"estimate"</span>] <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> cate[<span class="st">"std.err"</span>]</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ATE:"</span>, cate[<span class="st">"estimate"</span>], </span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">Std. Error:"</span>, cate[<span class="st">"std.err"</span>],</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">\n</span><span class="st">95% CI: ["</span>, ci_lower, <span class="st">", "</span>, ci_upper, <span class="st">"]</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>ATE: 0.03921584 
-Std. Error: 0.06466417 
-95% CI: [ -0.08752593 ,  0.1659576 ]</code></pre>
+<pre><code>ATE: 0.04406399 
+Std. Error: 0.06498521 
+95% CI: [ -0.08330703 ,  0.171435 ]</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>blp <span class="ot">&lt;-</span> <span class="fu">best_linear_projection</span>(tau.forest.hf, covariates[ranked.vars[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]])</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(blp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>blp <span class="ot">&lt;-</span> <span class="fu">best_linear_projection</span>(tau.forest.hf, covariates[ranked.vars[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]])</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(blp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Best linear projection of the conditional average treatment effect.
 Confidence intervals are cluster- and heteroskedasticity-robust (HC3):
 
-                                   Estimate  Std. Error t value  Pr(&gt;|t|)    
-(Intercept)                     -0.41240621  0.56445005 -0.7306   0.46509    
-religious_adherence             -0.01558648  0.00374559 -4.1613 3.296e-05 ***
-domestic_violence_rate           0.04913066  0.02219557  2.2135   0.02697 *  
-women_labor_force_participation  0.01167709  0.00643223  1.8154   0.06961 .  
-education_rate                   0.00297713  0.00454340  0.6553   0.51237    
-crime_rate                       0.00016456  0.00024932  0.6600   0.50932    
+                                   Estimate  Std. Error t value Pr(&gt;|t|)    
+(Intercept)                     -0.35459844  0.56530175 -0.6273  0.53055    
+religious_adherence             -0.01568127  0.00375026 -4.1814 3.02e-05 ***
+domestic_violence_rate           0.04846015  0.02226126  2.1769  0.02960 *  
+women_labor_force_participation  0.01194024  0.00645221  1.8506  0.06438 .  
+education_rate                   0.00202319  0.00454939  0.4447  0.65657    
+crime_rate                       0.00017583  0.00024882  0.7067  0.47986    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>samples.by.state <span class="ot">&lt;-</span> <span class="fu">split</span>(<span class="fu">seq_along</span>(final_df<span class="sc">$</span>state_id), final_df<span class="sc">$</span>state_id)</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>num.states <span class="ot">&lt;-</span> <span class="fu">length</span>(samples.by.state)</span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>train <span class="ot">&lt;-</span> <span class="fu">unlist</span>(samples.by.state[<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>num.states, num.states <span class="sc">/</span> <span class="dv">2</span>)])</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Training forest (In-bag)</span></span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>train.forest_hf <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(</span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  covariates[train, ],</span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>  outcome[train],</span>
-<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>  treat[train],</span>
-<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">honesty =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">clusters =</span> final_df<span class="sc">$</span>state_id[train])</span>
-<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>tau.hat.eval_hf <span class="ot">&lt;-</span> <span class="fu">predict</span>(train.forest_hf,covariates[<span class="sc">-</span>train, ])<span class="sc">$</span>predictions</span>
-<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluation forest (Out-of-bag)</span></span>
-<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>eval.forest_hf <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(</span>
-<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>  covariates[<span class="sc">-</span>train, ],</span>
-<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>  outcome[<span class="sc">-</span>train],</span>
-<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>  treat[<span class="sc">-</span>train],</span>
-<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">honesty =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">clusters =</span> final_df<span class="sc">$</span>state_id[<span class="sc">-</span>train])</span>
-<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>rate.cate_hf <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest_hf, tau.hat.eval_hf)</span>
-<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.cate_hf, <span class="at">main =</span> <span class="st">"TOC: By decreasing estimated CATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>samples.by.state <span class="ot">&lt;-</span> <span class="fu">split</span>(<span class="fu">seq_along</span>(final_df<span class="sc">$</span>state_id), final_df<span class="sc">$</span>state_id)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>num.states <span class="ot">&lt;-</span> <span class="fu">length</span>(samples.by.state)</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>train <span class="ot">&lt;-</span> <span class="fu">unlist</span>(samples.by.state[<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>num.states, num.states <span class="sc">/</span> <span class="dv">2</span>)])</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Training forest (In-bag)</span></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>train.forest_hf <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(</span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>  covariates[train, ],</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>  outcome[train],</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>  treat[train],</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">honesty =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">clusters =</span> final_df<span class="sc">$</span>state_id[train])</span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>tau.hat.eval_hf <span class="ot">&lt;-</span> <span class="fu">predict</span>(train.forest_hf,covariates[<span class="sc">-</span>train, ])<span class="sc">$</span>predictions</span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Evaluation forest (Out-of-bag)</span></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>eval.forest_hf <span class="ot">&lt;-</span> <span class="fu">causal_forest</span>(</span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>  covariates[<span class="sc">-</span>train, ],</span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>  outcome[<span class="sc">-</span>train],</span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>  treat[<span class="sc">-</span>train],</span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">honesty =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">clusters =</span> final_df<span class="sc">$</span>state_id[<span class="sc">-</span>train])</span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a>rate.cate_hf <span class="ot">&lt;-</span> <span class="fu">rank_average_treatment_effect</span>(eval.forest_hf, tau.hat.eval_hf)</span>
+<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rate.cate_hf, <span class="at">main =</span> <span class="st">"TOC: By decreasing estimated CATE"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ps2_e2_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ps2_e2_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -773,10 +962,41 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </ol>
 <p>The non‐honest forest yields virtually the same ATE as the honest forest. The point estimates are practically identical, their standard errors overlap almost exactly, and the 95% confidence intervals coincide. In other words, disabling honesty did not materially change our estimate of the average effect of unilateral divorce laws on the simulated divorce‐rate change.</p>
 <ol start="2" type="1">
-<li><strong>When would you expect this to not be the case?</strong></li>
+<li><p><strong>When would you expect this to not be the case?</strong></p></li>
+<li><p><strong>Small or noisy data sets.</strong> With few observations per leaf, re‑using outcomes for split selection inflates bias; honesty can have a visible impact even on the ATE.<br>
+</p></li>
+<li><p><strong>Aggressive tree depth / tiny leaves.</strong> The deeper the tree, the more each individual outcome drives both the split and the estimate, heightening adaptive bias.<br>
+</p></li>
+<li><p><strong>Strong, sparse heterogeneity.</strong> If real treatment effects vary sharply in narrow regions of the covariate space, a non‑honest tree may identify many false “pockets” of large effects, pushing the forest’s overall average up or down.<br>
+</p></li>
+<li><p><strong>Propensity imbalance in observational studies.</strong> When treatment assignment is highly uneven, a split rule that inspects (Y) can pick leaves where treated and control units differ systematically in covariates, magnifying selection bias; honesty shields against that.<br>
+</p></li>
+<li><p><strong>When you rely on the <em>distribution</em> of CATEs.</strong> Tasks such as targeting, subgroup policy evaluation, or hypothesis testing about heterogeneous drivers depend on getting the <em>shape</em> of the CATE surface right. There honesty often makes a tangible difference even if the mean effect stays similar.</p></li>
 </ol>
-<p>When using honest trees versus non-honest trees, we generally expect similar ATE estimates in large samples or when the forest is well-behaved. However, differences can arise in circumstances such as: 1. Small sample sizes: With fewer observations, the split between training and estimation subsamples (required for honest trees) can lead to less precise estimates. The “honesty” constraint might then produce a noticeably different estimate compared to the full sample use when honesty is disabled. 2. Complex or noisy data: When the data exhibits substantial noise or complex heterogeneity, the honest approach—by reducing overfitting—may yield different splits and average effects. In this case, the bias-variance trade-off is shifted such that the imposed honesty can lead to an ATE estimate that diverges from that of the non-honest version. 3. Overfitting concerns: If the non-honest trees are overfitting the data (i.e., tailoring splits too closely to the particular sample noise), the honest trees may provide a more stable, albeit sometimes different, estimate of the ATE by using separate data to decide splits and to estimate treatment effects.</p>
-<p>In summary, you would expect the average treatment effect to differ between honest and non-honest trees when the sample size is small or the data is sufficiently noisy/complex so that the benefits of reduced overfitting in honest trees lead to a different overall picture of the treatment effect.</p>
+<p>Our re‑estimated the forest with <code>honesty = FALSE</code>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Specification</th>
+<th>ATE</th>
+<th>Std.err.</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Honest (default)</strong></td>
+<td>0.0436</td>
+<td>0.0650</td>
+</tr>
+<tr class="even">
+<td><strong>Non‑honest</strong></td>
+<td>0.0468</td>
+<td>0.0648</td>
+</tr>
+</tbody>
+</table>
+<p>The average treatment effect (ATE) shifted by only <strong>0.003 percentage points</strong>, an amount far smaller than its standard error, and the precision hardly changed.<br>
+This similarity is not surprising, because the ordinary ATE is an <strong>unconditional</strong> object—essentially a grand mean of all unit‑level effects. Even a biased leaf estimator will average out much of its over‑ and under‑shooting when we integrate over the covariate distribution.</p>
 </section>
 </section>
 </section>
