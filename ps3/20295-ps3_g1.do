@@ -85,7 +85,12 @@ if ("`user'" == "gabrielemole") {
 
 use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/500c011b31d4929fb126f88bfbc4fe39e27d5ac9/ps3/ps3_data/pset_3.dta", clear
 
+**# (a) Generate a RD Plot of T - Islamic mayor in 1994 - against X - Islamic Vote Margin in 1994 - when the Islamic party wins and lose an election. Call the y-axis - Treatment Variable; call the x-axis - Running variable. Is the current design a sharp or a fuzzy RD? Why?
 
+**# (b)
 
+	/* (i) Create a macro named covariates containing the baseline variables: hischshr1520m i89 vshr islam1994 partycount lpop1994 merkezi merkezp subbuyuk buyuk. */
+	
+	/* (ii) Create a table named Table 1, summarizing RD estimates for all baseline variables. Table 1 should have the following columns: Label, MSE-Optimal Bandwidth, RD Estimator, p-value 
 
-
+**

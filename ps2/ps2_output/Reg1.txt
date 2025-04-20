@@ -1,0 +1,62 @@
+regression ex i point i		
+		(1)
+		Divorces per 1000 people
+VARIABLES	LABELS	1956-1998
+		
+lead10	lead10	0.0559
+		(0.157)
+lead9	lead9	0.0809
+		(0.145)
+lead8	lead8	0.0603
+		(0.110)
+lead7	lead7	0.0184
+		(0.113)
+lead6	lead6	0.0209
+		(0.108)
+lead5	lead5	0.0988
+		(0.0883)
+lead4	lead4	0.0997
+		(0.0664)
+lead3	lead3	0.0378
+		(0.0576)
+lead2	lead2	0.0401
+		(0.0517)
+lag0	lag0	0.289
+		(0.202)
+lag1	lag1	0.336***
+		(0.101)
+lag2	lag2	0.304***
+		(0.0943)
+lag3	lag3	0.216*
+		(0.108)
+lag4	lag4	0.182
+		(0.112)
+lag5	lag5	0.247**
+		(0.122)
+lag6	lag6	0.252*
+		(0.133)
+lag7	lag7	0.168
+		(0.130)
+lag8	lag8	-0.00769
+		(0.120)
+lag9	lag9	-0.131
+		(0.133)
+lag10	lag10	-0.180
+		(0.159)
+lag11	lag11	-0.366**
+		(0.163)
+lag12	lag12	-0.389**
+		(0.166)
+lag13	lag13	-0.442**
+		(0.192)
+lag14	lag14	-0.340**
+		(0.168)
+lag15	lag15	-0.527**
+		(0.256)
+Constant	Constant	3.899***
+		(0.101)
+		
+Observations		1,631
+R-squared		0.935
+Robust standard errors in parentheses		
+*** p<0.01, ** p<0.05, * p<0.1		

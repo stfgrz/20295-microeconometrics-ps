@@ -1,0 +1,164 @@
+regression ex i point ii		
+		(1)
+		Divorces per 1000 people
+VARIABLES	LABELS	1956-1998
+		
+lead10	lead10	-0.276
+		(0.311)
+lead9	lead9	-0.171
+		(0.266)
+lead8	lead8	-0.161
+		(0.228)
+lead7	lead7	-0.171
+		(0.203)
+lead6	lead6	-0.136
+		(0.172)
+lead5	lead5	-0.0299
+		(0.110)
+lead4	lead4	0.00381
+		(0.0937)
+lead3	lead3	-0.0295
+		(0.0794)
+lead2	lead2	0.00545
+		(0.0652)
+lag0	lag0	0.325
+		(0.224)
+lag1	lag1	0.400***
+		(0.134)
+lag2	lag2	0.406***
+		(0.133)
+lag3	lag3	0.353**
+		(0.171)
+lag4	lag4	0.351*
+		(0.176)
+lag5	lag5	0.446**
+		(0.192)
+lag6	lag6	0.484**
+		(0.212)
+lag7	lag7	0.432*
+		(0.216)
+lag8	lag8	0.298
+		(0.225)
+lag9	lag9	0.210
+		(0.240)
+lag10	lag10	0.183
+		(0.227)
+lag11	lag11	0.0292
+		(0.245)
+lag12	lag12	0.0409
+		(0.270)
+lag13	lag13	0.0360
+		(0.261)
+lag14	lag14	0.152
+		(0.347)
+lag15	lag15	0.0324
+		(0.313)
+time_trend_1	time_trend_1	0.0500**
+		(0.0210)
+time_trend_2	time_trend_2	-0.0306***
+		(0.00436)
+time_trend_3	time_trend_3	0.0347
+		(0.0211)
+time_trend_4	time_trend_4	-0.0682***
+		(0.00325)
+time_trend_5	time_trend_5	-0.0498***
+		(0.00559)
+time_trend_6	time_trend_6	-0.0210***
+		(0.00473)
+time_trend_7	time_trend_7	-0.0230***
+		(0.00285)
+time_trend_8	time_trend_8	0.0149
+		(0.0211)
+time_trend_9	time_trend_9	0.0264
+		(0.0211)
+time_trend_10	time_trend_10	-0.0271***
+		(0.00506)
+time_trend_11	time_trend_11	0.00372
+		(0.00293)
+time_trend_12	time_trend_12	-0.0343***
+		(0.00296)
+time_trend_13	time_trend_13	-0.0495***
+		(0.00495)
+time_trend_14	time_trend_14	-0.0317***
+		(0.00450)
+time_trend_15	time_trend_15	-0.0368*
+		(0.0215)
+time_trend_16	time_trend_16	0.0107***
+		(0.00262)
+time_trend_17	time_trend_17	-0.0105*
+		(0.00587)
+time_trend_18	time_trend_18	-0.0283***
+		(0.00412)
+time_trend_19	time_trend_19	-0.00732
+		(0.0234)
+time_trend_20	time_trend_20	-0.0604***
+		(0.00148)
+time_trend_21	time_trend_21	-0.0401*
+		(0.0212)
+time_trend_22	time_trend_22	-0.0145***
+		(0.00282)
+time_trend_23	time_trend_23	-0.0427***
+		(0.00355)
+time_trend_24	time_trend_24	-0.0427***
+		(0.00208)
+time_trend_25	time_trend_25	-0.0192
+		(0.0211)
+time_trend_26	time_trend_26	-0.00989
+		(0.0211)
+time_trend_27	time_trend_27	-0.0314***
+		(0.00130)
+time_trend_28	time_trend_28	0.0242
+		(0.0215)
+time_trend_29	time_trend_29	-0.0360***
+		(0.00424)
+time_trend_30	time_trend_30	-0.0382***
+		(0.00352)
+time_trend_31	time_trend_31	-0.00544
+		(0.00467)
+time_trend_32	time_trend_32	-0.000815
+		(0.0211)
+time_trend_33	time_trend_33	0.0600***
+		(0.00288)
+time_trend_34	time_trend_34	-0.719***
+		(0.00345)
+time_trend_35	time_trend_35	0.0195
+		(0.0215)
+time_trend_36	time_trend_36	-0.0102
+		(0.0211)
+time_trend_37	time_trend_37	-0.00846
+		(0.0199)
+time_trend_38	time_trend_38	-0.0210***
+		(0.00289)
+time_trend_39	time_trend_39	-0.0331
+		(0.0211)
+time_trend_40	time_trend_40	-0.0324***
+		(0.000705)
+time_trend_41	time_trend_41	0.00475
+		(0.0211)
+time_trend_42	time_trend_42	-0.0320***
+		(0.00817)
+time_trend_43	time_trend_43	0.0406*
+		(0.0211)
+time_trend_44	time_trend_44	-0.0386***
+		(0.00217)
+time_trend_45	time_trend_45	-0.00187
+		(0.0211)
+time_trend_46	time_trend_46	-0.0116
+		(0.0211)
+time_trend_47	time_trend_47	0.0185
+		(0.0211)
+time_trend_48	time_trend_48	-0.0254***
+		(0.00293)
+time_trend_49	time_trend_49	-0.0204
+		(0.0211)
+time_trend_50	time_trend_50	0.0141
+		(0.0215)
+o.time_trend_51	time_trend_51 = o,	-
+		
+Constant	Constant	4.413***
+		(0.0944)
+		
+Observations		1,631
+R-squared		0.976
+Robust standard errors in parentheses		
+*** p<0.01, ** p<0.05, * p<0.1		

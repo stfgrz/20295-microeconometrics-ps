@@ -1,0 +1,266 @@
+regression ex i point iii		
+		(1)
+		Divorces per 1000 people
+VARIABLES	LABELS	1956-1998
+		
+lead10	lead10	0.320
+		(0.324)
+lead9	lead9	0.266
+		(0.271)
+lead8	lead8	0.216
+		(0.236)
+lead7	lead7	0.146
+		(0.216)
+lead6	lead6	0.121
+		(0.187)
+lead5	lead5	0.169
+		(0.156)
+lead4	lead4	0.146
+		(0.106)
+lead3	lead3	0.0703
+		(0.0818)
+lead2	lead2	0.0545
+		(0.0535)
+lag0	lag0	0.277
+		(0.203)
+lag1	lag1	0.298**
+		(0.113)
+lag2	lag2	0.272**
+		(0.121)
+lag3	lag3	0.169
+		(0.153)
+lag4	lag4	0.132
+		(0.161)
+lag5	lag5	0.195
+		(0.167)
+lag6	lag6	0.203
+		(0.182)
+lag7	lag7	0.124
+		(0.189)
+lag8	lag8	-0.0349
+		(0.215)
+lag9	lag9	-0.145
+		(0.230)
+lag10	lag10	-0.188
+		(0.254)
+lag11	lag11	-0.353
+		(0.269)
+lag12	lag12	-0.348
+		(0.281)
+lag13	lag13	-0.349
+		(0.328)
+lag14	lag14	-0.207
+		(0.326)
+lag15	lag15	-0.194
+		(0.371)
+time_trend_1	time_trend_1	0.196***
+		(0.0189)
+time_trend_2	time_trend_2	-0.178***
+		(0.0261)
+time_trend_3	time_trend_3	0.0239
+		(0.0187)
+time_trend_4	time_trend_4	-0.0871***
+		(0.0201)
+time_trend_5	time_trend_5	-0.00586
+		(0.0295)
+time_trend_6	time_trend_6	-0.0326
+		(0.0265)
+time_trend_7	time_trend_7	-0.126***
+		(0.0182)
+time_trend_8	time_trend_8	0.00458
+		(0.0185)
+time_trend_9	time_trend_9	-0.0717***
+		(0.0188)
+time_trend_10	time_trend_10	-0.0354
+		(0.0269)
+time_trend_11	time_trend_11	-0.0168
+		(0.0186)
+time_trend_12	time_trend_12	-0.0787***
+		(0.0189)
+time_trend_13	time_trend_13	-0.161***
+		(0.0293)
+time_trend_14	time_trend_14	-0.0813***
+		(0.0263)
+time_trend_15	time_trend_15	-0.125***
+		(0.0214)
+time_trend_16	time_trend_16	0.0201
+		(0.0182)
+time_trend_17	time_trend_17	-0.0491
+		(0.0321)
+time_trend_18	time_trend_18	-0.299***
+		(0.0275)
+time_trend_19	time_trend_19	-0.471***
+		(0.0679)
+time_trend_20	time_trend_20	-0.211***
+		(0.00949)
+time_trend_21	time_trend_21	-0.172***
+		(0.0189)
+time_trend_22	time_trend_22	-0.0694***
+		(0.0181)
+time_trend_23	time_trend_23	-0.0880***
+		(0.0222)
+time_trend_24	time_trend_24	-0.156***
+		(0.0136)
+time_trend_25	time_trend_25	-0.103***
+		(0.0186)
+time_trend_26	time_trend_26	-0.0839***
+		(0.0186)
+time_trend_27	time_trend_27	-0.0657***
+		(0.00868)
+time_trend_28	time_trend_28	-0.143***
+		(0.0215)
+time_trend_29	time_trend_29	-0.200***
+		(0.0259)
+time_trend_30	time_trend_30	-0.172***
+		(0.0221)
+time_trend_31	time_trend_31	-0.0144
+		(0.0264)
+time_trend_32	time_trend_32	-0.191***
+		(0.0188)
+time_trend_33	time_trend_33	-5.03e-05
+		(0.0188)
+time_trend_34	time_trend_34	-1.793***
+		(0.0208)
+time_trend_35	time_trend_35	-0.174***
+		(0.0214)
+time_trend_36	time_trend_36	-0.0766***
+		(0.0186)
+time_trend_37	time_trend_37	-0.0905**
+		(0.0382)
+time_trend_38	time_trend_38	-0.0338*
+		(0.0186)
+time_trend_39	time_trend_39	-0.192***
+		(0.0186)
+time_trend_40	time_trend_40	-0.233***
+		(0.00385)
+time_trend_41	time_trend_41	-0.171***
+		(0.0187)
+time_trend_42	time_trend_42	-0.161***
+		(0.0321)
+time_trend_43	time_trend_43	-0.0452**
+		(0.0187)
+time_trend_44	time_trend_44	-0.130***
+		(0.0144)
+time_trend_45	time_trend_45	-0.0706***
+		(0.0188)
+time_trend_46	time_trend_46	-0.185***
+		(0.0187)
+time_trend_47	time_trend_47	-0.163***
+		(0.0187)
+time_trend_48	time_trend_48	0.00654
+		(0.0186)
+time_trend_49	time_trend_49	-0.193***
+		(0.0187)
+time_trend_50	time_trend_50	-0.141***
+		(0.0212)
+o.time_trend_51	time_trend_51 = o,	-
+		
+timetrend_square_1	timetrend_square_1	-0.00503***
+		(0.000544)
+timetrend_square_2	timetrend_square_2	0.00412***
+		(0.000780)
+timetrend_square_3	timetrend_square_3	-0.000814
+		(0.000569)
+timetrend_square_4	timetrend_square_4	0.000565
+		(0.000592)
+timetrend_square_5	timetrend_square_5	-0.00141
+		(0.000886)
+timetrend_square_6	timetrend_square_6	0.000211
+		(0.000793)
+timetrend_square_7	timetrend_square_7	0.00292***
+		(0.000532)
+timetrend_square_8	timetrend_square_8	-0.000937
+		(0.000597)
+timetrend_square_9	timetrend_square_9	0.00171***
+		(0.000563)
+timetrend_square_10	timetrend_square_10	0.000142
+		(0.000804)
+timetrend_square_11	timetrend_square_11	0.000563
+		(0.000547)
+timetrend_square_12	timetrend_square_12	0.00125**
+		(0.000555)
+timetrend_square_13	timetrend_square_13	0.00303***
+		(0.000882)
+timetrend_square_14	timetrend_square_14	0.00128
+		(0.000785)
+timetrend_square_15	timetrend_square_15	0.00141***
+		(0.000514)
+timetrend_square_16	timetrend_square_16	-0.000369
+		(0.000519)
+timetrend_square_17	timetrend_square_17	0.000837
+		(0.000971)
+timetrend_square_18	timetrend_square_18	0.00729***
+		(0.000789)
+timetrend_square_19	timetrend_square_19	0.0102***
+		(0.00145)
+timetrend_square_20	timetrend_square_20	0.00430***
+		(0.000271)
+timetrend_square_21	timetrend_square_21	0.00267***
+		(0.000561)
+timetrend_square_22	timetrend_square_22	0.00153***
+		(0.000530)
+timetrend_square_23	timetrend_square_23	0.00121*
+		(0.000659)
+timetrend_square_24	timetrend_square_24	0.00326***
+		(0.000391)
+timetrend_square_25	timetrend_square_25	0.00129**
+		(0.000575)
+timetrend_square_26	timetrend_square_26	0.000999*
+		(0.000574)
+timetrend_square_27	timetrend_square_27	0.000982***
+		(0.000249)
+timetrend_square_28	timetrend_square_28	0.00358***
+		(0.000506)
+timetrend_square_29	timetrend_square_29	0.00464***
+		(0.000774)
+timetrend_square_30	timetrend_square_30	0.00378***
+		(0.000655)
+timetrend_square_31	timetrend_square_31	0.000131
+		(0.000790)
+timetrend_square_32	timetrend_square_32	0.00436***
+		(0.000570)
+timetrend_square_33	timetrend_square_33	0.00167***
+		(0.000557)
+timetrend_square_34	timetrend_square_34	0.0288***
+		(0.000610)
+timetrend_square_35	timetrend_square_35	0.00434***
+		(0.000516)
+timetrend_square_36	timetrend_square_36	0.000770
+		(0.000577)
+timetrend_square_37	timetrend_square_37	0.00115
+		(0.00112)
+timetrend_square_38	timetrend_square_38	0.000340
+		(0.000546)
+timetrend_square_39	timetrend_square_39	0.00346***
+		(0.000581)
+timetrend_square_40	timetrend_square_40	0.00580***
+		(0.000106)
+timetrend_square_41	timetrend_square_41	0.00392***
+		(0.000564)
+timetrend_square_42	timetrend_square_42	0.00332***
+		(0.000831)
+timetrend_square_43	timetrend_square_43	0.00135**
+		(0.000568)
+timetrend_square_44	timetrend_square_44	0.00262***
+		(0.000419)
+timetrend_square_45	timetrend_square_45	0.000899
+		(0.000549)
+timetrend_square_46	timetrend_square_46	0.00385***
+		(0.000562)
+timetrend_square_47	timetrend_square_47	0.00409***
+		(0.000566)
+timetrend_square_48	timetrend_square_48	-0.000928*
+		(0.000548)
+timetrend_square_49	timetrend_square_49	0.00385***
+		(0.000573)
+timetrend_square_50	timetrend_square_50	0.00326***
+		(0.000517)
+o.timetrend_square_51	timetrend_square_51 = o,	-
+		
+Constant	Constant	4.981***
+		(0.0720)
+		
+Observations		1,631
+R-squared		0.984
+Robust standard errors in parentheses		
+*** p<0.01, ** p<0.05, * p<0.1		

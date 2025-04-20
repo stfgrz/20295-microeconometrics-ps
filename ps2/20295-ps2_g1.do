@@ -15,14 +15,19 @@ set more off
 
 /* First time running this code? Please remove the comment marks from the code below and install of the necessary packages */
 
-
 ssc install outreg2, replace
-ssc install ivreg2, replace
 ssc install estout, replace
 ssc install avar, replace
 ssc install eventstudyinteract, replace
 ssc install bacondecomp, replace
- */
+ssc install egenmore, replace
+ssc install _gwmean, replace
+ssc install twowayfeweights, replace
+ssc install ftools, replace
+ssc install moremata, replace
+ssc install reghdfe, replace
+
+*/
 
 /* For graphs & stuff */
 /*
@@ -32,6 +37,7 @@ graph set window fontface "Lato"
 grstyle init
 grstyle set plain, horizontal
 */
+
 local user = c(username)
 
 if ("`user'" == "erick") {
@@ -54,7 +60,7 @@ if ("`user'" == "gabrielemole") {
 /*                      													*/
 *=============================================================================
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/blob/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/pset_4.dta", clear
+use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/pset_4.dta", clear
 
 /* (a) Note that one of the variables in the data set is stpop, the state population. In the next exercises, you should follow Wolfers (2006) in weighting both your descriptive output and your analysis by the state population. A short summary of the different weighting procedures in Stata is provided here ([1,2]). Given that divorce rates are an average computed in each state and the variable stpop provides the population in each of these states, which is the weight you should use when reporting the evolution of divorce rates or a regression of divorce rates on unilateral divorce laws to match the analysis in Wolfers (2006)? */
 
@@ -65,56 +71,54 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/blob/5c
 /* (b) The article relies on the timing of the introduction of unilateral divorce laws to compare divorce rates in the two possible regimes. One of the assumptions of this analysis is that states with the previous divorce law and the ones that introduced unilateral divorce laws would both follow parallel trends in their divorce rates in the absence of the changes to the legislation. Create 2 different graphs to support this assumption: (i) the first graph should convey the same message as the one in Figure 1 of the original paper, comparing states that did not change their divorce laws during 1968 - 1988 (Friedberg's sample) and the ones that did; (ii) the second graph should perform the same description, but focusing on the simpler analysis we will perform in the next exercise: compare the states adopting the unilateral divorce law between 1969 and 1973 to the ones that introduced it in the year 2000, only reporting the time trend up to 1978 and including a vertical line between 1968 and 1969 (when the first reforms in our sample started). Do your results support the assumption of parallel trends? */
 
 preserve
-egen total_pop_by_state = total(stpop), by(year)
-gen wgt = stpop/total_pop_by_state
+	egen total_pop_by_state = total(stpop), by(year)
+	gen wgt = stpop/total_pop_by_state
 
-gen TREATED = (lfdivlaw >= 1968 & lfdivlaw <= 1988)
-sum TREATED 
+	gen TREATED = (lfdivlaw >= 1968 & lfdivlaw <= 1988)
+	sum TREATED 
 
-egen div_rate_tre = wmean(div_rate) if TREATED == 1, by(year) weight(wgt)
-egen div_rate_con = wmean(div_rate) if TREATED == 0, by(year) weight(wgt)
+	egen div_rate_tre = wmean(div_rate) if TREATED == 1, by(year) weight(wgt)
+	egen div_rate_con = wmean(div_rate) if TREATED == 0, by(year) weight(wgt)
 
-collapse div_rate_tre div_rate_con, by(year)
+	collapse div_rate_tre div_rate_con, by(year)
 
-gen div_rate_dif = div_rate_tre - div_rate_con
+	gen div_rate_dif = div_rate_tre - div_rate_con
 
 
-#delimit ;
+	#delimit ;
 
-graph set window fontface "Times New Roman";
+	graph set window fontface "Times New Roman";
 
-graph twoway	
-    (line div_rate_tre year, lcolor(black) lwidth(thick))
-    (line div_rate_con year, lcolor(gs5) lwidth(thick))
-    (line div_rate_dif year, lcolor(black) lp(dash)) 
-    (function y = 0.2, range(1968 1988) lcolor(black) lpattern(solid) lwidth(medium))
-    ,
-    xline(1968 1988, lp(solid)) //* might change the vertical lines 
-    ylabel(0(1)7, grid glstyle(solid))
-    yline(0, lp(solid))
-    xlabel(1956(2)1998, nogrid angle(45))
-    xmticks(1957(2)1999)
-    legend(
-        pos(12)
-        order(
-            1 "Reform states"
-            2 "Control states"
-            3 "Difference in divorce rates: Reform states less controls"
-            )
-        region(lstyle(solid) lcolor(black) lwidth(thin))
-    )
-    xtitle("Year")
-	text(0.3 1982 "Friedberg's sample", size(small) color(black) place(n))	
-	text(6.6 1973 "Reform period", size(small) color(black) place(n))
-	*text(6.3 1973 "29 states adopted", size(small) color(black) place(n)) //*check if it is 29 states 
-	*text(6 1973 "unilateral divorce", size(small) color(black) place(n))
-    ytitle("Divorce rate" "Divorces per 1,000 persons per year")
+	graph twoway	
+		(line div_rate_tre year, lcolor(black) lwidth(thick))
+		(line div_rate_con year, lcolor(gs5) lwidth(thick))
+		(line div_rate_dif year, lcolor(black) lp(dash)) 
+		(function y = 0.2, range(1968 1988) lcolor(black) lpattern(solid) lwidth(medium))
+		,
+		xline(1968 1988, lp(solid)) //* might change the vertical lines 
+		ylabel(0(1)7, grid glstyle(solid))
+		yline(0, lp(solid))
+		xlabel(1956(2)1998, nogrid angle(45))
+		xmticks(1957(2)1999)
+		legend(
+			pos(12)
+			order(
+				1 "Reform states"
+				2 "Control states"
+				3 "Difference in divorce rates: Reform states less controls"
+				)
+			region(lstyle(solid) lcolor(black) lwidth(thin))
+		)
+		xtitle("Year")
+		text(0.3 1982 "Friedberg's sample", size(small) color(black) place(n))	
+		text(6.6 1973 "Reform period", size(small) color(black) place(n))
+		ytitle("Divorce rate" "Divorces per 1,000 persons per year")
 
-;
+	;
 
-#delimit cr
+	#delimit cr
 
-graph export "Graph_1.pdf", replace
+	graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Graph_1.pdf", replace
 
 restore
 
@@ -169,7 +173,7 @@ graph twoway
 
 #delimit cr
 
-graph export "Graph_2.pdf", replace
+graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Graph_2.pdf", replace
 restore 
 
 
@@ -251,7 +255,7 @@ Difference 1 should show differences across columns while Difference 2 across li
 	matrix rownames table_1 = POST=1 POST=0 Difference_1
 
 	matrix list table_1
-	putexcel set "table_1.xlsx", replace
+	putexcel set "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/table_1.xlsx", replace
 	putexcel A1=matrix(table_1), names
 	putexcel C1:C4, border(right)
 	putexcel A3:D3, border(bottom)
@@ -299,43 +303,43 @@ This bias is less prominent after controlling for state specific quadratic time 
 /* Created simulated observations */
 
 preserve
-clear
+	clear
 
-set 		obs = 6 
-gen 		obs = _n ;
-gen 		state = floor(.9 + obs/3)
-bysort		state : gen year = _n ;
-gen 		D = state == 1 & year == 3 ;
-replace 	D = 1 if state == 2 & ( year == 2 | year == 3 ) ;
+	set obs 6 
+	gen obs = _n 
+	gen state = floor(.9 + obs/3)
+	bysort state : gen year = _n
+	gen D = state == 1 & year == 3
+	replace D = 1 if state == 2 & ( year == 2 | year == 3 )
 
-* Generate Y
-gen Y = 0.1 + 0.02 * (year == 2) + 0.05 * (D == 1) + runiform() / 100
+	* Generate Y
+	gen Y = 0.1 + 0.02 * (year == 2) + 0.05 * (D == 1) + runiform() / 100
 
-* Generate Y2
-gen Y2 = 0.1 + 0.02 * (year == 2) + 0.05 * (D == 1) + 0.3 * (state == 2 & year == 3) + runiform() / 100
+	* Generate Y2
+	gen Y2 = 0.1 + 0.02 * (year == 2) + 0.05 * (D == 1) + 0.3 * (state == 2 & year == 3) + runiform() / 100
 
-* Generate Y3
-gen Y3 = 0.1 + 0.02 * (year == 2) + 0.05 * (D == 1) + 0.4 * (state == 2 & year == 3) + runiform() / 100
+	* Generate Y3
+	gen Y3 = 0.1 + 0.02 * (year == 2) + 0.05 * (D == 1) + 0.4 * (state == 2 & year == 3) + runiform() / 100
 
-* Generate Y4
-gen Y4 = 0.1 + 0.02 * (year == 2) + 0.05 * (D == 1) + 0.5 * (state == 2 & year == 3) + runiform() / 100
+	* Generate Y4
+	gen Y4 = 0.1 + 0.02 * (year == 2) + 0.05 * (D == 1) + 0.5 * (state == 2 & year == 3) + runiform() / 100
 
-	/* (i) Now perform regressions analogous to the one performed in exercise e question (i) for all 4 dependent variables created (that is, a state and year fixed-effects regression with an absorbing treatment dummy). Is it possible to estimate the treatment coefficient consistently in each of these cases? */
-	
-reg Y i.state i.year D, vce(robust)
-twowayfeweights Y state year D, type(feTR) 
-reg Y2 i.state i.year D, vce(robust)
-twowayfeweights Y2 state year D, type(feTR) 
-reg Y3 i.state i.year D, vce(robust)
-twowayfeweights Y3 state year D, type(feTR) 
-reg Y4 i.state i.year D, vce(robust)
-twowayfeweights Y4 state year D, type(feTR) 
+		/* (i) Now perform regressions analogous to the one performed in exercise e question (i) for all 4 dependent variables created (that is, a state and year fixed-effects regression with an absorbing treatment dummy). Is it possible to estimate the treatment coefficient consistently in each of these cases? */
+		
+	reg Y i.state i.year D, vce(robust)
+	twowayfeweights Y state year D, type(feTR) 
+	reg Y2 i.state i.year D, vce(robust)
+	twowayfeweights Y2 state year D, type(feTR) 
+	reg Y3 i.state i.year D, vce(robust)
+	twowayfeweights Y3 state year D, type(feTR) 
+	reg Y4 i.state i.year D, vce(robust)
+	twowayfeweights Y4 state year D, type(feTR) 
 
 
-/*extra: controlling for state specific time effects */
-reg Y2 i.state##i.year D, vce(robust)
-reg Y3 i.state##i.year D, vce(robust)
-reg Y4 i.state##i.year D, vce(robust)
+	/*extra: controlling for state specific time effects */
+	reg Y2 i.state##i.year D, vce(robust)
+	reg Y3 i.state##i.year D, vce(robust)
+	reg Y4 i.state##i.year D, vce(robust)
 restore
 	
 		/* A: Only the first regression consistently estimates the average treatment effect: the estimated coefficient is 0.056 and statistically significant at the 5% level. In all remaining regressions the estimated coefficient for the treatment dummy becomes negative, though statistically insignificant. This can be explained by the way the simulated data have been created. "Y" includes only a fixed efect and a year effect, while following simulated outcomes include a time varying and state specific effect on the outcome that is not accounted by the regression specification we adopted. Indeed, if we control for state specific time effects in the specification (as in the extra section) the estimates for treatment are close to the "true" values of 0.05. Hence, due to the staggered implementation of the treatment the estimated regressions include a downard bias that is increasing depending on the magnitude of the state and year specific effect. This because the treatment effect is "masked" by the state and time specific effect of state 2 in year 3 that might be due either to specific changes in state 2 at year 3 or by heterogeneous treatment effects.   */
@@ -379,8 +383,8 @@ preserve
 	/* (iii) Run the command bacondecomp to analyze the decomposition of the treatment effect. Plot the graph showing the relationship between the treatment effect estimates and the corresponding weights. Briefly explain what is the analysis proposed by Goodman-Bacon (2021). Is there evidence of issues regarding negative weights? */
 	
 		bacondecomp div_rate IMP_UNILATERAL [aweight = init_stpop], robust  mcolors(blue red green)
-	graph rename bacondecomp
-	graph export "Bacon_decomposition_graph.pdf", replace
+	graph rename bacondecomp22
+	graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Bacon_decomposition_graph.pdf", replace
 restore
 	
 	/* Goodman-Bacon (2021) provides a decomposition of the twoway Difference in Differences estimator (TWFEDD) in case of staggered treatment as the weighted average of all possible 2x2 two group two periods DiD estimators. These differ by the adopted control group: as a group might change treatment status over time, every DiD can either have as control group an always treated group, a never treated group, or timing groups, namely groups whose treatment stated at different times is used as other's controls groups.
@@ -403,58 +407,62 @@ So that this dummy will equal 1 for all observations 10 or more years before the
 
 	/* (i) Run the regresson below, using the unilateral divorce dummies Dτ st you created and sector (πs) and year (γt) fixed effects. */
 	
-encode st, generate(state)
-keep if year >= 1956 & year <= 1988
-gen IMP_UNILATERAL = 0
-replace IMP_UNILATERAL = 1 if lfdivlaw <= year
-gen no_law = 0 
-replace no_law=1 if lfdivlaw==2000
-xtset state year
+preserve
+	use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/pset_4.dta", clear
 
-gen tau = year - lfdivlaw
-tab tau
+	encode st, generate(state)
+	keep if year >= 1956 & year <= 1988
+	gen IMP_UNILATERAL = 0
+	replace IMP_UNILATERAL = 1 if lfdivlaw <= year
+	gen no_law = 0 
+	replace no_law=1 if lfdivlaw==2000
+	xtset state year
 
-gen lead10 = 0
-replace lead10 = 1 if tau <=-10
+	gen tau = year - lfdivlaw
+	tab tau
 
-*Lead and lag dummies
-forvalues k = 9(-1)2 {
-gen lead`k' = tau == -`k'
-}
+	gen lead10 = 0
+	replace lead10 = 1 if tau <=-10
 
-forvalues k = 0/14 {
-gen lag`k' = tau == `k'
-}
-gen lag15 = 0
-replace lag15 = 1 if tau >= 15
+	*Lead and lag dummies
+	forvalues k = 9(-1)2 {
+	gen lead`k' = tau == -`k'
+	}
 
-*Generate the linear and the squared time trends
-forval i=1/51{
-	bysort state (year): gen time_trend_`i'=_n if state==`i' 
-	replace time_trend_`i'=0 if time_trend_`i'==.
-}
+	forvalues k = 0/14 {
+	gen lag`k' = tau == `k'
+	}
+	gen lag15 = 0
+	replace lag15 = 1 if tau >= 15
 
-forval i = 1/51 {
-    gen timetrend_square_`i' = time_trend_`i'^2
-}
+	*Generate the linear and the squared time trends
+	forval i=1/51{
+		bysort state (year): gen time_trend_`i'=_n if state==`i' 
+		replace time_trend_`i'=0 if time_trend_`i'==.
+	}
 
-reghdfe div_rate lead* lag* [aweight = stpop], absorb(i.year i.state) cluster(state)
-estimates store reg_simple
-outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg1.xlsx", title("regression ex i point i") label excel replace
+	forval i = 1/51 {
+		gen timetrend_square_`i' = time_trend_`i'^2
+	}
 
-	
-	/* (ii) Perform the same regression as the one described above, now including state-specific linear time trends. */
-	
-reghdfe div_rate lead* lag* time_trend_* [aweight = stpop], absorb(i.year i.state) cluster(state)
-estimates store reg_timetrend
-outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg2.xlsx", title("regression ex i point ii") label excel replace
+	reghdfe div_rate lead* lag* [aweight = stpop], absorb(i.year i.state) cluster(state)
+	estimates store reg_simple
+	outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg1.xlsx", title("regression ex i point i") label excel replace
 
-	
-	/* (iii) In addition to state-specific linear time trends, include also quadratic state-specific time trends. */
-	
-reghdfe div_rate lead* lag* time_trend_* timetrend_square_* [aweight = stpop], absorb(i.year i.state) cluster(state)
-estimates store reg_sqtime
-outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg3.xlsx", title("regression ex i point iii") label excel replace
+		
+		/* (ii) Perform the same regression as the one described above, now including state-specific linear time trends. */
+		
+	reghdfe div_rate lead* lag* time_trend_* [aweight = stpop], absorb(i.year i.state) cluster(state)
+	estimates store reg_timetrend
+	outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg2.xlsx", title("regression ex i point ii") label excel replace
+
+		
+		/* (iii) In addition to state-specific linear time trends, include also quadratic state-specific time trends. */
+		
+	reghdfe div_rate lead* lag* time_trend_* timetrend_square_* [aweight = stpop], absorb(i.year i.state) cluster(state)
+	estimates store reg_sqtime
+	outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg3.xlsx", title("regression ex i point iii") label excel replace
+
 
 	
 	/* (iv) Interpret the results of all 3 regressions. What can we see in the behaviour of divorce rates through this analysis that was not possible in the single coefficient analysis? */
@@ -485,7 +493,7 @@ coefplot ///
     ytitle("Coefficient") ///
     title("Event-Study Estimates with 95% Confidence Intervals") ///
     vertical
-
+graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/event_study_regression.pdf", replace
 
 /* (k) Wolfers (2006) presents a summary of the debate regarding the influence of the unilateral divorce law in the divorce rates. How do the conclusions of the paper differ from Friedberg (1998)? How does the author rationalize the difference in his findings? */
 
@@ -501,13 +509,14 @@ drop timetrend_square_*
 *simple
 eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) control_cohort(no_law) absorb(i.year i.state) vce( cluster state)
 estimates store reg_interact_simple
-outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg4.xlsx", title("regression ex l 1") label excel replace
+outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg4.xlsx", title("regression ex l 1") label excel replace
 matrix C = e(b_iw)
 mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
 matrix C = C \ A'
 matrix list C
 coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
 				title("Simple Event Study") xlabel(, alternate)
+graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/interact_simple.pdf", replace
 
 *linear time trends
 
@@ -519,7 +528,7 @@ local lineartime time_trend_*
 
 eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) covariates(`lineartime') control_cohort(no_law) absorb(i.year i.state ) vce(cluster state)
 estimates store reg_interact_linear
-outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg5.xlsx", title("regression ex l 2") label excel replace
+outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg5.xlsx", title("regression ex l 2") label excel replace
 *graph
 matrix C = e(b_iw)
 mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
@@ -527,6 +536,7 @@ matrix C = C \ A'
 matrix list C
 coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
 				title("Event Study with Linear Time Trends") xlabel(, alternate)
+graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/interact_linear.pdf", replace
 				
 *squared time trends
 
@@ -539,45 +549,21 @@ local squaretrend timetrend_sq_*
 
 eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) control_cohort(no_law) covariates(`lineartime' `squaretrend') absorb(i.year i.state) vce(cluster state)
 estimates store reg_interact_squared
-outreg2 using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\New folder\Reg6.xlsx", title("regression ex l 3") label excel replace
+outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg6.xlsx", title("regression ex l 3") label excel replace
+
 *graph
+
 matrix C = e(b_iw)
 mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
 matrix C = C \ A'
 matrix list C
 coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
 				title("Event Study with Square Time Trends") xlabel(, alternate)
+graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/final_graph.pdf", replace
 				
-
+restore
+				
 *In Sun and Abraham (2021) the following is discussed: with heterogenous treatment effects, standard event-study coefficients are not able to capture the dynamic treatment effects. So, with the eventstudyinteract command, the estimators are "interaction-weighted": at first, the CATT (Cohort-specific Average Treatment effect on the Treated) is estimated , then the CATT estimates are averaged across cohorts at a given relative period. These estimators are robust to heterogeneous treatment effects. 
 
 *Comparison with the results from the original paper:
 *In general, the results found in this exercise are in line with what was found by the original paper, so in both cases what has been found is a short run increase in the divorce rates in the first years after the introduction of the unilateral divorce laws. After a couple of years, the effect becomes insignifcantly different from zero. When adding squared time trends, there is an unusual output. In particular, ten years before the introduction of the law, there is a significantly positive effect, that then is zero for most of the other time periods analyzed, and it becomes significantly negative after the eleventh period after the introduction of the law. 
-
-
-	
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
