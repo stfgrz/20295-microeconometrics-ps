@@ -145,11 +145,18 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/500c011
 	
 **# Question (h) 
 
-	/* (i) Use rdrobust to estimate the effect of ``T - Islamic mayor in 1994'' - on ``Y - Share Women aged 15-20 with High School Education'' using a linear polynomial. */
+	/* (i) Use rdrobust to estimate the effect of ``T - Islamic mayor in 1994'' - on ``Y - Share Women aged 15-20 with High School Education'' using a linear polynomial. Try both an uniform and triangular kernel. */
 	
-	/* (ii) Try both an uniform and triangular kernel. */
+*triangular
+rdrobust Y X, p(1) kernel(triangular) bwselect(mserd)
+local opt_i = e(h_l)
+
+*uniform
+rdrobust Y X, p(1) kernel(uni) bwselect(mserd)
 	
 	/* (iii) Does electing a mayor from an Islamic party has a significant effect on the educational attainment of women? Do results differ significantly for different kernel choices? */
+	
+		/* A: We find a positive and statistically significant effect of the election of a muslim party on the share of women with high school education. In particular the estimated Average Treatment Effect at the cutoff is 3.0195 for the triangular kernel and 3.2019 for the uniform. Both estimates are significant at the 5% level. The uniform kernel gives equal weights to the observations in the bandwith, while the triangular one gives linearly less weight as observations get further from the cutoff. The results are fairly comparable with different kernels.  */
 	
 /* MANDATORY: Use a triangular kernel for these next items. */
 	
@@ -157,16 +164,30 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/500c011
 
 	/* (i) Do not choose any bandwidth. Use a polynomial of order 4. */
 	
+*as the cutoff is 0 then X-c = X
+gen X2 = X^2
+gen X3 = X^3
+gen X4 = X^4
+	
 	/* (ii) Run a regular linear regression instead of rdrobust. */
+	
+reg Y T X X2 X3 X4 i.T#c.X i.T#c.X2 i.T#c.X3 i.T#c.X4
+
+		/* A: The estimated treatment effect at the cutoff is 3.06. Results are not the same yet are very different. The slight disrepancy might be due to the different weights given to the observations. The triangular kernel used in h) gives less weight to observation far from the cutoff. These are equally weighted in the regression, hence capturing some noise the kernel was cancelling out*/
 	
 **# Question (j) Estimate the effect of T on Y but using a local approach by restricting our sample to a window within an optimal bandwidth that we should have obtained with rdrobust (mserd bandwidth).
 
-	/* (i) Run a regular linear regression. */
+	/* (i) Run a regular linear regression. Use a linear polynomial. */
 	
-	/* (ii) Use a linear polynomial. */
+preserve
+drop if X>17.240 | X <-17.240
+reg Y T X i.T#c.X
+restore
 	
-	/* (iii) Do we get the exact same result as in item (h)? If not, explain why. 
-		
+	/* (ii) Do we get the exact same result as in item (h)? If not, explain why. 
+	
+		/* A: The estimated treatment effect at the cutoff is 3.06. Results are not the same yet are very different. The slight disrepancy might be due to the different weights given to the observations. The triangular kernel used in h) gives less weight to observation far from the cutoff. These are equally weighted in the regression, hence capturing some noise the kernel was cancelling out*/
+	
 		HINT: In the `rdrobust` post-estimate, save our optimal bandwidth in a local using:
 
 			`local opt i = e(h l)` */
@@ -176,10 +197,35 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/500c011
 	/* (i) Re-estimate item (h)'s RD using as alternative bandwidths:
 	
 		`0.5*opt i, 0.75*opt i, 1.25*opt i, and 1.5*opt i`*/
+
+rdrobust Y X, p(1) kernel(triangular) bwselect(mserd)
+local opt_i = e(h_l)
+estimates store reg_band_3
+rdrobust Y X, p(1) kernel(triangular) h(0.5*17.240 0.5*17.240)
+estimates store reg_band_1
+rdrobust Y X, p(1) kernel(triangular) h(0.75*17.240 0.75*17.240)
+estimates store reg_band_2
+rdrobust Y X, p(1) kernel(triangular) h(1.25*17.240 1.25*17.240)
+estimates store reg_band_4
+rdrobust Y X, p(1) kernel(triangular) h(1.5*17.240 1.5*17.240)
+estimates store reg_band_5
 	
 	/* (ii) Plot each five RD point estimates, including that from item (h), with their respective confidence intervals in a graphic named Graph 3. */
 	
+coefplot ///
+    (reg_band_1, label("Bandwith 0.5") msymbol(O) mcolor(blue)) ///
+    (reg_band_2, label("Bandwith 0.75") msymbol(O) mcolor(red)) ///
+    (reg_band_3, label("Bandwith 1") msymbol(O) mcolor(green)) ///
+	(reg_band_4, label("Bandwith 1.25") msymbol(O) mcolor(yellow)) ///
+	(reg_band_5, label("Bandwith 1.5") msymbol(O) mcolor(purple)) ///
+	
+graph export "Graph_3.pdf", replace
+
+	
 	/* (iii) What can we say about the robustness of our results with respect to bandwidth choice? */
+	
+		/* A: Relying on various intervals for the bandwith shows the bias-variance trade off in the estimation of the local average treatment effect. 
+If we keep a very small interval by taking 0.5*opt_i the estimates is likely to be less biased but it is highly volatile. Indeed, the coefficient is not statistically significant, with wide standard errors. The variance diminishes as we increase the width of the bandwith reaching statistical significance when using the values of opt_i. The coefficient slightly increases (from 1.8 to 3.02) compared to the 0.5*opt_i interval, showing that the cost of smaller variance comes with an estimate that is likely to be marginally biased. Increasing the bandwith does not come with a great increase in variance while yielding point estimates comparable to the baseline case of opt_i */
 
 *=============================================================================
 **#								Exercise 2 									*/
