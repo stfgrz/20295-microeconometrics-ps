@@ -28,6 +28,7 @@ ssc install rdrobust, replace
 ssc install estout, replace
 ssc install rddensity, replace
 ssc install lpdensity, replace
+
 */
 
 /* For graphs & stuff */
@@ -232,24 +233,144 @@ If we keep a very small interval by taking 0.5*opt_i the estimates is likely to 
 /* Use the file pset_3.dta													*/
 *=============================================================================
 
+use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/2f55a86f76628ec3c31c25581dafa7e4469a9f9c/ps3/ps3_data/fraud_pcenter_final.dta", clear
+
+* First of all, we need to generate the appropriate variables
+
+gen runvar = cond(cov==1, _dist, -_dist)
+label variable runvar "Signed dist to boundary (neg=outside, pos=inside)"
+
+gen D = runvar>=0
+label variable D "Indicator: inside coverage"
+
+gen fraud1 = (frnum_comb>0)
+label variable fraud1 "1 if ≥1 Category C station"
+
+gen share_fraud = share_comb
+label variable share_fraud "Share votes in Cat C fraud"
+
 **# Question (a)
 
 	/* (i) Plot the treatment variable used at Gonzalez (2021) as a function of this new running variable. In addition, compute the RD estimate for a regression where you model the 
 	same treatment variable as a function of the new running variable. */
 	
+twoway ///
+  (lpolyci cov runvar if runvar<0, bwidth(2) lcolor(blue)      ) ///
+  (lpolyci cov runvar if runvar>=0, bwidth(2) lcolor(red)     ) ///
+  (scatter cov runvar,     ///
+      msymbol(circle) msize(vsmall) mcolor(gs14%40) jitter(0.002)) ///
+  , xline(0, lpattern(dash) lwidth(thin)) ///
+    xtitle("Signed distance (km)", size(medium)) ///
+    ytitle("Pr(Coverage = 1)", size(medium)) ///
+    title("First-Stage Coverage Probability", size(large)) ///
+    scheme(s1color) ///
+    graphregion(color(white)) bgcolor(white)
+	
+reg cov D runvar if abs(runvar)<=7.278, vce(cluster province_id)
+
+di as txt "First‐stage jump = " as res %6.3f _b[D]
+
+foreach v in elevation slope {
+  rdplot `v' runvar, c(0) p(1) kernel(triangular) ///
+    title("Continuity: `v' at coverage boundary")
+  reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
+  di as txt "`v' jump = " as res %6.3f _b[D]
+}
+
+* Density (McCrary) test
+rddensity runvar, c(0)
+	
 	/* (ii) Is the current design a sharp or a fuzzy RD? */
 	
+		/* A: In the original article González (2021) models the mobile-coverage frontier as though it determined treatment perfectly: a polling centre that falls inside the raster cell is coded as treated, one that falls outside is coded as untreated, and the regressions estimate the sharp discontinuity in outcomes at that boundary.  The exercise you are asked to perform places that set-up in a different information environment.  Longitude is now observed with error—only a noisy proxy is available—while latitude is measured correctly.  González therefore computes each centre's Euclidean distance to the frontier with a coordinate that is partly wrong, and uses the sign of that *proxy* distance as if it told him on which side of the threshold the centre lies.  At the same time he retains an independent, accurately recorded indicator of whether the centre actually had a phone signal on election day.
+
+		Because of the noise in longitude the proxy distance no longer maps deterministically into treatment status: some stations that truly lacked coverage are nevertheless calculated as having positive distance, while some that truly enjoyed coverage are calculated as negative.  What remains at zero proxy distance is not a clean cliff from treatment probability zero to one; instead the probability of treatment jumps upward but stops short of unity.  That probabilistic jump is the hallmark of a **fuzzy regression-discontinuity design**.  Position relative to the nominal frontier functions as a strong but imperfect instrument for realised coverage, and the causal parameter of interest becomes the local Wald ratio—the discontinuity in the fraud outcome divided by the discontinuity in the treatment rate—estimated within a narrow bandwidth around the threshold.
+
+		Identification in this context still depends on the usual smoothness of potential outcomes with respect to the *true* but unobserved distance; in addition it requires that the longitudinal measurement error be random, unrelated to potential fraud outcomes, and mild enough that crossing the proxy boundary never makes a centre *less* likely to receive coverage (monotonicity).  Under those conditions, estimating two local-linear regressions—one with the fraud variable and one with the treatment indicator as dependent variables, both as functions of the proxy distance and latitude, with boundary-segment fixed effects—yields two discontinuities whose ratio consistently recovers the causal effect of mobile coverage for the polling centres whose treatment status is genuinely altered by being measured just inside or just outside the threshold.  In short, once the running variable is observed with noise while an accurate treatment flag is available, the design that had been sharp in González (2021) must be analysed as a fuzzy RD and the boundary indicator must be treated as an instrument rather than as the treatment itself. */
+	
 	/* (iii) Which assumptions must hold in order for the one-dimensional RD estimates of Gonzalez (2021) to be valid? */
+	
+		/*A: For that one-dimensional sharp RD to deliver credible causal estimates, a sequence of conditions—some generic to the RD framework, others specific to the geographic setting—must hold. First, the potential outcomes (the fraud measures that would be observed with or without coverage) must vary smoothly with location so that any jump exactly at distance = 0 can only be attributed to the treatment. Gonzalez subjects an extensive battery of electoral, demographic, topographic and development covariates to the same discontinuity test applied to the outcomes and shows that, once the sample is narrowed to polling centres lying within a few kilometres of the frontier, those characteristics evolve continuously across it; none of them mimics the break in fraud that the treatment generates​​.
+		
+		Second, there must be no strategic manipulation of the running variable: polling stations (or the villages they serve) cannot have been placed deliberately "just inside" or "just outside" coverage in anticipation of the election. A recent Cattaneo-Jansson-Ma density test reveals no bunching of observations on either side of zero distance, which supports the absence of sorting or gaming of the assignment mechanism​​.
+		
+		Third, comparison must always be local; accordingly the author discards any stretch of frontier for which at least one side lacks observations, thereby satisfying the "boundary positivity" requirement that every segment offer both treated and control units for comparison​​.
+		
+		Because the physical environment is rugged and cellular footprints can be irregular, it is equally important that the smooth functions used to partial out latitude and longitude are flexible enough within the selected bandwidth. Gonzalez adopts the Calonico-Cattaneo-Titiunik bandwidth selector, estimates separate low-order polynomials on each side of the cut-off, and shows that alternative polynomial orders or wider/narrower windows leave the treatment coefficient essentially unchanged​​.
+
+		Moreover, since the cut-off is geographical rather than behavioural, the Stable Unit Treatment Value Assumption is plausible: a centre's fraud behaviour is unlikely to be affected by whether a neighbouring centre metres away is, technically, on the other side of the invisible radio boundary, and empirical tests detect neither spill-overs nor displacement of fraud into nearby untreated areas​​. 
+		
+		Finally, treatment assignment is deterministic at the cut-off by construction—a centre that falls inside the raster cell is coded as covered—so the probability of treatment jumps from zero to one, as demanded by the sharp design.
+
+		When all these pieces are in place—the continuity of counterfactual trends, the absence of manipulation, the presence of observations on both sides, the correct local specification and the deterministic jump in the treatment indicator—the scalar "distance to coverage" specification that compresses the two-dimensional spatial boundary into a single running variable isolates the local average causal effect of mobile-phone coverage on electoral fraud for polling centres located arbitrarily close to that boundary. Under those assumptions the discontinuity in fraud that Gonzalez documents can be interpreted as the deterrent effect of enabling voters to communicate irregularities in real time. */
 
 **# Question (b)
 
 	/* (i) Point out in which setting does having a proxy for longitude does not require you to change RD design (relative to Gonzalez, 2021).
 	
 	HINT: Read the "Additional Results" section of Gonzalez (2021) and reflect on which type of cell phone coverage boundary would deliver you this result. */
+	
+		/*A: In the specific case you are asked to consider, the regression-discontinuity design would **remain sharp**—despite the noisy longitude—only if the treatment frontier were an east-west, horizontal line so that coverage status depended **exclusively on latitude**.  With such a geometry every polling centre's signed distance to the boundary can be computed with the formula ``runvar = latitude – φ0'' where φ0 is the latitude of the coverage edge.  Longitude never enters that calculation, so measurement error in the east-west coordinate has absolutely no bearing on whether a centre is classified as "inside" or "outside." 
+		
+		The indicator  ``D = 1(runvar ≥ 0)'' would therefore remain a deterministic function of the running variable, and the first-stage discontinuity in the probability of treatment would still jump from zero to one.  In other words, the essential identifying feature of a sharp RD—the perfect alignment between the crossing of the cut-off and receipt of treatment—would survive intact, and no fuzzy correction would be necessary.
+
+		González effectively illustrates this point in the "Additional Results" section of the paper when he implements placebo boundaries defined by randomly chosen latitudes.  Those boundaries slice the map along horizontal lines; because only latitude matters, any mis-recorded longitude cannot create misclassification at those artificial cut-offs, and the estimated discontinuities collapse to zero.  The exercise demonstrates that as soon as the frontier can be described by latitude alone, noise in longitude is innocuous.  By contrast, the real Afghan 2-G footprint winds through both latitude and longitude, so once longitude is observed imprecisely the relationship between the nominal cut-off and true coverage becomes probabilistic, forcing the researcher to treat the specification as a fuzzy RD. */
 
 **# Question (c)
 
 	/* (i) Use fraud pcenter final to partially replicate Columns 1, 3 and 5 of Table 2 under this new RD setting (present only point estimates). Interpret your new estimates.
 	
 	HINT: use ``Table_onedim_results.do'' and review your RDD slides. */
+	
+
+*──────────────────────────────────────────────────────*
+*  Check continuity of key covariates at 0
+*──────────────────────────────────────────────────────*
+
+
+
+*──────────────────────────────────────────────────────*
+* (b)  East–West boundary case
+*──────────────────────────────────────────────────────*
+* If the true 2G boundary were a horizontal line (constant latitude),
+* runvar = signed(latitude – cutoff) only depends on latitude.
+* Longitude errors then do NOT affect runvar ⇒ same 1-D RD.
+
+*──────────────────────────────────────────────────────*
+* (c)  Replicate Cols 1, 3, 5 of Table 2 (point estimates)
+*──────────────────────────────────────────────────────*
+* Panel A: Outcome = fraud1
+*   All regions (h≈7.278)
+rdrobust fraud1 runvar, c(0) h(7.278) p(1) kernel(triangular)
+di as txt "All regions: β̂(fraud1) = " as res %6.3f _b[cutoff]
+
+*   Southeast ("East", h≈6.100)
+rdrobust fraud1 runvar if region2=="East", ///
+    c(0) h(6.100) p(1) kernel(triangular)
+di as txt "East region: β̂(fraud1) = " as res %6.3f _b[cutoff]
+
+*   Northwest ("North", h≈7.675)
+rdrobust fraud1 runvar if region2=="North", ///
+    c(0) h(7.675) p(1) kernel(triangular)
+di as txt "North region: β̂(fraud1) = " as res %6.3f _b[cutoff]
+
+* Panel B: Outcome = share_fraud
+*   All regions (h≈7.152)
+rdrobust share_fraud runvar, c(0) h(7.152) p(1) kernel(triangular)
+di as txt "All regions: β̂(share) = " as res %6.3f _b[cutoff]
+
+*   Southeast ("East", h≈5.963)
+rdrobust share_fraud runvar if region2=="East", ///
+    c(0) h(5.963) p(1) kernel(triangular)
+di as txt "East region: β̂(share) = " as res %6.3f _b[cutoff]
+
+*   Northwest ("North", h≈7.030)
+rdrobust share_fraud runvar if region2=="North", ///
+    c(0) h(7.030) p(1) kernel(triangular)
+di as txt "North region: β̂(share) = " as res %6.3f _b[cutoff]
+
+*******************************************************
+*  End of do‐file
+*******************************************************
+
 	
