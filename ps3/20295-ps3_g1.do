@@ -30,6 +30,7 @@ ssc install rddensity, replace
 ssc install lpdensity, replace
 ssc install rdrobust, replace
 
+
 */
 
 /* For graphs & stuff */
@@ -287,7 +288,7 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/2f55a86
 * First of all, we need to generate the appropriate variables
 
 gen runvar = cond(cov==1, _dist, -_dist)
-label variable runvar "Signed dist to boundary (neg=outside, pos=inside)"
+label variable runvar "Signed distance to boundary (neg=outside, pos=inside)"
 
 gen D = runvar>=0
 label variable D "Indicator: inside coverage"
@@ -315,15 +316,23 @@ twoway ///
     scheme(s1color) ///
     graphregion(color(white)) bgcolor(white)
 	
-reg cov D runvar if abs(runvar)<=7.278, vce(cluster province_id)
-
-di as txt "First‐stage jump = " as res %6.3f _b[D]
+graph save "$output/g_covprob.gph", replace
+graph export "$output/first_stage_coverage.pdf", as(pdf) replace
+	
+rdrobust cov runvar, p(1) kernel(triangular)
 
 foreach v in elevation slope {
-  rdplot `v' runvar, c(0) p(1) kernel(triangular) ///
-    title("Continuity: `v' at coverage boundary")
-  reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
-  di as txt "`v' jump = " as res %6.3f _b[D]
+	local fname = "`v'_rdplot"
+	
+	rdplot cov runvar, p(1) kernel(triangular) bw(r(h_l) r(h_r)) ///
+		title("rdrobust / rdplot with optimal bandwidth") ///
+		name(`fname', replace)
+	
+	graph save "$output/`fname'.gph", replace
+    graph export "$output/`fname'.pdf", as(pdf) replace
+	
+	reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
+	di as txt "`v' jump = " as res %6.3f _b[D]
 }
 
 * Density (McCrary) test
@@ -359,7 +368,7 @@ rddensity runvar, c(0)
 	
 	HINT: Read the "Additional Results" section of Gonzalez (2021) and reflect on which type of cell phone coverage boundary would deliver you this result. */
 	
-		/*A: In the specific case you are asked to consider, the regression-discontinuity design would **remain sharp**—despite the noisy longitude—only if the treatment frontier were an east-west, horizontal line so that coverage status depended **exclusively on latitude**.  With such a geometry every polling centre's signed distance to the boundary can be computed with the formula ``runvar = latitude – φ0'' where φ0 is the latitude of the coverage edge.  Longitude never enters that calculation, so measurement error in the east-west coordinate has absolutely no bearing on whether a centre is classified as "inside" or "outside." 
+		/*A: In the specific case we are asked to consider, the regression-discontinuity design would remain sharp—despite the noisy longitude—only if the treatment frontier were an east-west, horizontal line so that coverage status depended **exclusively on latitude**.  With such a geometry every polling centre's signed distance to the boundary can be computed with the formula ``runvar = latitude – φ0'' where φ0 is the latitude of the coverage edge.  Longitude never enters that calculation, so measurement error in the east-west coordinate has absolutely no bearing on whether a centre is classified as "inside" or "outside." 
 		
 		The indicator  ``D = 1(runvar ≥ 0)'' would therefore remain a deterministic function of the running variable, and the first-stage discontinuity in the probability of treatment would still jump from zero to one.  In other words, the essential identifying feature of a sharp RD—the perfect alignment between the crossing of the cut-off and receipt of treatment—would survive intact, and no fuzzy correction would be necessary.
 
@@ -372,54 +381,5 @@ rddensity runvar, c(0)
 	HINT: use ``Table_onedim_results.do'' and review your RDD slides. */
 	
 
-*──────────────────────────────────────────────────────*
-*  Check continuity of key covariates at 0
-*──────────────────────────────────────────────────────*
-
-
-
-*──────────────────────────────────────────────────────*
-* (b)  East–West boundary case
-*──────────────────────────────────────────────────────*
-* If the true 2G boundary were a horizontal line (constant latitude),
-* runvar = signed(latitude – cutoff) only depends on latitude.
-* Longitude errors then do NOT affect runvar ⇒ same 1-D RD.
-
-*──────────────────────────────────────────────────────*
-* (c)  Replicate Cols 1, 3, 5 of Table 2 (point estimates)
-*──────────────────────────────────────────────────────*
-* Panel A: Outcome = fraud1
-*   All regions (h≈7.278)
-rdrobust fraud1 runvar, c(0) h(7.278) p(1) kernel(triangular)
-di as txt "All regions: β̂(fraud1) = " as res %6.3f _b[cutoff]
-
-*   Southeast ("East", h≈6.100)
-rdrobust fraud1 runvar if region2=="East", ///
-    c(0) h(6.100) p(1) kernel(triangular)
-di as txt "East region: β̂(fraud1) = " as res %6.3f _b[cutoff]
-
-*   Northwest ("North", h≈7.675)
-rdrobust fraud1 runvar if region2=="North", ///
-    c(0) h(7.675) p(1) kernel(triangular)
-di as txt "North region: β̂(fraud1) = " as res %6.3f _b[cutoff]
-
-* Panel B: Outcome = share_fraud
-*   All regions (h≈7.152)
-rdrobust share_fraud runvar, c(0) h(7.152) p(1) kernel(triangular)
-di as txt "All regions: β̂(share) = " as res %6.3f _b[cutoff]
-
-*   Southeast ("East", h≈5.963)
-rdrobust share_fraud runvar if region2=="East", ///
-    c(0) h(5.963) p(1) kernel(triangular)
-di as txt "East region: β̂(share) = " as res %6.3f _b[cutoff]
-
-*   Northwest ("North", h≈7.030)
-rdrobust share_fraud runvar if region2=="North", ///
-    c(0) h(7.030) p(1) kernel(triangular)
-di as txt "North region: β̂(share) = " as res %6.3f _b[cutoff]
-
-*******************************************************
-*  End of do‐file
-*******************************************************
 
 	
