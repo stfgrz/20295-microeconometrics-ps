@@ -62,9 +62,7 @@ if ("`user'" == "gabrielemole") {
 **#								Instructions								*/
 *=============================================================================
 
-	/* This problem set is composed of two exercises, each exercise focusing on a different regression discontinuity design (RDD). In Exercise 1, we follow a standard RDD application, Meyers- son (2014), 
-	to study the effect that Islamic political representation had on the educational attainment of women in Turkey during the late 1990s. In Exercise 2, we turn to a spatial RDD, Gonzalez (2021), 
-	to study the effect of cell phone coverage on electoral frauds. */
+	/* This problem set is composed of two exercises, each exercise focusing on a different regression discontinuity design (RDD). In Exercise 1, we follow a standard RDD application, Meyers- son (2014), to study the effect that Islamic political representation had on the educational attainment of women in Turkey during the late 1990s. In Exercise 2, we turn to a spatial RDD, Gonzalez (2021), to study the effect of cell phone coverage on electoral frauds. */
 	
 /*								Commands									*/
 
@@ -72,8 +70,7 @@ if ("`user'" == "gabrielemole") {
 	
 /*								Instructions								*/
 
-	/* (1) rdrobust reports estimates from different estimation methods: (1) Conventional, (2) Bias-corrected, and (3) Robust. In this problem set, any rdrobust output should be reported with Conventional 
-	betas and standard errors. Nonetheless, note that in your own research it is recommended that you report Conventional betas and Robust standard errors */
+	/* (1) rdrobust reports estimates from different estimation methods: (1) Conventional, (2) Bias-corrected, and (3) Robust. In this problem set, any rdrobust output should be reported with Conventional betas and standard errors. Nonetheless, note that in your own research it is recommended that you report Conventional betas and Robust standard errors */
 	
 	/* (2) Unless asked otherwise, use as default options for your rdrobust estimates:
 		
@@ -81,8 +78,7 @@ if ("`user'" == "gabrielemole") {
 		
 		*/
 	
-	/* (3) Have in mind that some commands have different default procedures in Stata and R. Since we are not asking you to specify some of these procedures, it is normal that sometimes the results are
-	not exaclty the same between the two languages. */
+	/* (3) Have in mind that some commands have different default procedures in Stata and R. Since we are not asking you to specify some of these procedures, it is normal that sometimes the results are not exaclty the same between the two languages. */
 
 *=============================================================================
 **#								Exercise 1 									*/
