@@ -286,7 +286,7 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/2f55a86
 gen runvar = cond(cov==1, _dist, -_dist)
 label variable runvar "Signed distance to boundary (neg=outside, pos=inside)"
 
-gen D = runvar>=0
+gen D = runvar>=0 /* GM: occhio che mi sa che qui devi mettere = cov perché ci sono casi in cui hai copertura ma il tuo D=0*/
 label variable D "Indicator: inside coverage"
 
 gen fraud1 = (frnum_comb>0)
@@ -375,7 +375,97 @@ rddensity runvar, c(0)
 	/* (i) Use fraud pcenter final to partially replicate Columns 1, 3 and 5 of Table 2 under this new RD setting (present only point estimates). Interpret your new estimates.
 	
 	HINT: use ``Table_onedim_results.do'' and review your RDD slides. */
+
+* Optimal bandwidth
+
+foreach var in 600 95 ecc comb comb_ind {
+		rdbwselect vote_`var' runvar if ind_seg50==1, vce(cluster segment50)
+		scalar hopt_`var'=e(h_mserd)
+		forvalues r=1/2 {
+			rdbwselect vote_`var' runvar if ind_seg50==1 & region2==`r', vce(cluster segment50)
+			scalar hopt_`var'_`r'=e(h_mserd)
+	}
+}
+*
+
+xtset, clear
+xtset segment50 pccode
+
+*Local Linear Regression 
+
+gen T=cov									/* *!!!!!!!!! Questo va tolto in caso sia messo sopra  !!!!!!!!!!!!!!!***/
+label variable T "Coverage dummy"
+gen instrument_T=0
+replace instrument_T=1 if runvar>0
+gen interaction=T*runvar
+label variable interaction "Interaction between coverage dummy and outcome variable"
+gen instrument_interaction=runvar*instrument_T
+ 
+*** Only using the treatment instrument 
+
+foreach var in comb_ind comb {	
+	* All regions
+	xtivreg vote_`var' (T = instrument_T) runvar if ind_seg50==1 & _dist<=hopt_`var', fe  vce(robust)
+		est store col1_a1_`var'
+		
+
+	* Southeast
+	xtivreg vote_`var' (T = instrument_T) runvar if ind_seg50==1 & _dist<=hopt_`var'_1 & region2==1, fe vce(robust)  
+		est store col1_b1_`var'
+		
+
+	* Northwest
+	xtivreg vote_`var' (T = instrument_T) runvar if ind_seg50==1 & _dist<=hopt_`var'_2 & region2==2, fe vce(robust)
+		est store col1_c1_`var'
 	
+ }
+
+
+
+foreach var in comb_ind comb {	
+	* All regions
+	xtivreg vote_`var' (T interaction = instrument_T instrument_interaction) runvar if ind_seg50==1 & _dist<=hopt_`var', fe  vce(robust)
+		est store col1_a2_`var'
+		
+	* Southeast
+	xtivreg vote_`var' (T interaction = instrument_T instrument_interaction) runvar if ind_seg50==1 & _dist<=hopt_`var'_1 & region2==1, fe vce(robust)  
+		est store col1_b2_`var'
+		
+	* Northwest
+	xtivreg vote_`var' (T interaction = instrument_T instrument_interaction) runvar if ind_seg50==1 & _dist<=hopt_`var'_2 & region2==2, fe vce(robust)
+		est store col1_c2_`var'
+	
+ }
+
+
+
+* Panel A
+estout col1_a1_comb_ind  col1_a2_comb_ind  col1_b1_comb_ind  col1_b2_comb_ind col1_c1_comb_ind  col1_c2_comb_ind   ///
+using "TABLE_4.tex", replace style(tex) ///
+keep(T) label cells(b(star fmt(3)) se(par fmt(3))) starlevels(* 0.10 ** 0.05 *** 0.01) ///
+mlabels(, none) collabels(, none) eqlabels(, none) ///
+stats(N, fmt(a3) ///
+labels("Observations")) ///
+prehead("\begin{table}[H]" "\centering" "\begin{tabular}{lcccccc}" ///
+	"\noalign{\smallskip} \hline \hline \noalign{\smallskip}" ///
+	"& \multicolumn{6}{c} {RDD - Optimal Bandwidth}"   ///
+	"\noalign{\smallskip} \\ " ///
+	"& \multicolumn{2}{c} {All regions} & \multicolumn{2}{c} {SE region} & \multicolumn{2}{c} {NW region}\\" ///
+	" & (1) & (2) & (3) & (4) & (5) & (6) \\" ) ///
+	posthead("\hline \noalign{\smallskip}" "\multicolumn{6}{l}{\emph{Panel A. At least one station with Category C fraud}} \\" "\noalign{\smallskip} \noalign{\smallskip}" ) ///
+	prefoot("\noallign{\smallskip}" "Interaction & & \checkmark & & \checkmark & & \checkmark \\")
+
+* Panel B
+estout col1_a1_comb  col1_a2_comb  col1_b1_comb  col1_b2_comb col1_c1_comb  col1_c2_comb  ///
+using "TABLE_4.tex", append style(tex) ///
+posthead("\noalign{\smallskip} \noalign{\smallskip} \noalign{\smallskip}" "\multicolumn{6}{l}{\emph{Panel B.  Share of votes under Category C fraud}} \\" "\noalign{\smallskip} \noalign{\smallskip}" ) ///
+keep(T) label cells(b(star fmt(3)) se(par fmt(3))) starlevels(* 0.10 ** 0.05 *** 0.01) ///
+mlabels(, none) collabels(, none) eqlabels(, none) ///
+stats(N, fmt(a3) ///
+labels("Observations")) ///
+prefoot("\noallign{\smallskip}" "Interaction & & \checkmark & & \checkmark & & \checkmark \\") ///
+postfoot("\noalign{\smallskip} \hline \hline \noalign{\smallskip}" ///
+	"\end{tabular} \end{table}")
 
 
 	
