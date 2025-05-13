@@ -259,11 +259,20 @@ estimates store reg_band_5
 	/* (ii) Plot each five RD point estimates, including that from item (h), with their respective confidence intervals in a graphic named Graph 3. */
 	
 coefplot ///
-    (reg_band_1, label("Bandwith 0.5") msymbol(O) mcolor(blue)) ///
-    (reg_band_2, label("Bandwith 0.75") msymbol(O) mcolor(red)) ///
-    (reg_band_3, label("Bandwith 1") msymbol(O) mcolor(green)) ///
-	(reg_band_4, label("Bandwith 1.25") msymbol(O) mcolor(yellow)) ///
-	(reg_band_5, label("Bandwith 1.5") msymbol(O) mcolor(purple)) ///
+    (reg_band_1, label("Bandwidth 0.5") msymbol(O) mcolor(navy)) ///
+    (reg_band_2, label("Bandwidth 0.75") msymbol(D) mcolor(maroon)) ///
+    (reg_band_3, label("Bandwidth 1.0") msymbol(S) mcolor(forest_green)) ///
+    (reg_band_4, label("Bandwidth 1.25") msymbol(T) mcolor(orange_red)) ///
+    (reg_band_5, label("Bandwidth 1.5") msymbol(H) mcolor(magenta)) ///
+, ///
+    title("Coefficient Estimates Across Bandwidths") ///
+    ytitle("Coefficient Estimate") ///
+    xtitle("Variable") ///
+    msiz(medium) ///
+    ciopts(recast(rcap) color(gs8)) ///
+    scheme(s1color) ///
+    legend(on)
+
 	
 graph export "Graph_3.pdf", replace
 
@@ -312,11 +321,13 @@ twoway ///
     scheme(s1color) ///
     graphregion(color(white)) bgcolor(white)
 	
+	/* rdplot T X if X>-20 & X<20 + opzioni grafico*/
+	
 graph save "$output/g_covprob.gph", replace
 graph export "$output/first_stage_coverage.pdf", as(pdf) replace
 	
-rdrobust cov runvar, p(1) kernel(triangular)
-
+rdrobust cov runvar, p(1) kernel(triangular)  /*Secondo Giulia Putrino dovresti fare sia rdrobust fraud1 runvar, p(1) kernel(triangular) bselect(mserd) rdrobust share_fraud runvar, p(1) kernel(triangular) bselect(mserd) */
+ 
 foreach v in elevation slope {
 	local fname = "`v'_rdplot"
 	
@@ -437,7 +448,7 @@ foreach var in comb_ind comb {
 	
  }
 
-
+/*Aggiungere clusters optimal bandwidth */
 
 * Panel A
 estout col1_a1_comb_ind  col1_a2_comb_ind  col1_b1_comb_ind  col1_b2_comb_ind col1_c1_comb_ind  col1_c2_comb_ind   ///
@@ -467,5 +478,21 @@ prefoot("\noallign{\smallskip}" "Interaction & & \checkmark & & \checkmark & & \
 postfoot("\noalign{\smallskip} \hline \hline \noalign{\smallskip}" ///
 	"\end{tabular} \end{table}")
 
+		/* A: 
+		The different estimation strategy leads to a change in both point estimates and significance levels of the coefficients. Point estimates are generally lower compared to Table 2. The coefficients lose in significance too. Similarly to Gonzalez (2021), there is heterogeneity in effects, namely South-East regions have a significant negative effect while North-West ones are associated to a positive yet insignificant effect. Overall, there are not striking differences among the two instrumental strategies: point estimates are virtually equal while the interaction instument is related to a slight drop in significance in South-East regions. This corroborates the hypothesis of a constant slope of the outcome with respect to the running variable. The IV estimates the Local Average Treatment Effect on the compliers, provided the non defiers assumption is met. 
+		
+		The difference in 
+		
+
+		
+		
+		The coefficients linked to the proportions of votes affected by fraud, or the likelihood of fraud in individual polling centers, vary when calculated using optimal bandwidth selection compared to those derived from global fitting. Specifically, our coefficients lose in statistical significance. This decline in significance in the optimal bandwidth estimation can be explained by two main factors: 
+•	Transitioning from a global to a local regression can significantly reduce the number of observations, leading to decreased precision and consequently higher standard errors. This increase in standard errors may diminish the significance of our coefficients.
+•	Bias correction: a narrower bandwidth allows for more precise estimation, helping to avoid the mis-specifications inherent in the global model. This is because in global regressions, extreme observations may bias the overall fit. In this scenario, a coefficient showing no statistical difference from zero may indicate that the actual effect is indeed zero, and it is more precisely computed  using a local estimation method.
+
+These two phenomena are connected to the trade-off between bias and variance in local and global estimation within a regression-discontinuity design. Essentially, narrower bandwidths result in smaller sample sizes, leading to increased variance. However, they also enable more precise estimation of the true effect at the threshold. However, unraveling the effects of these two factors presents a challenge. Consequently, determining whether the difference between local and global outcomes arises from one factor or the other remains elusive.
+
+
+							*/
 
 	
