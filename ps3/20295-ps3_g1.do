@@ -326,12 +326,25 @@ twoway ///
 graph save "$output/g_covprob.gph", replace
 graph export "$output/first_stage_coverage.pdf", as(pdf) replace
 	
+<<<<<<< Updated upstream
 rdrobust cov runvar, p(1) kernel(triangular)  /*Secondo Giulia Putrino dovresti fare sia rdrobust fraud1 runvar, p(1) kernel(triangular) bselect(mserd) rdrobust share_fraud runvar, p(1) kernel(triangular) bselect(mserd) */
  
+=======
+gen outcome_a = vote_comb_ind
+label variable outcome_a "at least one station with category C fraud"
+
+gen outcome_b = vote_comb
+label variable outcome_b "share of votes with category fraud"
+
+	*-----Panel A------------------*
+	
+rdrobust outcome_a runvar, p(1) kernel(triangular) bwselect(mserd)
+
+>>>>>>> Stashed changes
 foreach v in elevation slope {
 	local fname = "`v'_rdplot"
 	
-	rdplot cov runvar, p(1) kernel(triangular) bw(r(h_l) r(h_r)) ///
+	rdplot outcome_a runvar if runvar> -20 & runvar< 20, p(4) kernel(triangular) bwselect(mserd) ///
 		title("rdrobust / rdplot with optimal bandwidth") ///
 		name(`fname', replace)
 	
@@ -341,6 +354,54 @@ foreach v in elevation slope {
 	reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
 	di as txt "`v' jump = " as res %6.3f _b[D]
 }
+
+foreach v in elevation slope {
+	local fname = "`v'_rdplot"
+	
+	rdplot outcome_a runvar, p(1) kernel(triangular) bwselect(mserd) ///
+		title("rdrobust / rdplot with optimal bandwidth") ///
+		name(`fname', replace)
+	
+	graph save "$output/`fname'.gph", replace
+    graph export "$output/`fname'.pdf", as(pdf) replace
+	
+	reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
+	di as txt "`v' jump = " as res %6.3f _b[D]
+}
+
+	*-----Panel A------------------*
+	
+rdrobust outcome_b runvar, p(1) kernel(triangular) bwselect(mserd)
+
+foreach v in elevation slope {
+	local fname = "`v'_rdplot"
+	
+	rdplot outcome_b runvar if runvar> -20 & runvar< 20, p(4) kernel(triangular) bwselect(mserd) ///
+		title("rdrobust / rdplot with optimal bandwidth") ///
+		name(`fname', replace)
+	
+	graph save "$output/`fname'.gph", replace
+    graph export "$output/`fname'.pdf", as(pdf) replace
+	
+	reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
+	di as txt "`v' jump = " as res %6.3f _b[D]
+}
+
+foreach v in elevation slope {
+	local fname = "`v'_rdplot"
+	
+	rdplot outcome_b runvar, p(1) kernel(triangular) bwselect(mserd) ///
+		title("rdrobust / rdplot with optimal bandwidth") ///
+		name(`fname', replace)
+	
+	graph save "$output/`fname'.gph", replace
+    graph export "$output/`fname'.pdf", as(pdf) replace
+	
+	reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
+	di as txt "`v' jump = " as res %6.3f _b[D]
+}
+
+	
 
 * Density (McCrary) test
 rddensity runvar, c(0)
@@ -375,9 +436,9 @@ rddensity runvar, c(0)
 	
 	HINT: Read the "Additional Results" section of Gonzalez (2021) and reflect on which type of cell phone coverage boundary would deliver you this result. */
 	
-		/*A: In the specific case we are asked to consider, the regression-discontinuity design would remain sharp—despite the noisy longitude—only if the treatment frontier were an east-west, horizontal line so that coverage status depended **exclusively on latitude**.  With such a geometry every polling centre's signed distance to the boundary can be computed with the formula ``runvar = latitude – φ0'' where φ0 is the latitude of the coverage edge.  Longitude never enters that calculation, so measurement error in the east-west coordinate has absolutely no bearing on whether a centre is classified as "inside" or "outside." 
+		/*A: In the specific case we are asked to consider, the regression-discontinuity design would remain sharp—despite the noisy longitude—only if the treatment frontier were an east-west, horizontal line so that coverage status depended exclusively on latitude.  With such a geometry every polling centre's signed distance to the boundary can be computed with the formula ``runvar = latitude – φ0'' where φ0 is the latitude of the coverage edge.  Longitude never enters that calculation, so measurement error in the east-west coordinate has absolutely no bearing on whether a centre is classified as "inside" or "outside." 
 		
-		The indicator  ``D = 1(runvar ≥ 0)'' would therefore remain a deterministic function of the running variable, and the first-stage discontinuity in the probability of treatment would still jump from zero to one.  In other words, the essential identifying feature of a sharp RD—the perfect alignment between the crossing of the cut-off and receipt of treatment—would survive intact, and no fuzzy correction would be necessary.
+		The indicator  `D = 1(runvar ≥ 0)' would therefore remain a deterministic function of the running variable, and the first-stage discontinuity in the probability of treatment would still jump from zero to one.  In other words, the essential identifying feature of a sharp RD—the perfect alignment between the crossing of the cut-off and receipt of treatment—would survive intact, and no fuzzy correction would be necessary.
 
 		González effectively illustrates this point in the "Additional Results" section of the paper when he implements placebo boundaries defined by randomly chosen latitudes.  Those boundaries slice the map along horizontal lines; because only latitude matters, any mis-recorded longitude cannot create misclassification at those artificial cut-offs, and the estimated discontinuities collapse to zero.  The exercise demonstrates that as soon as the frontier can be described by latitude alone, noise in longitude is innocuous.  By contrast, the real Afghan 2-G footprint winds through both latitude and longitude, so once longitude is observed imprecisely the relationship between the nominal cut-off and true coverage becomes probabilistic, forcing the researcher to treat the specification as a fuzzy RD. */
 
