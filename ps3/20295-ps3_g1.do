@@ -478,21 +478,10 @@ prefoot("\noallign{\smallskip}" "Interaction & & \checkmark & & \checkmark & & \
 postfoot("\noalign{\smallskip} \hline \hline \noalign{\smallskip}" ///
 	"\end{tabular} \end{table}")
 
-		/* A: 
-		The different estimation strategy leads to a change in both point estimates and significance levels of the coefficients. Point estimates are generally lower compared to Table 2. The coefficients lose in significance too. Similarly to Gonzalez (2021), there is heterogeneity in effects, namely South-East regions have a significant negative effect while North-West ones are associated to a positive yet insignificant effect. Overall, there are not striking differences among the two instrumental strategies: point estimates are virtually equal while the interaction instument is related to a slight drop in significance in South-East regions. This corroborates the hypothesis of a constant slope of the outcome with respect to the running variable. The IV estimates the Local Average Treatment Effect on the compliers, provided the non defiers assumption is met. 
+				/* A: 
+		The different estimation strategy leads to a change in both point estimates and significance levels of the coefficients. Point estimates are generally lower compared to Table 2. The coefficients lose in significance too. Similarly to Gonzalez (2021), there is heterogeneity in effects, namely South-East regions have a significant negative effect while North-West ones are associated to a positive yet insignificant effect. Overall, there are not striking differences among the two instrumental strategies: point estimates are virtually equal while the interaction instument is related to a slight drop in significance in South-East regions. This corroborates the hypothesis of a constant slope of the outcome with respect to the running variable. The IV estimates the Local Average Treatment Effect on the compliers, provided the "no-defiers" assumption is met. In this context it seems plausible to assume that the treatment dummy does not decrease at the cutoff: according to the reported figures in Gonzalez (2021) the covered areas are wide enough to assume that once you step into them the coverage persists for various kilometres.
 		
-		The difference in 
+		The difference compared to Table 2 is likely due to the use of the optimal bandiwth rather than a global approach. This is related to the bias-variance trade-off: shifting to a local regression reduces bias by relying on less-noisy observations, namely the ones close to the cut-off, while increasing the variance due to the reduction in the number of the observations, hence explaining why the estimates become statistically insignificant. */
 		
-
-		
-		
-		The coefficients linked to the proportions of votes affected by fraud, or the likelihood of fraud in individual polling centers, vary when calculated using optimal bandwidth selection compared to those derived from global fitting. Specifically, our coefficients lose in statistical significance. This decline in significance in the optimal bandwidth estimation can be explained by two main factors: 
-•	Transitioning from a global to a local regression can significantly reduce the number of observations, leading to decreased precision and consequently higher standard errors. This increase in standard errors may diminish the significance of our coefficients.
-•	Bias correction: a narrower bandwidth allows for more precise estimation, helping to avoid the mis-specifications inherent in the global model. This is because in global regressions, extreme observations may bias the overall fit. In this scenario, a coefficient showing no statistical difference from zero may indicate that the actual effect is indeed zero, and it is more precisely computed  using a local estimation method.
-
-These two phenomena are connected to the trade-off between bias and variance in local and global estimation within a regression-discontinuity design. Essentially, narrower bandwidths result in smaller sample sizes, leading to increased variance. However, they also enable more precise estimation of the true effect at the threshold. However, unraveling the effects of these two factors presents a challenge. Consequently, determining whether the difference between local and global outcomes arises from one factor or the other remains elusive.
-
-
-							*/
 
 	
