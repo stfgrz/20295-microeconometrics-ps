@@ -444,20 +444,6 @@ foreach v in elevation slope {
 	di as txt "`v' jump = " as res %6.3f
 }
 
-foreach v in elevation slope {
-	local fname = "`v'_rdplot"
-	
-	rdplot outcome_b runvar if runvar> -20 & runvar< 20, p(4) kernel(triangular) bwselect(mserd) ///
-		title("rdrobust / rdplot with optimal bandwidth") ///
-		name(`fname', replace)
-	
-	graph save "$output/`fname'.gph", replace
-    graph export "$output/`fname'.pdf", as(pdf) replace
-	
-	reg `v' outcome runvar if abs(runvar)<=5, vce(cluster province_id)
-	di as txt "`v' jump = " as res %6.3f
-}
-
 	*-----Panel B------------------*
 	
 rdrobust outcome_b runvar, p(1) kernel(triangular) bwselect(mserd)
@@ -476,22 +462,6 @@ foreach v in elevation slope {
 	di as txt "`v' jump = " as res %6.3f _b[D]
 }
 
-foreach v in elevation slope {
-	local fname = "`v'_rdplot"
-	
-	rdplot outcome_b runvar if runvar> -20 & runvar< 20, p(4) kernel(triangular) bwselect(mserd) ///
-		title("rdrobust / rdplot with optimal bandwidth") ///
-		name(`fname', replace)
-	
-	graph save "$output/`fname'.gph", replace
-    graph export "$output/`fname'.pdf", as(pdf) replace
-	
-	reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
-	di as txt "`v' jump = " as res %6.3f _b[D]
-}
-
-	
-
 * Density (McCrary) test
 rddensity runvar, c(0)
 	
@@ -505,19 +475,21 @@ rddensity runvar, c(0)
 	
 	/* (iii) Which assumptions must hold in order for the one-dimensional RD estimates of Gonzalez (2021) to be valid? */
 	
-		/*A: For that one-dimensional sharp RD to deliver credible causal estimates, a sequence of conditions—some generic to the RD framework, others specific to the geographic setting—must hold. First, the potential outcomes (the fraud measures that would be observed with or without coverage) must vary smoothly with location so that any jump exactly at distance = 0 can only be attributed to the treatment. Gonzalez subjects an extensive battery of electoral, demographic, topographic and development covariates to the same discontinuity test applied to the outcomes and shows that, once the sample is narrowed to polling centres lying within a few kilometres of the frontier, those characteristics evolve continuously across it; none of them mimics the break in fraud that the treatment generates​​.
+		/*A: For that one-dimensional sharp RD to deliver credible causal estimates, a sequence of conditions—some generic to the RD framework, others specific to the geographic setting—must hold. 
+		
+		First, the potential outcomes (the fraud measures that would be observed with or without coverage) must vary smoothly with location so that any jump exactly at distance = 0 can only be attributed to the treatment. Gonzalez subjects an extensive battery of electoral, demographic, topographic and development covariates to the same discontinuity test applied to the outcomes and shows that, once the sample is narrowed to polling centres lying within a few kilometres of the frontier, those characteristics evolve continuously across it; none of them mimics the break in fraud that the treatment generates​​.
 		
 		Second, there must be no strategic manipulation of the running variable: polling stations (or the villages they serve) cannot have been placed deliberately "just inside" or "just outside" coverage in anticipation of the election. A recent Cattaneo-Jansson-Ma density test reveals no bunching of observations on either side of zero distance, which supports the absence of sorting or gaming of the assignment mechanism​​.
 		
-		Third, comparison must always be local; accordingly the author discards any stretch of frontier for which at least one side lacks observations, thereby satisfying the "boundary positivity" requirement that every segment offer both treated and control units for comparison​​.
+		Third, since the cut-off is geographical rather than behavioural, the Stable Unit Treatment Value Assumption is plausible: a centre's fraud behaviour is unlikely to be affected by whether a neighbouring centre metres away is, technically, on the other side of the invisible radio boundary, and empirical tests detect neither spill-overs nor displacement of fraud into nearby untreated areas​​. 
 		
 		Because the physical environment is rugged and cellular footprints can be irregular, it is equally important that the smooth functions used to partial out latitude and longitude are flexible enough within the selected bandwidth. Gonzalez adopts the Calonico-Cattaneo-Titiunik bandwidth selector, estimates separate low-order polynomials on each side of the cut-off, and shows that alternative polynomial orders or wider/narrower windows leave the treatment coefficient essentially unchanged​​.
 
-		Moreover, since the cut-off is geographical rather than behavioural, the Stable Unit Treatment Value Assumption is plausible: a centre's fraud behaviour is unlikely to be affected by whether a neighbouring centre metres away is, technically, on the other side of the invisible radio boundary, and empirical tests detect neither spill-overs nor displacement of fraud into nearby untreated areas​​. 
+		Moreover, comparison must always be local; accordingly the author discards any stretch of frontier for which at least one side lacks observations, thereby satisfying the "boundary positivity" requirement that every segment offer both treated and control units for comparison​​.
 		
 		Finally, treatment assignment is deterministic at the cut-off by construction—a centre that falls inside the raster cell is coded as covered—so the probability of treatment jumps from zero to one, as demanded by the sharp design.
 
-		When all these pieces are in place—the continuity of counterfactual trends, the absence of manipulation, the presence of observations on both sides, the correct local specification and the deterministic jump in the treatment indicator—the scalar "distance to coverage" specification that compresses the two-dimensional spatial boundary into a single running variable isolates the local average causal effect of mobile-phone coverage on electoral fraud for polling centres located arbitrarily close to that boundary. Under those assumptions the discontinuity in fraud that Gonzalez documents can be interpreted as the deterrent effect of enabling voters to communicate irregularities in real time. */
+		Under those assumptions the discontinuity in fraud that Gonzalez documents can be interpreted as the deterrent effect of enabling voters to communicate irregularities in real time. */
 
 **# Question (b)
 
@@ -601,7 +573,7 @@ foreach var in comb_ind comb {
 
 * Panel A
 estout col1_a1_comb_ind  col1_a2_comb_ind  col1_b1_comb_ind  col1_b2_comb_ind col1_c1_comb_ind  col1_c2_comb_ind   ///
-using "TABLE_4.tex", replace style(tex) ///
+using "$output/Table_2.tex", replace style(tex) ///
 keep(T) label cells(b(star fmt(3)) se(par fmt(3))) starlevels(* 0.10 ** 0.05 *** 0.01) ///
 mlabels(, none) collabels(, none) eqlabels(, none) ///
 stats(N, fmt(a3) ///
@@ -617,7 +589,7 @@ prehead("\begin{table}[H]" "\centering" "\begin{tabular}{lcccccc}" ///
 
 * Panel B
 estout col1_a1_comb  col1_a2_comb  col1_b1_comb  col1_b2_comb col1_c1_comb  col1_c2_comb  ///
-using "TABLE_4.tex", append style(tex) ///
+using "$output/Table_2.tex", append style(tex) ///
 posthead("\noalign{\smallskip} \noalign{\smallskip} \noalign{\smallskip}" "\multicolumn{6}{l}{\emph{Panel B.  Share of votes under Category C fraud}} \\" "\noalign{\smallskip} \noalign{\smallskip}" ) ///
 keep(T) label cells(b(star fmt(3)) se(par fmt(3))) starlevels(* 0.10 ** 0.05 *** 0.01) ///
 mlabels(, none) collabels(, none) eqlabels(, none) ///
@@ -629,7 +601,6 @@ postfoot("\noalign{\smallskip} \hline \hline \noalign{\smallskip}" ///
 
 	/* A: The different estimation strategy leads to a change in both point estimates and significance levels of the coefficients. Point estimates are generally lower compared to Table 2. The coefficients lose in significance too. Similarly to Gonzalez (2021), there is heterogeneity in effects, namely South-East regions have a significant negative effect while North-West ones are associated to a positive yet insignificant effect. Overall, there are not striking differences among the two instrumental strategies: point estimates are virtually equal while the interaction instument is related to a slight drop in significance in South-East regions. This corroborates the hypothesis of a constant slope of the outcome with respect to the running variable. The IV estimates the Local Average Treatment Effect on the compliers, provided the "no-defiers" assumption is met. In this context it seems plausible to assume that the treatment dummy does not decrease at the cutoff: according to the reported figures in Gonzalez (2021) the covered areas are wide enough to assume that once you step into them the coverage persists for various kilometres.
 		
-		The difference compared to Table 2 is likely due to the use of the optimal bandiwth rather than a global approach. This is related to the bias-variance trade-off: shifting to a local regression reduces bias by relying on less-noisy observations, namely the ones close to the cut-off, while increasing the variance due to the reduction in the number of the observations, hence explaining why the estimates become statistically insignificant. */
+		The difference compared to Table 2 is likely due the different estimated bandwith: by applying comparable methodologies for calculating the optimal bandwidth, and taking into account the very fact that our design requires a larger set of information to carry out inference, it is reasonable to assume that our larger bandwith imply a tradeoff; namely, we are dealing with the bias-variance trade-off: shifting to a local regression reduces bias by relying on less-noisy observations, namely the ones close to the cut-off, while increasing the variance due to the reduction in the number of the observations, hence explaining why the estimates become statistically insignificant. */
 		
 
-	

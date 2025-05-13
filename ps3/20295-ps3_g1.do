@@ -94,7 +94,7 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/500c011
 	Call the y-axis - ``Treatment Variable'' ; call the x-axis - ``Running variable'' */
 	
 rdplot T X, graph_options(title(RD Plot) ytitle("Treament Variable") xtitle("Running Variable") legend(off)) graph rename T_X replace
-graph export "$output\table1.csv\disc_plot.png", replace
+graph export "$output/disc_plot.png", replace
 	
 	/* (ii) Is the current design a sharp or a fuzzy RD? Why? */
 	
@@ -126,12 +126,12 @@ mat rownames balance = "Share Men High School Education" "Islamic Mayor in 1989"
 mat colnames balance = "MSE-Optimal Bandwidth" "RD Estimator" "p-value" "Effective Number of Observations"
 mat list balance 
 
-putexcel set "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\PS3\table1.csv", replace
+putexcel set "$output/table1.csv", replace
 putexcel A1=matrix(balance), names nformat(number_d2)
 putexcel (A2:A10), overwr bold border(right thick) 
 putexcel (B1:E1), overwr bold border(bottom thick)
 
-esttab matrix(balance) using "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\PS3\Output\table1.csv", replace
+esttab matrix(balance) using "$output/table1.csv", replace
 
 		/* A: Since all p-values are large, this implies that covariates are balanced across the cutoff. The balance checks suggest that the treatment assignment around the cutoff is as good as random, supporting validity of the RD design. */
 	
@@ -164,7 +164,7 @@ graph combine hischshr1520m_X i89_X vshr_islam1994_X partycount_X lpop1994_X mer
 	
 	/* (iii) Title each RD subplot so that the reader is able to identify each subplot to the corresponding outcome. Save the unique graphic as `Graph 1`. */
 	
-graph export "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\PS3\Output\Graph_1.png", replace
+graph export "$output/Graph_1.png", replace
 	
 **# Question (d)
 
@@ -187,14 +187,14 @@ rddensity X, plot plot_range(`h_l' `h_r') graph_opt(name(hist_2, replace) legend
 	/* (iii) Save a graphic named `Graph_2` containing the histogram plot and the estimated density plot side-by-side. */
 	
 graph combine hist_1 hist_2
-graph export "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\PS3\Output\Graph_2.png", replace
+graph export "$output/Graph_2.png", replace
 	
 **# Question (e)
 
 	/* (i) Use `rddensity` to test if a discontinuity in our running variable X's density does not exist in our cutoff. */
 	
 rddensity X , all plot
-graph export "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\PS3\Output\Graph_3.png", replace
+graph export "$output/Graph_3.png", replace
 	
 	/* (ii) What are we able to conclude from such test? Is it favorable or against the validity of our RD design? */
 	
@@ -243,7 +243,7 @@ rdrobust Y X, c(10)
 rdplot Y X, nbins(20 20) binselect(es) graph_options(title("RD plot") ytitle(Outcome) xtitle(Running Variable))
 *note that c(0) is the default
 
-graph export "RD_Plot.pdf", replace
+graph export "$output/RD_Plot.pdf", replace
 
 	
 **# Question (h) 
@@ -370,11 +370,9 @@ coefplot ///
     ciopts(recast(rcap) color(gs8)) ///
     scheme(s1color) ///
     legend(on)
-
 	
-graph export "Graph_3.pdf", replace
+graph export "$output/Graph_3.pdf", replace
 
-	
 	/* (iii) What can we say about the robustness of our results with respect to bandwidth choice? */
 	
 		/* A: Relying on various intervals for the bandwith shows the bias-variance trade off in the estimation of the local average treatment effect. 
@@ -446,20 +444,6 @@ foreach v in elevation slope {
 	di as txt "`v' jump = " as res %6.3f
 }
 
-foreach v in elevation slope {
-	local fname = "`v'_rdplot"
-	
-	rdplot outcome_b runvar if runvar> -20 & runvar< 20, p(4) kernel(triangular) bwselect(mserd) ///
-		title("rdrobust / rdplot with optimal bandwidth") ///
-		name(`fname', replace)
-	
-	graph save "$output/`fname'.gph", replace
-    graph export "$output/`fname'.pdf", as(pdf) replace
-	
-	reg `v' outcome runvar if abs(runvar)<=5, vce(cluster province_id)
-	di as txt "`v' jump = " as res %6.3f
-}
-
 	*-----Panel B------------------*
 	
 rdrobust outcome_b runvar, p(1) kernel(triangular) bwselect(mserd)
@@ -478,44 +462,30 @@ foreach v in elevation slope {
 	di as txt "`v' jump = " as res %6.3f _b[D]
 }
 
-foreach v in elevation slope {
-	local fname = "`v'_rdplot"
-	
-	rdplot outcome_b runvar if runvar> -20 & runvar< 20, p(4) kernel(triangular) bwselect(mserd) ///
-		title("rdrobust / rdplot with optimal bandwidth") ///
-		name(`fname', replace)
-	
-	graph save "$output/`fname'.gph", replace
-    graph export "$output/`fname'.pdf", as(pdf) replace
-	
-	reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
-	di as txt "`v' jump = " as res %6.3f _b[D]
-}
-
-	
-
 * Density (McCrary) test
 rddensity runvar, c(0)
 	
 	/* (ii) Is the current design a sharp or a fuzzy RD? */
 	
-		/* A: In the original article González (2021) models the mobile-coverage frontier as though it determined treatment perfectly: a polling centre that falls inside the raster cell is coded as treated, one that falls outside is coded as untreated, and the regressions estimate the sharp discontinuity in outcomes at that boundary.  The exercise you are asked to perform places that set-up in a different information environment.  Longitude is now observed with error—only a noisy proxy is available—while latitude is measured correctly.  González therefore computes each centre's Euclidean distance to the frontier with a coordinate that is partly wrong, and uses the sign of that *proxy* distance as if it told him on which side of the threshold the centre lies.  At the same time he retains an independent, accurately recorded indicator of whether the centre actually had a phone signal on election day.
+		/* A: In the original article González (2021) models the mobile-coverage frontier as though it determined treatment perfectly: a polling centre that falls inside the raster cell is coded as treated, one that falls outside is coded as untreated, and the regressions estimate the sharp discontinuity in outcomes at that boundary.  The exercise you are asked to perform places that set-up in a different information environment.  Longitude is now observed with error—only a noisy proxy is available—while latitude is measured correctly.  González therefore computes each centre's Euclidean distance to the frontier with a coordinate that is partly wrong, and uses the sign of that proxy distance as if it told him on which side of the threshold the centre lies.  At the same time he retains an independent, accurately recorded indicator of whether the centre actually had a phone signal on election day.
 
-		Because of the noise in longitude the proxy distance no longer maps deterministically into treatment status: some stations that truly lacked coverage are nevertheless calculated as having positive distance, while some that truly enjoyed coverage are calculated as negative.  What remains at zero proxy distance is not a clean cliff from treatment probability zero to one; instead the probability of treatment jumps upward but stops short of unity.  That probabilistic jump is the hallmark of a **fuzzy regression-discontinuity design**.  Position relative to the nominal frontier functions as a strong but imperfect instrument for realised coverage, and the causal parameter of interest becomes the local Wald ratio—the discontinuity in the fraud outcome divided by the discontinuity in the treatment rate—estimated within a narrow bandwidth around the threshold.
+		Because of the noise in longitude the proxy distance no longer maps deterministically into treatment status: some stations that truly lacked coverage are nevertheless calculated as having positive distance, while some that truly enjoyed coverage are calculated as negative.  What remains at zero proxy distance is not a clean cliff from treatment probability zero to one; instead the probability of treatment jumps upward but stops short of unity.  That probabilistic jump is what allows us to determine that we are dealing with a fuzzy regression-discontinuity design.  Position relative to the nominal frontier functions as a strong but imperfect instrument for realised coverage, and the causal parameter of interest becomes the local Wald ratio—the discontinuity in the fraud outcome divided by the discontinuity in the treatment rate—estimated within a narrow bandwidth around the threshold.
 
-		Identification in this context still depends on the usual smoothness of potential outcomes with respect to the *true* but unobserved distance; in addition it requires that the longitudinal measurement error be random, unrelated to potential fraud outcomes, and mild enough that crossing the proxy boundary never makes a centre *less* likely to receive coverage (monotonicity).  Under those conditions, estimating two local-linear regressions—one with the fraud variable and one with the treatment indicator as dependent variables, both as functions of the proxy distance and latitude, with boundary-segment fixed effects—yields two discontinuities whose ratio consistently recovers the causal effect of mobile coverage for the polling centres whose treatment status is genuinely altered by being measured just inside or just outside the threshold.  In short, once the running variable is observed with noise while an accurate treatment flag is available, the design that had been sharp in González (2021) must be analysed as a fuzzy RD and the boundary indicator must be treated as an instrument rather than as the treatment itself. */
+		Identification in this context still depends on the usual smoothness of potential outcomes with respect to the true but unobserved distance; in addition it requires that the longitudinal measurement error be random, unrelated to potential fraud outcomes, and mild enough that crossing the proxy boundary never makes a centre less likely to receive coverage (monotonicity).  Under those conditions, estimating two local-linear regressions—one with the fraud variable and one with the treatment indicator as dependent variables, both as functions of the proxy distance and latitude, with boundary-segment fixed effects—yields two discontinuities whose ratio consistently recovers the causal effect of mobile coverage for the polling centres whose treatment status is genuinely altered by being measured just inside or just outside the threshold.  In short, once the running variable is observed with noise while an accurate treatment flag is available, the design that had been sharp in González (2021) must be analysed as a fuzzy RD and the boundary indicator must be treated as an instrument rather than as the treatment itself. */
 	
 	/* (iii) Which assumptions must hold in order for the one-dimensional RD estimates of Gonzalez (2021) to be valid? */
 	
-		/*A: For that one-dimensional sharp RD to deliver credible causal estimates, a sequence of conditions—some generic to the RD framework, others specific to the geographic setting—must hold. First, the potential outcomes (the fraud measures that would be observed with or without coverage) must vary smoothly with location so that any jump exactly at distance = 0 can only be attributed to the treatment. Gonzalez subjects an extensive battery of electoral, demographic, topographic and development covariates to the same discontinuity test applied to the outcomes and shows that, once the sample is narrowed to polling centres lying within a few kilometres of the frontier, those characteristics evolve continuously across it; none of them mimics the break in fraud that the treatment generates​​.
+		/*A: For that one-dimensional sharp RD to deliver credible causal estimates, a sequence of conditions—some generic to the RD framework, others specific to the geographic setting—must hold. 
+		
+		First, the potential outcomes (the fraud measures that would be observed with or without coverage) must vary smoothly with location so that any jump exactly at distance = 0 can only be attributed to the treatment. Gonzalez subjects an extensive battery of electoral, demographic, topographic and development covariates to the same discontinuity test applied to the outcomes and shows that, once the sample is narrowed to polling centres lying within a few kilometres of the frontier, those characteristics evolve continuously across it; none of them mimics the break in fraud that the treatment generates​​.
 		
 		Second, there must be no strategic manipulation of the running variable: polling stations (or the villages they serve) cannot have been placed deliberately "just inside" or "just outside" coverage in anticipation of the election. A recent Cattaneo-Jansson-Ma density test reveals no bunching of observations on either side of zero distance, which supports the absence of sorting or gaming of the assignment mechanism​​.
 		
-		Third, comparison must always be local; accordingly the author discards any stretch of frontier for which at least one side lacks observations, thereby satisfying the "boundary positivity" requirement that every segment offer both treated and control units for comparison​​.
+		Third, since the cut-off is geographical rather than behavioural, the Stable Unit Treatment Value Assumption is plausible: a centre's fraud behaviour is unlikely to be affected by whether a neighbouring centre metres away is, technically, on the other side of the invisible radio boundary, and empirical tests detect neither spill-overs nor displacement of fraud into nearby untreated areas​​. 
 		
 		Because the physical environment is rugged and cellular footprints can be irregular, it is equally important that the smooth functions used to partial out latitude and longitude are flexible enough within the selected bandwidth. Gonzalez adopts the Calonico-Cattaneo-Titiunik bandwidth selector, estimates separate low-order polynomials on each side of the cut-off, and shows that alternative polynomial orders or wider/narrower windows leave the treatment coefficient essentially unchanged​​.
 
-		Moreover, since the cut-off is geographical rather than behavioural, the Stable Unit Treatment Value Assumption is plausible: a centre's fraud behaviour is unlikely to be affected by whether a neighbouring centre metres away is, technically, on the other side of the invisible radio boundary, and empirical tests detect neither spill-overs nor displacement of fraud into nearby untreated areas​​. 
+		Moreover, comparison must always be local; accordingly the author discards any stretch of frontier for which at least one side lacks observations, thereby satisfying the "boundary positivity" requirement that every segment offer both treated and control units for comparison​​.
 		
 		Finally, treatment assignment is deterministic at the cut-off by construction—a centre that falls inside the raster cell is coded as covered—so the probability of treatment jumps from zero to one, as demanded by the sharp design.
 
@@ -603,7 +573,7 @@ foreach var in comb_ind comb {
 
 * Panel A
 estout col1_a1_comb_ind  col1_a2_comb_ind  col1_b1_comb_ind  col1_b2_comb_ind col1_c1_comb_ind  col1_c2_comb_ind   ///
-using "TABLE_4.tex", replace style(tex) ///
+using "$output/Table_2.tex", replace style(tex) ///
 keep(T) label cells(b(star fmt(3)) se(par fmt(3))) starlevels(* 0.10 ** 0.05 *** 0.01) ///
 mlabels(, none) collabels(, none) eqlabels(, none) ///
 stats(N, fmt(a3) ///
@@ -619,7 +589,7 @@ prehead("\begin{table}[H]" "\centering" "\begin{tabular}{lcccccc}" ///
 
 * Panel B
 estout col1_a1_comb  col1_a2_comb  col1_b1_comb  col1_b2_comb col1_c1_comb  col1_c2_comb  ///
-using "TABLE_4.tex", append style(tex) ///
+using "$output/Table_2.tex", append style(tex) ///
 posthead("\noalign{\smallskip} \noalign{\smallskip} \noalign{\smallskip}" "\multicolumn{6}{l}{\emph{Panel B.  Share of votes under Category C fraud}} \\" "\noalign{\smallskip} \noalign{\smallskip}" ) ///
 keep(T) label cells(b(star fmt(3)) se(par fmt(3))) starlevels(* 0.10 ** 0.05 *** 0.01) ///
 mlabels(, none) collabels(, none) eqlabels(, none) ///
@@ -631,7 +601,6 @@ postfoot("\noalign{\smallskip} \hline \hline \noalign{\smallskip}" ///
 
 	/* A: The different estimation strategy leads to a change in both point estimates and significance levels of the coefficients. Point estimates are generally lower compared to Table 2. The coefficients lose in significance too. Similarly to Gonzalez (2021), there is heterogeneity in effects, namely South-East regions have a significant negative effect while North-West ones are associated to a positive yet insignificant effect. Overall, there are not striking differences among the two instrumental strategies: point estimates are virtually equal while the interaction instument is related to a slight drop in significance in South-East regions. This corroborates the hypothesis of a constant slope of the outcome with respect to the running variable. The IV estimates the Local Average Treatment Effect on the compliers, provided the "no-defiers" assumption is met. In this context it seems plausible to assume that the treatment dummy does not decrease at the cutoff: according to the reported figures in Gonzalez (2021) the covered areas are wide enough to assume that once you step into them the coverage persists for various kilometres.
 		
-		The difference compared to Table 2 is likely due to the use of the optimal bandiwth rather than a global approach. This is related to the bias-variance trade-off: shifting to a local regression reduces bias by relying on less-noisy observations, namely the ones close to the cut-off, while increasing the variance due to the reduction in the number of the observations, hence explaining why the estimates become statistically insignificant. */
+		The difference compared to Table 2 is likely due the different estimated bandwith: by applying comparable methodologies for calculating the optimal bandwidth, and taking into account the very fact that our design requires a larger set of information to carry out inference, it is reasonable to assume that our larger bandwith imply a tradeoff; namely, we are dealing with the bias-variance trade-off: shifting to a local regression reduces bias by relying on less-noisy observations, namely the ones close to the cut-off, while increasing the variance due to the reduction in the number of the observations, hence explaining why the estimates become statistically insignificant. */
 		
 
-	
