@@ -486,8 +486,6 @@ rddensity runvar, c(0)
 		Because the physical environment is rugged and cellular footprints can be irregular, it is equally important that the smooth functions used to partial out latitude and longitude are flexible enough within the selected bandwidth. Gonzalez adopts the Calonico-Cattaneo-Titiunik bandwidth selector, estimates separate low-order polynomials on each side of the cut-off, and shows that alternative polynomial orders or wider/narrower windows leave the treatment coefficient essentially unchanged​​.
 
 		Moreover, comparison must always be local; accordingly the author discards any stretch of frontier for which at least one side lacks observations, thereby satisfying the "boundary positivity" requirement that every segment offer both treated and control units for comparison​​.
-		
-		Finally, treatment assignment is deterministic at the cut-off by construction—a centre that falls inside the raster cell is coded as covered—so the probability of treatment jumps from zero to one, as demanded by the sharp design.
 
 		Under those assumptions the discontinuity in fraud that Gonzalez documents can be interpreted as the deterrent effect of enabling voters to communicate irregularities in real time. */
 
@@ -569,7 +567,7 @@ foreach var in comb_ind comb {
 	
  }
 
-/*Aggiungere clusters optimal bandwidth */
+/*Aggiungere clusters optimal bandwidth? */
 
 * Panel A
 estout col1_a1_comb_ind  col1_a2_comb_ind  col1_b1_comb_ind  col1_b2_comb_ind col1_c1_comb_ind  col1_c2_comb_ind   ///
@@ -599,8 +597,11 @@ prefoot("\noallign{\smallskip}" "Interaction & & \checkmark & & \checkmark & & \
 postfoot("\noalign{\smallskip} \hline \hline \noalign{\smallskip}" ///
 	"\end{tabular} \end{table}")
 
-	/* A: The different estimation strategy leads to a change in both point estimates and significance levels of the coefficients. Point estimates are generally lower compared to Table 2. The coefficients lose in significance too. Similarly to Gonzalez (2021), there is heterogeneity in effects, namely South-East regions have a significant negative effect while North-West ones are associated to a positive yet insignificant effect. Overall, there are not striking differences among the two instrumental strategies: point estimates are virtually equal while the interaction instument is related to a slight drop in significance in South-East regions. This corroborates the hypothesis of a constant slope of the outcome with respect to the running variable. The IV estimates the Local Average Treatment Effect on the compliers, provided the "no-defiers" assumption is met. In this context it seems plausible to assume that the treatment dummy does not decrease at the cutoff: according to the reported figures in Gonzalez (2021) the covered areas are wide enough to assume that once you step into them the coverage persists for various kilometres.
+	/* A: The different estimation strategy leads to a change in both point estimates and significance levels of the coefficients. Point estimates are generally lower compared to Table 2. The coefficients lose in significance too. Panel A shows that the overall estimated effect on "At least one station with Category C fraud" is negative (-11.1 percentage points) yet not statistically significant. Panel B presents a negative and statistically significant effect of the coverage of 10.1 percentage points on the "Share of votes under Category C fraud". 
+Similarly to Gonzalez (2021), there is heterogeneity in effects. In Panel A South-East regions have a significant negative effect (- 29.0 percentage points) while North-West ones are associated to a positive (2.5 percentage points) yet insignificant effect. The estimates in Panel B follow a similar dynamic. South-East regions yield a negative effect of -28.2 percentage points, and North-West areas show almost null and insignificant coefficients. 
+
+	Overall, there are not striking differences among the two instrumental strategies: point estimates are virtually equal while the interaction instument is related to a slight drop in significance in South-East regions in both Panel A and Panel B. This corroborates the hypothesis of a constant slope of the outcome with respect to the running variable. The IV estimates the Local Average Treatment Effect on the compliers, provided the "no-defiers" assumption is met. In this context it seems plausible to assume that the treatment dummy does not decrease at the cutoff: according to the reported figures in Gonzalez (2021) the covered areas are wide enough to assume that once you step into them the coverage persists for various kilometres.
 		
-		The difference compared to Table 2 is likely due the different estimated bandwith: by applying comparable methodologies for calculating the optimal bandwidth, and taking into account the very fact that our design requires a larger set of information to carry out inference, it is reasonable to assume that our larger bandwith imply a tradeoff; namely, we are dealing with the bias-variance trade-off: shifting to a local regression reduces bias by relying on less-noisy observations, namely the ones close to the cut-off, while increasing the variance due to the reduction in the number of the observations, hence explaining why the estimates become statistically insignificant. */
+	The difference compared to Table 2 is likely due the different estimated bandwith: by applying comparable methodologies for calculating the optimal bandwidth, and taking into account the very fact that our design requires a larger set of information to carry out inference, it is reasonable to assume that our larger bandwith imply a tradeoff; namely, we are dealing with the bias-variance trade-off: shifting to a local regression reduces bias by relying on less-noisy observations, namely the ones close to the cut-off, while increasing the variance due to the reduction in the number of the observations, hence explaining why the estimates become statistically insignificant. */
 		
 
