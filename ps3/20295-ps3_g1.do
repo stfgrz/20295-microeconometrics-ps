@@ -489,7 +489,7 @@ rddensity runvar, c(0)
 		
 		Finally, treatment assignment is deterministic at the cut-off by construction—a centre that falls inside the raster cell is coded as covered—so the probability of treatment jumps from zero to one, as demanded by the sharp design.
 
-		When all these pieces are in place—the continuity of counterfactual trends, the absence of manipulation, the presence of observations on both sides, the correct local specification and the deterministic jump in the treatment indicator—the scalar "distance to coverage" specification that compresses the two-dimensional spatial boundary into a single running variable isolates the local average causal effect of mobile-phone coverage on electoral fraud for polling centres located arbitrarily close to that boundary. Under those assumptions the discontinuity in fraud that Gonzalez documents can be interpreted as the deterrent effect of enabling voters to communicate irregularities in real time. */
+		Under those assumptions the discontinuity in fraud that Gonzalez documents can be interpreted as the deterrent effect of enabling voters to communicate irregularities in real time. */
 
 **# Question (b)
 
@@ -525,7 +525,7 @@ xtset segment50 pccode
 
 *Local Linear Regression 
 
-gen T=cov									/* *!!!!!!!!! Questo va tolto in caso sia messo sopra  !!!!!!!!!!!!!!!***/
+gen T=cov	
 label variable T "Coverage dummy"
 gen instrument_T=0
 replace instrument_T=1 if runvar>0
@@ -569,7 +569,7 @@ foreach var in comb_ind comb {
 	
  }
 
-/*Aggiungere clusters optimal bandwidth */
+/*Aggiungere clusters optimal bandwidth? */
 
 * Panel A
 estout col1_a1_comb_ind  col1_a2_comb_ind  col1_b1_comb_ind  col1_b2_comb_ind col1_c1_comb_ind  col1_c2_comb_ind   ///

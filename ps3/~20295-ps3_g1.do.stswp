@@ -525,7 +525,7 @@ xtset segment50 pccode
 
 *Local Linear Regression 
 
-gen T=cov									/* *!!!!!!!!! Questo va tolto in caso sia messo sopra  !!!!!!!!!!!!!!!***/
+gen T=cov	
 label variable T "Coverage dummy"
 gen instrument_T=0
 replace instrument_T=1 if runvar>0
