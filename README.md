@@ -78,10 +78,15 @@ Recommended tooling:
 
 ### Stata (.do) workflows
 
+**✨ NEW: Improved Path Management**
+All Stata scripts now use automatic path detection - no need to edit paths!
+
 From within Stata (GUI):
 ```
 cd "PATH/TO/20295-microeconometrics-ps"
-do "path/to/the/problemset.do"
+do "ps1/20295-ps1_g1.do"      // For PS1
+do "ps2/20295-ps2_g1.do"      // For PS2  
+do "ps3/20295-ps3_g1.do"      // For PS3
 ```
 
 From the command line (example for Unix-like systems; adjust `stata-mp`/`stata-se` to your edition):
@@ -148,26 +153,46 @@ python -m http.server 8000
 
 ## Data layout and paths
 
-To keep analyses portable, a common layout is:
+The repository now follows a standardized layout for better organization:
+
 ```
 data/
   raw/        # unmodified source data (not committed if sensitive/large)
   interim/    # intermediate files created by scripts
   processed/  # cleaned/analysis-ready data
 outputs/
-  figures/
-  tables/
-  logs/
-reports/      # LaTeX sources, PDFs
-scripts/      # .do and .R files (optionally grouped by problem set)
+  figures/    # plots, graphs, and visualizations
+  tables/     # analysis results and summary tables
+  logs/       # analysis logs and computational outputs
+scripts/      # reusable utilities and templates
+  stata/      # Stata utilities and templates
+    utils.do      # path management and common functions
+    template.do   # standardized template for new scripts
+  r/          # R utilities and templates
+    template.R    # standardized template for R scripts
+reports/      # LaTeX sources and compiled reports
+ps1/, ps2/, ps3/  # individual problem set files and data
+```
+
+### Path Management
+
+All problem set scripts now use **automatic path detection** instead of hardcoded paths:
+
+```stata
+* In Stata scripts - this replaces user-specific hardcoded paths
+do "../scripts/stata/utils.do"
+init_paths 1  // Replace 1 with problem set number
+
+* Now you can use standardized globals:
+use "${ps_data}/dataset.dta", clear
+esttab using "${ps_output}/results.tex", replace
 ```
 
 Guidelines:
-- Place any sensitive or large raw datasets under `data/raw` and add them to `.gitignore`.
-- Make scripts write their outputs to `outputs/` instead of the repo root.
-- Use relative paths anchored at the project root to minimize manual path edits.
-
-If this repository uses a different structure, prefer that and adjust paths accordingly.
+- **No more hardcoded paths**: Scripts automatically detect the project root
+- **Portable scripts**: Code works on any system without modification
+- **Standardized outputs**: All outputs go to designated directories
+- **Use relative paths**: All paths are relative to the project root
 
 ---
 

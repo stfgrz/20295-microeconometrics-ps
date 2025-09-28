@@ -38,21 +38,24 @@ grstyle init
 grstyle set plain, horizontal
 */
 
-local user = c(username)
-
-if ("`user'" == "erick") {
-    global filepath "/home/erick/TEMP/"
+* Initialize project paths automatically
+capture do "../scripts/stata/utils.do"
+if _rc != 0 {
+    * Fallback: manual path setup if utils.do not found
+    display "Warning: Could not load utils.do, using manual path setup"
+    global project_root = c(pwd)
+    * Go up one level if we're in ps2 directory
+    local current_dir = c(pwd)
+    if strpos("`current_dir'", "ps2") > 0 {
+        cd ..
+        global project_root = c(pwd)
+        cd "`current_dir'"
+    }
+    global ps_data "${project_root}/ps2/ps2_data"
+    global ps_output "${project_root}/ps2/ps2_output"
 }
-
-if ("`user'" == "stefanograziosi") {
-	cd "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps"
-    global filepath "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2"
-	global output "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output"
-}
-
-if ("`user'" == "gabrielemole") {
-    global filepath "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1"
-	global output "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
+else {
+    init_paths 2
 }
 
 *=============================================================================
@@ -60,7 +63,7 @@ if ("`user'" == "gabrielemole") {
 /*                      													*/
 *=============================================================================
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/pset_4.dta", clear
+use "${ps_data}/pset_4.dta", clear
 
 /* (a) Note that one of the variables in the data set is stpop, the state population. In the next exercises, you should follow Wolfers (2006) in weighting both your descriptive output and your analysis by the state population. A short summary of the different weighting procedures in Stata is provided here ([1,2]). Given that divorce rates are an average computed in each state and the variable stpop provides the population in each of these states, which is the weight you should use when reporting the evolution of divorce rates or a regression of divorce rates on unilateral divorce laws to match the analysis in Wolfers (2006)? */
 
@@ -118,7 +121,7 @@ preserve
 
 	#delimit cr
 
-	graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Graph_1.pdf", replace
+	graph export "${ps_output}/Graph_1.pdf", replace
 
 restore
 
@@ -173,7 +176,7 @@ graph twoway
 
 #delimit cr
 
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Graph_2.pdf", replace
+graph export "${ps_output}/Graph_2.pdf", replace
 restore 
 
 
@@ -255,7 +258,7 @@ Difference 1 should show differences across columns while Difference 2 across li
 	matrix rownames table_1 = POST=1 POST=0 Difference_1
 
 	matrix list table_1
-	putexcel set "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/table_1.xlsx", replace
+	putexcel set "${ps_output}/table_1.xlsx", replace
 	putexcel A1=matrix(table_1), names
 	putexcel C1:C4, border(right)
 	putexcel A3:D3, border(bottom)
@@ -384,7 +387,7 @@ preserve
 	
 		bacondecomp div_rate IMP_UNILATERAL [aweight = init_stpop], robust  mcolors(blue red green)
 	graph rename bacondecomp22
-	graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Bacon_decomposition_graph.pdf", replace
+	graph export "${ps_output}/Bacon_decomposition_graph.pdf", replace
 restore
 	
 	/* Goodman-Bacon (2021) provides a decomposition of the twoway Difference in Differences estimator (TWFEDD) in case of staggered treatment as the weighted average of all possible 2x2 two group two periods DiD estimators. These differ by the adopted control group: as a group might change treatment status over time, every DiD can either have as control group an always treated group, a never treated group, or timing groups, namely groups whose treatment stated at different times is used as other's controls groups.
@@ -408,7 +411,7 @@ So that this dummy will equal 1 for all observations 10 or more years before the
 	/* (i) Run the regresson below, using the unilateral divorce dummies Dτ st you created and sector (πs) and year (γt) fixed effects. */
 	
 preserve
-	use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/5c6aebedcdd74f0e85b270c2d25c9e0c9f5501aa/ps2/ps2_data/pset_4.dta", clear
+	use "${ps_data}/pset_4.dta", clear
 
 	encode st, generate(state)
 	keep if year >= 1956 & year <= 1988
@@ -447,21 +450,21 @@ preserve
 
 	reghdfe div_rate lead* lag* [aweight = stpop], absorb(i.year i.state) cluster(state)
 	estimates store reg_simple
-	outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg1.xlsx", title("regression ex i point i") label excel replace
+	outreg2 using "${ps_output}/Reg1.xlsx", title("regression ex i point i") label excel replace
 
 		
 		/* (ii) Perform the same regression as the one described above, now including state-specific linear time trends. */
 		
 	reghdfe div_rate lead* lag* time_trend_* [aweight = stpop], absorb(i.year i.state) cluster(state)
 	estimates store reg_timetrend
-	outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg2.xlsx", title("regression ex i point ii") label excel replace
+	outreg2 using "${ps_output}/Reg2.xlsx", title("regression ex i point ii") label excel replace
 
 		
 		/* (iii) In addition to state-specific linear time trends, include also quadratic state-specific time trends. */
 		
 	reghdfe div_rate lead* lag* time_trend_* timetrend_square_* [aweight = stpop], absorb(i.year i.state) cluster(state)
 	estimates store reg_sqtime
-	outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg3.xlsx", title("regression ex i point iii") label excel replace
+	outreg2 using "${ps_output}/Reg3.xlsx", title("regression ex i point iii") label excel replace
 
 
 	
@@ -493,7 +496,7 @@ coefplot ///
     ytitle("Coefficient") ///
     title("Event-Study Estimates with 95% Confidence Intervals") ///
     vertical
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/event_study_regression.pdf", replace
+graph export "${ps_output}/event_study_regression.pdf", replace
 
 /* (k) Wolfers (2006) presents a summary of the debate regarding the influence of the unilateral divorce law in the divorce rates. How do the conclusions of the paper differ from Friedberg (1998)? How does the author rationalize the difference in his findings? */
 
@@ -509,14 +512,14 @@ drop timetrend_square_*
 *simple
 eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) control_cohort(no_law) absorb(i.year i.state) vce( cluster state)
 estimates store reg_interact_simple
-outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg4.xlsx", title("regression ex l 1") label excel replace
+outreg2 using "${ps_output}/Reg4.xlsx", title("regression ex l 1") label excel replace
 matrix C = e(b_iw)
 mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
 matrix C = C \ A'
 matrix list C
 coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
 				title("Simple Event Study") xlabel(, alternate)
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/interact_simple.pdf", replace
+graph export "${ps_output}/interact_simple.pdf", replace
 
 *linear time trends
 
@@ -528,7 +531,7 @@ local lineartime time_trend_*
 
 eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) covariates(`lineartime') control_cohort(no_law) absorb(i.year i.state ) vce(cluster state)
 estimates store reg_interact_linear
-outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg5.xlsx", title("regression ex l 2") label excel replace
+outreg2 using "${ps_output}/Reg5.xlsx", title("regression ex l 2") label excel replace
 *graph
 matrix C = e(b_iw)
 mata st_matrix("A",sqrt(diagonal(st_matrix("e(V_iw)"))))
@@ -536,7 +539,7 @@ matrix C = C \ A'
 matrix list C
 coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
 				title("Event Study with Linear Time Trends") xlabel(, alternate)
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/interact_linear.pdf", replace
+graph export "${ps_output}/interact_linear.pdf", replace
 				
 *squared time trends
 
@@ -549,7 +552,7 @@ local squaretrend timetrend_sq_*
 
 eventstudyinteract div_rate lead* lag* [aweight=stpop], cohort(lfdivlaw) control_cohort(no_law) covariates(`lineartime' `squaretrend') absorb(i.year i.state) vce(cluster state)
 estimates store reg_interact_squared
-outreg2 using "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/Reg6.xlsx", title("regression ex l 3") label excel replace
+outreg2 using "${ps_output}/Reg6.xlsx", title("regression ex l 3") label excel replace
 
 *graph
 
@@ -559,7 +562,7 @@ matrix C = C \ A'
 matrix list C
 coefplot matrix(C[1]), se(C[2]) keep(lag* lead*) vertical yline(0) xtitle("Years after law") ytitle("Estimated effect") ///
 				title("Event Study with Square Time Trends") xlabel(, alternate)
-graph export "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps2/ps2_output/final_graph.pdf", replace
+graph export "${ps_output}/final_graph.pdf", replace
 				
 restore
 				

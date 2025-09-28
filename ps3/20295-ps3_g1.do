@@ -37,26 +37,24 @@ graph set window fontface "Lato"
 grstyle init
 grstyle set plain, horizontal
 
-local user = c(username)
-
-if ("`user'" == "erick") {
-    global filepath "/home/erick/TEMP/"
+* Initialize project paths automatically
+capture do "../scripts/stata/utils.do"
+if _rc != 0 {
+    * Fallback: manual path setup if utils.do not found
+    display "Warning: Could not load utils.do, using manual path setup"
+    global project_root = c(pwd)
+    * Go up one level if we're in ps3 directory
+    local current_dir = c(pwd)
+    if strpos("`current_dir'", "ps3") > 0 {
+        cd ..
+        global project_root = c(pwd)
+        cd "`current_dir'"
+    }
+    global ps_data "${project_root}/ps3/ps3_data"
+    global ps_output "${project_root}/ps3/ps3_output"
 }
-
-if ("`user'" == "stefanograziosi") {
-	cd "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps"
-    global filepath "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps3"
-	global output "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps3/ps3_output"
-}
-
-if ("`user'" == "gabrielemole") {
-    global filepath "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1"
-	global output "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
-}
-
-if ("`user'" == "39331") {
-    global filepath "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\PS3\pset_3.dta"
-	global output "C:\Users\39331\OneDrive - Università Commerciale Luigi Bocconi\Desktop\MICROMETRICS\PS3\Output"
+else {
+    init_paths 3
 }
 
 *=============================================================================
@@ -86,7 +84,7 @@ if ("`user'" == "39331") {
 /* Use the file pset_3.dta													*/
 *=============================================================================
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/500c011b31d4929fb126f88bfbc4fe39e27d5ac9/ps3/ps3_data/pset_3.dta", clear
+use "${ps_data}/pset_3.dta", clear
 
 **# Question (a) 
 
@@ -94,7 +92,7 @@ use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/500c011
 	Call the y-axis - ``Treatment Variable'' ; call the x-axis - ``Running variable'' */
 	
 rdplot T X, graph_options(title(RD Plot) ytitle("Treament Variable") xtitle("Running Variable") legend(off)) graph rename T_X replace
-graph export "$output/disc_plot.png", replace
+graph export "${ps_output}/disc_plot.png", replace
 	
 	/* (ii) Is the current design a sharp or a fuzzy RD? Why? */
 	
@@ -126,12 +124,12 @@ mat rownames balance = "Share Men High School Education" "Islamic Mayor in 1989"
 mat colnames balance = "MSE-Optimal Bandwidth" "RD Estimator" "p-value" "Effective Number of Observations"
 mat list balance 
 
-putexcel set "$output/table1.csv", replace
+putexcel set "${ps_output}/table1.csv", replace
 putexcel A1=matrix(balance), names nformat(number_d2)
 putexcel (A2:A10), overwr bold border(right thick) 
 putexcel (B1:E1), overwr bold border(bottom thick)
 
-esttab matrix(balance) using "$output/table1.csv", replace
+esttab matrix(balance) using "${ps_output}/table1.csv", replace
 
 		/* A: Since all p-values are large, this implies that covariates are balanced across the cutoff. The balance checks suggest that the treatment assignment around the cutoff is as good as random, supporting validity of the RD design. */
 	
@@ -164,7 +162,7 @@ graph combine hischshr1520m_X i89_X vshr_islam1994_X partycount_X lpop1994_X mer
 	
 	/* (iii) Title each RD subplot so that the reader is able to identify each subplot to the corresponding outcome. Save the unique graphic as `Graph 1`. */
 	
-graph export "$output/Graph_1.png", replace
+graph export "${ps_output}/Graph_1.png", replace
 	
 **# Question (d)
 
@@ -187,14 +185,14 @@ rddensity X, plot plot_range(`h_l' `h_r') graph_opt(name(hist_2, replace) legend
 	/* (iii) Save a graphic named `Graph_2` containing the histogram plot and the estimated density plot side-by-side. */
 	
 graph combine hist_1 hist_2
-graph export "$output/Graph_2.png", replace
+graph export "${ps_output}/Graph_2.png", replace
 	
 **# Question (e)
 
 	/* (i) Use `rddensity` to test if a discontinuity in our running variable X's density does not exist in our cutoff. */
 	
 rddensity X , all plot
-graph export "$output/Graph_3.png", replace
+graph export "${ps_output}/Graph_3.png", replace
 	
 	/* (ii) What are we able to conclude from such test? Is it favorable or against the validity of our RD design? */
 	
@@ -243,7 +241,7 @@ rdrobust Y X, c(10)
 rdplot Y X, nbins(20 20) binselect(es) graph_options(title("RD plot") ytitle(Outcome) xtitle(Running Variable))
 *note that c(0) is the default
 
-graph export "$output/RD_Plot.pdf", replace
+graph export "${ps_output}/RD_Plot.pdf", replace
 
 	
 **# Question (h) 
@@ -252,12 +250,12 @@ graph export "$output/RD_Plot.pdf", replace
 	
 *uniform
 rdrobust Y X, p(1) kernel(uni) bwselect(mserd)
-outreg2 using table_1.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_1.tex", append se bdec(3) sdec(3) ///
 ctitle("Uniform Kernel")
 
 *triangular
 rdrobust Y X, p(1) kernel(tri) bwselect(mserd)
-outreg2 using table_1.tex, replace se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_1.tex", replace se bdec(3) sdec(3) ///
 ctitle("Triangular Kernel")
 
 
@@ -279,7 +277,7 @@ gen X3 = X^3
 gen X4 = X^4
 
 reg Y T X X2 X3 X4 i.T#c.X i.T#c.X2 i.T#c.X3 i.T#c.X4
-outreg2 using table_1.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_1.tex", append se bdec(3) sdec(3) ///
 ctitle("Unweighted Global Regression")
 
 *Triangular weights 
@@ -291,7 +289,7 @@ replace wght = (1-abs(X/min)) if X<0
 replace wght = (1-abs(X/max)) if X>=0
 
 reg Y T X X2 X3 X4 i.T#c.X i.T#c.X2 i.T#c.X3 i.T#c.X4 [aw = wght]
-outreg2 using table_1.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_1.tex", append se bdec(3) sdec(3) ///
 ctitle("Triangular Global Regression")
 
 	
@@ -312,7 +310,7 @@ display `opt_i'
 drop if X>`opt_i' | X <-`opt_i'
 reg Y T X i.T#c.X
 *Save the files
-outreg2 using table_1.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_1.tex", append se bdec(3) sdec(3) ///
 ctitle("Unweighted Local Regression")
 restore
 
@@ -327,7 +325,7 @@ replace whgt2 = (1 - abs(X/`opt_i')) if X < 0 & X >= -`opt_i'
 replace whgt2 = (1 - abs(X/`opt_i')) if X >= 0 & X <= `opt_i'
 
 reg Y T X i.T#c.X [aw = whgt2]
-outreg2 using table_1.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_1.tex", append se bdec(3) sdec(3) ///
 ctitle("Triangular Local Regression")
 restore
 
@@ -372,7 +370,7 @@ coefplot ///
     scheme(s1color) ///
     legend(on)
 	
-graph export "$output/Graph_3.pdf", replace
+graph export "${ps_output}/Graph_3.pdf", replace
 
 	/* (iii) What can we say about the robustness of our results with respect to bandwidth choice? */
 	
@@ -423,8 +421,8 @@ twoway ///
 	
 	/* rdplot T X if X>-20 & X<20 + opzioni grafico*/
 	
-graph save "$output/g_covprob.gph", replace
-graph export "$output/first_stage_coverage.pdf", as(pdf) replace
+graph save "${ps_output}/g_covprob.gph", replace
+graph export "${ps_output}/first_stage_coverage.pdf", as(pdf) replace
 
 
 	*-----Panel A------------------*
@@ -438,8 +436,8 @@ foreach v in elevation slope {
 		title("rdrobust / rdplot with optimal bandwidth") ///
 		name(`fname', replace)
 	
-	graph save "$output/`fname'.gph", replace
-    graph export "$output/`fname'.pdf", as(pdf) replace
+	graph save "${ps_output}/`fname'.gph", replace
+    graph export "${ps_output}/`fname'.pdf", as(pdf) replace
 	
 	reg `v' outcome_a runvar if abs(runvar)<=5, vce(cluster province_id)
 	di as txt "`v' jump = " as res %6.3f
@@ -456,8 +454,8 @@ foreach v in elevation slope {
 		title("rdrobust / rdplot with optimal bandwidth") ///
 		name(`fname', replace)
 	
-	graph save "$output/`fname'.gph", replace
-    graph export "$output/`fname'.pdf", as(pdf) replace
+	graph save "${ps_output}/`fname'.gph", replace
+    graph export "${ps_output}/`fname'.pdf", as(pdf) replace
 	
 	reg `v' D runvar if abs(runvar)<=5, vce(cluster province_id)
 	di as txt "`v' jump = " as res %6.3f _b[D]
@@ -572,7 +570,7 @@ foreach var in comb_ind comb {
 
 * Panel A
 estout col1_a1_comb_ind  col1_a2_comb_ind  col1_b1_comb_ind  col1_b2_comb_ind col1_c1_comb_ind  col1_c2_comb_ind   ///
-using "$output/Table_2.tex", replace style(tex) ///
+using "${ps_output}/Table_2.tex", replace style(tex) ///
 keep(T) label cells(b(star fmt(3)) se(par fmt(3))) starlevels(* 0.10 ** 0.05 *** 0.01) ///
 mlabels(, none) collabels(, none) eqlabels(, none) ///
 stats(N, fmt(a3) ///
@@ -588,7 +586,7 @@ prehead("\begin{table}[H]" "\centering" "\begin{tabular}{lcccccc}" ///
 
 * Panel B
 estout col1_a1_comb  col1_a2_comb  col1_b1_comb  col1_b2_comb col1_c1_comb  col1_c2_comb  ///
-using "$output/Table_2.tex", append style(tex) ///
+using "${ps_output}/Table_2.tex", append style(tex) ///
 posthead("\noalign{\smallskip} \noalign{\smallskip} \noalign{\smallskip}" "\multicolumn{6}{l}{\emph{Panel B.  Share of votes under Category C fraud}} \\" "\noalign{\smallskip} \noalign{\smallskip}" ) ///
 keep(T) label cells(b(star fmt(3)) se(par fmt(3))) starlevels(* 0.10 ** 0.05 *** 0.01) ///
 mlabels(, none) collabels(, none) eqlabels(, none) ///

@@ -36,21 +36,24 @@ graph set window fontface "Lato"
 grstyle init
 grstyle set plain, horizontal
 */
-local user = c(username)
-
-if ("`user'" == "erick") {
-    global filepath "/home/erick/TEMP/"
+* Initialize project paths automatically
+capture do "../scripts/stata/utils.do"
+if _rc != 0 {
+    * Fallback: manual path setup if utils.do not found
+    display "Warning: Could not load utils.do, using manual path setup"
+    global project_root = c(pwd)
+    * Go up one level if we're in ps1 directory
+    local current_dir = c(pwd)
+    if strpos("`current_dir'", "ps1") > 0 {
+        cd ..
+        global project_root = c(pwd)
+        cd "`current_dir'"
+    }
+    global ps_data "${project_root}/ps1/ps1_data"
+    global ps_output "${project_root}/ps1/ps1_output"
 }
-
-if ("`user'" == "stefanograziosi") {
-	cd "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps"
-    global filepath "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps1"
-	global output "/Users/stefanograziosi/Documents/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
-}
-
-if ("`user'" == "gabrielemole") {
-    global filepath "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1"
-	global output "/Users/stealth/Documenti/GitHub/20295-microeconometrics-ps/ps1/ps1_output"
+else {
+    init_paths 1
 }
 
 *=============================================================================
@@ -58,7 +61,7 @@ if ("`user'" == "gabrielemole") {
 /* Use the file jtrain2 													*/
 *=============================================================================
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/abc3c6d67f27161b9899cedb19c8ff1016402746/ps1/jtrain2.dta", clear
+use "${ps_data}/jtrain2.dta", clear
 
 /* (a) Construct a table checking for balance across treatment and control for the following covariates: age educ black hisp nodegree re74 re75.
 Name it TABLE 1.
@@ -95,7 +98,7 @@ matrix rownames table_1a = age educ black hisp nodegree re74 re75
 
 matrix list table_1a
 
-esttab matrix(table_1a) using "ps1/ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a) using "${ps_output}/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -137,15 +140,15 @@ count if e(sample) & train==1
 scalar treated1 = r(N)
 
 regress re78 train, vce(robust)
-outreg2 using table_2.tex, replace se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_2.tex", replace se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_1")
 
 regress re78 train age educ black hisp, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_2")
 
 regress re78 train age educ black hisp re74 re75, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated1, "Controls", controls1) ctitle("Regression 1c_3")
 
 	
@@ -194,7 +197,7 @@ restore
 
 * Questa just in case ci fossimo persi qualcosa, secondo me ha senso ma non è richiesta #SG *
 
-esttab trim3 trim5 trim10 using "ps1/ps1_output/table_3.tex", replace tex ///
+esttab trim3 trim5 trim10 using "${ps_output}/table_3.tex", replace tex ///
     title("Regression Results After Removing Extreme Influence Observations") ///
     stats(N, fmt(%9.0g) label("N")) ///
 	nomtitles 
@@ -211,7 +214,7 @@ esttab trim3 trim5 trim10 using "ps1/ps1_output/table_3.tex", replace tex ///
 
 * SBLOCCA STO COSO PER AVERE ACCESSO ALL'ALTRO DATASET | NON USARLI ENTRAMBI, QUESTO CANCELLA IL DATASET PRECEDENTE *
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/abc3c6d67f27161b9899cedb19c8ff1016402746/ps1/jtrain3.dta", clear
+use "${ps_data}/jtrain3.dta", clear
 
 /* (a) Do a table with the same structure of TABLE 1 of item (a) in question 1 for the following covariates: age educ black hisp re74 re75 (note that nodegree is not present in the current dataset.) Add the corresponding columns to TABLE 1. */
 
@@ -265,7 +268,7 @@ matrix colnames table_1a_2a = TreatedMean_treat_1a ControlMean_treat_1a TreatedS
 
 matrix list table_1a_2a
 
-esttab matrix(table_1a_2a) using "ps1/ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a_2a) using "${ps_output}/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -350,7 +353,7 @@ matrix list table_2d
 	
 matrix table_1a_2a_2d = table_1a_2a, table_2d
 
-esttab matrix(table_1a_2a_2d) using "ps1/ps1_output/table_1.tex", replace tex ///
+esttab matrix(table_1a_2a_2d) using "${ps_output}/table_1.tex", replace tex ///
     title("Balance Check Across Treatment and Control") ///
     cells("result(fmt(3))") ///
 	nomtitles
@@ -374,15 +377,15 @@ count if e(sample) & train==1
 scalar treated2 = r(N)
 
 regress re78 treated, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_1")
 
 regress re78 treated age educ black hisp, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_2")
 
 regress re78 treated age educ black hisp re74 re75, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated2, "Controls", controls2) ctitle("Regression 2e_3")
 
 
@@ -410,15 +413,15 @@ count if e(sample) & train==1
 scalar treated3 = r(N)
 
 regress re78 train, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_1")
 
 regress re78 train age educ black hisp, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_2")
 
 regress re78 train age educ black hisp re74 re75, vce(robust)
-outreg2 using table_2.tex, append se bdec(3) sdec(3) ///
+outreg2 using "${ps_output}/table_2.tex", append se bdec(3) sdec(3) ///
 addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 
 		
@@ -437,7 +440,7 @@ addstat("Treated", treated3, "Controls", controls3) ctitle("Regression 2f_3")
 You may use the lassopack package in Stata or the hdm package in R to perform your analysis. To answer the questions below, read Belloni et al. (2014) to understand the "double selection" procedure and check the help files of the commands above in the language you chose. */
 *=============================================================================
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/abc3c6d67f27161b9899cedb19c8ff1016402746/ps1/jtrain2.dta", clear
+use "${ps_data}/jtrain2.dta", clear
 
 /* (a) Revisit your analysis of the data set jtrain2 in exercise 1 as a post-Lasso OLS estimation. */
 
@@ -546,7 +549,7 @@ Read Athey and Imbens (2017) (focus on those sections where the authors discuss 
 
 * (b) 
 
-use "https://raw.githubusercontent.com/stfgrz/20295-microeconometrics-ps/6439a5d44431b6a76c8de6989f44bf7adc461cbb/ps1/ps1_data/jtrain2.dta", clear
+use "${ps_data}/jtrain2.dta", clear
 
 *calculating the simple difference in means
 *seed set at 20295 to mantain coherence
