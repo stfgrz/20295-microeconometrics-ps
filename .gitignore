@@ -1,70 +1,66 @@
-ps1/~20295_ps1_SOL_g1.do.stswp
-.DS_Store
-.Rproj.user
+# Stata temporary files
+*.stswp
+~*.do.stswp
+*.tmp
 
-# History files
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# R files
+.Rproj.user
 .Rhistory
 .Rapp.history
-
-# Session Data files
 .RData
 .RDataTmp
-
-# User-specific files
 .Ruserdata
-
-# Example code in package build process
+.Renviron
 *-Ex.R
-
-# Output files from R CMD build
 /*.tar.gz
-
-# Output files from R CMD check
 /*.Rcheck/
-
-# RStudio files
-.Rproj.user/
-
-# produced vignettes
-vignettes/*.html
-vignettes/*.pdf
-
-# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
-.httr-oauth
-
-# knitr and R markdown default cache directories
 *_cache/
 /cache/
-
-# Temporary files created by R markdown
 *.utf8.md
 *.knit.md
-
-# R Environment Variables
-.Renviron
-
-# pkgdown site
-docs/
-
-# translation temp files
-po/*~
-
-# RStudio Connect folder
+.httr-oauth
 rsconnect/
 
-# I'm still trying to understand what it is
-# A: Turns out it is just for folder organization, completely innocuous
-.DS_Store 
+# RStudio
+.Rproj.user/
 
-# I have no fucking clue what this is but I found it in Quarto's GitHub
-# Still working
-.Rhistory
-
-.vscode
-
-inst/doc
-docs
-
+# Quarto
 /.quarto/
 /doc/
 /Meta/
+
+# Vignettes
+vignettes/*.html
+vignettes/*.pdf
+
+# Documentation
+docs/
+inst/doc
+
+# Translation temp files
+po/*~
+
+# IDE
+.vscode
+.idea/
+
+# Large data files (uncomment as needed)
+# data/raw/*.dta
+# data/raw/*.csv
+# *.xlsx
+
+# Log files
+*.log
+*.smcl
+
+# Temporary output (if not needed for reproduction)
+# outputs/temp/
